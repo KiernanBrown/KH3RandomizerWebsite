@@ -485,12 +485,6 @@ namespace KH3Randomizer.Data
             //    }
             //}
 
-            // Account for Events that have None in them
-            if (availableOptions.ContainsKey("Events"))
-            {
-                this.RemoveNoneFromEvents(DataTableEnum.Event, rng, ref randomizedOptions, availableOptions);
-            }
-
             // Account for Keyblade on ChrInit
             if (availableOptions.ContainsKey("Starting Stats") && availableOptions["Starting Stats"]["Weapons"])
             {
@@ -670,6 +664,12 @@ namespace KH3Randomizer.Data
                 this.RemoveNoneFromTreasure(DataTableEnum.TreasureRA, rng, ref randomizedOptions, availableOptions);
                 this.RemoveNoneFromTreasure(DataTableEnum.TreasureTS, rng, ref randomizedOptions, availableOptions);
                 this.RemoveNoneFromTreasure(DataTableEnum.TreasureTT, rng, ref randomizedOptions, availableOptions);
+            }
+
+            // Account for Events that have None in them
+            if (availableOptions.ContainsKey("Events"))
+            {
+                this.RemoveNoneFromEvents(DataTableEnum.Event, rng, ref randomizedOptions, availableOptions);
             }
 
             // Clean VBonuses

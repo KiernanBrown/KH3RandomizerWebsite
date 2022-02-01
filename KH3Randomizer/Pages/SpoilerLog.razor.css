@@ -129,12 +129,25 @@
     transition: background-color 0.5s ease;
 }
 
-    .rounded-selector:hover {
-        background-color: #cbabee;
-    }
+.rounded-selector:hover {
+    background-color: #cbabee;
+}
 
 .rounded-selected {
     background-color: #a169e0;
+}
+
+.rounded-disabled {
+    padding: 5px 10px;
+    border: 1px solid #a169e0;
+    border-radius: 20px;
+    margin: 5px;
+    display: block;
+    text-align: center;
+    color: black;
+    background-color: #d6d6d6;
+    text-decoration: none;
+    transition: background-color 0.5s ease;
 }
 
 .a-tag-selector {
@@ -142,9 +155,9 @@
     text-decoration: none;
 }
 
-    .a-tag-selector:hover {
-        color: white;
-    }
+.a-tag-selector:hover {
+    color: white;
+}
 
 .a-tag-selected {
     color: white;

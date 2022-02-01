@@ -15,7 +15,7 @@
                     <div class="row">
                         <div class="col-md-2">
                             <label class="switch">
-                                <input type="checkbox" @onchange="@((value) => { pools[pool.Key] = (bool)value.Value; this.UpdateOptionsText(); })" checked="@pool.Value" disabled="@(pool.Key == "Bosses" || pool.Key == "Enemies" || pool.Key == "General Stats")">
+                                <input type="checkbox" @onchange="@((value) => { HandlePoolValueChange(value, pool); })" checked="@pool.Value" disabled="@(pool.Key == "Bosses" || pool.Key == "Enemies" || pool.Key == "General Stats")">
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -57,12 +57,12 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label><b>Balanced Bonuses</b></label>
+                            <label><b>@extra.Key</b></label>
                         </div>
 
                         <div class="col-md-1">
                             <Tooltip Text="@extrasDescriptions[extra.Key]">
-                                <i class="bi bi-question-circle" style="font-size: 1.2rem;"></i>
+                                <i class="bi bi-question-circle" style="font-size: 1.2rem; color: dodgerblue;"></i>
                             </Tooltip>
                         </div>
                     </div>
@@ -107,7 +107,7 @@
     private Dictionary<string, bool> extras = new Dictionary<string, bool>();
 
     private Dictionary<string, string> extrasDescriptions = new Dictionary<string, string> {
-        { "Balanced Bonuses", "Evenly distributes checks that appear on Bonuses." }
+        { "Balanced Bonuses", "Evenly distribute checks that appear on Bonuses." }
     };
 
 
@@ -158,6 +158,7 @@
     {
         //this.RandomizerService.SetAvailablePools(this.pools);
         this.UpdateAvailablePools.InvokeAsync(this.pools);
+        this.UpdateAvailableExtras.InvokeAsync(this.extras);
 
         this.ContinueTo.InvokeAsync("Options");
     }
@@ -172,5 +173,4 @@
         }
         this.UpdateOptionsText();
     }
-
 }

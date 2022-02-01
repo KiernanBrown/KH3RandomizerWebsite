@@ -41,16 +41,29 @@
     </div>
 
     <div class="spoiler-log-options">
+        <h4>Pools</h4>
         <div class="spoiler-log-pools">
             <div class="row">
                 @foreach (var pool in this.availablePools)
                 {
                     if (pool.Key != "Bosses" && pool.Key != "Enemies" && pool.Key != "Room Transitions" && pool.Key != "General Stats")
-                    { 
+                    {
                         <div class="col-md-2">
-                            <a class="rounded-selector a-tag-selector @(pool.Value ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { availablePools[pool.Key] = !pool.Value; this.UpdateAvailablePools(); })" @onclick:preventDefault>@pool.Key</a>
+                            <a class="rounded-selector a-tag-selector @(pool.Value ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { HandlePoolValueChange(pool); })" @onclick:preventDefault>@pool.Key</a>
                         </div>
                     }
+                }
+            </div>
+        </div>
+
+        <h4 style="margin-top: 1em">Extras</h4>
+        <div class="spoiler-log-extras">
+            <div class="row">
+                @foreach (var extra in this.availableExtras)
+                {
+                    <div class="col-md-2">
+                        <a class="@(extra.Key == "Balanced Bonuses" && availablePools["Bonuses"] ? "rounded-selector a-tag-selector" : "rounded-disabled") @(extra.Value ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { HandleExtraValueChange(extra); })" @onclick:preventDefault>@extra.Key</a>
+                    </div>
                 }
             </div>
         </div>
@@ -95,8 +108,12 @@
     private string currentSeed { get; set; }
 
     private Dictionary<string, bool> allPools = new Dictionary<string, bool> {
-        { "Treasures", true }, { "Events", true }, { "Starting Stats", true }, { "Lucky Emblems", false }, { "Bonuses", true },
-        { "Fullcourse Abilities", true }, { "Level Ups", true }, { "Weapon Upgrades", true }, {"Equippables", true }
+        { "Treasures", true }, { "Events", true }, { "Starting Stats", true }, { "Lucky Emblems", true }, { "Bonuses", true },
+        { "Fullcourse Abilities", true }, { "Level Ups", true }, { "Weapon Upgrades", true }, { "Equippables", true }, { "Synthesis Items", true}
+    };
+
+    private Dictionary<string, bool> allExtras = new Dictionary<string, bool> {
+        { "Balanced Bonuses", true }
     };
 
     private Dictionary<string, bool> availablePools = new();
@@ -111,6 +128,7 @@
     protected override void OnInitialized()
     {
         this.UpdateAvailablePools(this.allPools);
+        this.UpdateAvailableExtras(this.allExtras);
 
         InvokeAsync(() =>
         {
@@ -262,5 +280,27 @@
                 StateHasChanged();
             });
         }
+    }
+
+    private void HandlePoolValueChange(KeyValuePair<string, bool> pool)
+    {
+        bool newValue = !pool.Value;
+        availablePools[pool.Key] = newValue;
+        this.UpdateAvailablePools();
+        if (pool.Key == "Bonuses")
+        {
+            availableExtras["Balanced Bonuses"] = newValue;
+        }
+    }
+
+    private void HandleExtraValueChange(KeyValuePair<string, bool> extra)
+    {
+        bool newValue = !extra.Value;
+        if (extra.Key == "Balanced Bonuses" && availablePools["Bonuses"])
+        {
+            availableExtras[extra.Key] = newValue;
+            this.UpdateAvailableExtras();
+        }
+
     }
 }
