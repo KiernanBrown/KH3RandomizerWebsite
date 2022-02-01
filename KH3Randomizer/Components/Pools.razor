@@ -107,10 +107,10 @@
     private Dictionary<string, bool> extras = new Dictionary<string, bool>();
 
     private Dictionary<string, string> extrasDescriptions = new Dictionary<string, string> {
-        { "Balanced Bonuses", "Evenly distribute checks that appear on Bonuses." }
+        { "Balanced Bonuses", "Evenly distribute checks that appear on Bonuses." }, // Requires Bonuses
+        { "Replace Reports", "Randomizes checks from Reports while keeping battlegates empty. Temporary fix for testing." }, // Requires Events
+        { "Poll Spin Start", "Ensures you start with Poll Spin." } // Requires Starting Stats
     };
-
-
 
     protected override void OnInitialized()
     {

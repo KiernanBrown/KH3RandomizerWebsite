@@ -1470,18 +1470,30 @@ namespace KH3Randomizer.Data
                 // Bonus 1 > Ability 1 > Bonus 2 > Ability 2
                 var currentBonusOption = new KeyValuePair<string, string>();
 
-                foreach (var bonusOption in currentVBonus.Value)
+                if (currentOption.Contains("Ability") && currentVBonus.Value.ContainsKey("Sora_Ability1") && currentVBonus.Value["Sora_Ability1"].Contains("NONE"))
                 {
-                    if (bonusOption.Value.Contains("NONE"))
+                    currentBonusOption = new KeyValuePair<string, string>("Sora_Ability1", currentVBonus.Value["Sora_Ability1"]);
+                }
+
+                else if (currentOption.Contains("Ability") && currentVBonus.Value.ContainsKey("Sora_Ability2") && currentVBonus.Value["Sora_Ability2"].Contains("NONE"))
+                {
+                    currentBonusOption = new KeyValuePair<string, string>("Sora_Ability2", currentVBonus.Value["Sora_Ability2"]);
+                }
+
+                else
+                {
+                    foreach (var bonusOption in currentVBonus.Value)
                     {
-                        Console.WriteLine();
-                        currentBonusOption = bonusOption;
-                        break;
+                        if (bonusOption.Value.Contains("NONE"))
+                        {
+                            currentBonusOption = bonusOption;
+                            break;
+                        }
                     }
                 }
 
                 // Add the currentOption to the VBonus
-                randomizedOptions[dataTableEnum][currentVBonus.Key][currentBonusOption.Key] = currentOption.Value;
+                randomizedOptions[dataTableEnum][currentVBonus.Key][currentBonusOption.Key] = currentOption;
 
                 // Remove this VBonus from our pending Dictionary and remove the option that has been used
                 pendingVBonuses.Remove(currentVBonus.Key);
@@ -1496,14 +1508,14 @@ namespace KH3Randomizer.Data
         }
 
         /// <summary>
-        /// Method that removes all options from VBonuses to make them all empty. 
-        /// This also returns a list of all of the options that were removed from VBonuses, 
+        /// Method that removes all checks from VBonuses to make them all empty. 
+        /// This also returns a list of all of the checks that were removed from VBonuses, 
         /// which can be used later for reassignment.
         /// </summary>
-        /// <returns>List of all options that were removed from VBonuses</returns>
-        public List<Option> EmptyAvailableVBonuses(DataTableEnum dataTableEnum, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
+        /// <returns>List of strings for all of the checks that were removed from VBonuses</returns>
+        public List<string> EmptyAvailableVBonuses(DataTableEnum dataTableEnum, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
         {
-            var removedOptions = new List<Option>();
+            var removedChecks = new List<string>();
             var availableVBonuses = GetAvailableVBonuses(ref randomizedOptions, availableOptions);
 
             foreach (var bonus in availableVBonuses)
@@ -1511,28 +1523,28 @@ namespace KH3Randomizer.Data
                 var bonusId = bonus.Key;
                 var bonusValues = bonus.Value;
 
-                foreach (var opt in bonusValues)
+                foreach (var check in bonusValues)
                 {
-                    if (!opt.Value.Contains("NONE"))
+                    if (!check.Value.Contains("NONE"))
                     {
                         // Save the removed bonus to be reassigned later
-                        var removedOption = new Option { Category = dataTableEnum, SubCategory = bonus.Key, Name = opt.Key, Value = opt.Value };
-                        removedOptions.Add(removedOption);
+                        string removedCheck = check.Value;
+                        removedChecks.Add(removedCheck);
 
-                        // Change this option to be none
-                        if (opt.Key.Contains("Ability"))
+                        // Change this check to be none
+                        if (check.Key.Contains("Ability"))
                         {
-                            randomizedOptions[dataTableEnum][removedOption.SubCategory][removedOption.Name] = "ETresAbilityKind::NONE\u0000";
+                            randomizedOptions[dataTableEnum][bonus.Key][check.Key] = "ETresAbilityKind::NONE\u0000";
                         }
-                        else if (opt.Key.Contains("Bonus"))
+                        else if (check.Key.Contains("Bonus"))
                         {
-                            randomizedOptions[dataTableEnum][removedOption.SubCategory][removedOption.Name] = "ETresVictoryBonusKind::NONE\u0000";
+                            randomizedOptions[dataTableEnum][bonus.Key][check.Key] = "ETresVictoryBonusKind::NONE\u0000";
                         }
                     }
                 }
             }
 
-            return removedOptions;
+            return removedChecks;
         }
 
         /// <summary>
