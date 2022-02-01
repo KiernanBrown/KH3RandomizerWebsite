@@ -8,15 +8,17 @@
 
     @if (this.currentSection == "Pools")
     {
-        <Pools ContinueTo="@(ContinueTo)" AvailablePools="@this.availablePools"
-               UpdateAvailablePools="@(pools => UpdateAvailablePools(pools))">
+        <Pools ContinueTo="@(ContinueTo)" AvailablePools="@this.availablePools" 
+               AvailableExtras="@this.availableExtras"
+               UpdateAvailablePools="@(pools => UpdateAvailablePools(pools))"
+               UpdateAvailableExtras="@(extras => UpdateAvailableExtras(extras))">
         </Pools>
     }
     else if (this.currentSection == "Options")
     {
         <Options ContinueTo="@(() => ContinueTo("Hints"))" BackTo="@(() => BackTo("Pools"))"
                  UpdateAvailableOptions="@(options => UpdateAvailableOptions(options))" UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateModifications="@((option1, option2) => UpdateModifications(option1, option2))"
-                 CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Modifications="@this.modifications" IsGoingBack="this.isGoingBack">
+                 CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Modifications="@this.modifications" IsGoingBack="this.isGoingBack">
         </Options>
     }
     else if (this.currentSection == "Hints")
@@ -35,12 +37,18 @@
 @code {
     public string CurrentSeed { get; set; }
 
-    private Dictionary<string, bool> availablePools = new Dictionary<string, bool> {
-        { "Treasures", true }, { "Events", true }, { "Starting Stats", true }, { "Lucky Emblems", false }, { "Bonuses", true },
+    private Dictionary<string, bool> availablePools = new Dictionary<string, bool>
+    {
+        { "Treasures", true }, { "Events", true }, { "Starting Stats", true }, { "Lucky Emblems", true }, { "Bonuses", true },
         { "Fullcourse Abilities", true }, { "Level Ups", true }, { "Weapon Upgrades", true }, {"Equippables", true },
         { "Synthesis Items", true },
 
         { "Bosses", false }, { "Enemies", false }, { "General Stats", false }
+    };
+
+    private Dictionary<string, bool> availableExtras = new Dictionary<string, bool>
+    {
+        { "Balanced Bonuses", true }
     };
 
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
@@ -133,6 +141,16 @@
     public void UpdateAvailableOptions(Dictionary<string, Dictionary<string, bool>> availableOptions)
     {
         this.availableOptions = availableOptions;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    public void UpdateAvailableExtras(Dictionary<string, bool> availableExtras)
+    {
+        this.availableExtras = availableExtras;
 
         InvokeAsync(() =>
         {

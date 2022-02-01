@@ -246,7 +246,7 @@ namespace KH3Randomizer.Data
             return option;
         }
 
-        public void RandomizeItems(string seed, ref Dictionary<string, Dictionary<string, bool>> availableOptions,
+        public void RandomizeItems(string seed, Dictionary<string, bool> availableExtras, ref Dictionary<string, Dictionary<string, bool>> availableOptions,
                                    ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions)
         {
             var hash = seed.StringToSeed();
@@ -672,6 +672,13 @@ namespace KH3Randomizer.Data
                 this.RemoveNoneFromTreasure(DataTableEnum.TreasureTT, rng, ref randomizedOptions, availableOptions);
             }
 
+            // Clean VBonuses
+            // This will reassign VBonuses such that each VBonus will have at least one check on it
+            if (availableOptions.ContainsKey("Bonuses") && availableExtras.ContainsKey("Balanced Bonuses") && availableExtras["Balanced Bonuses"])
+            {
+                this.CleanVBonuses(DataTableEnum.VBonus, rng, ref randomizedOptions, availableOptions);
+            }
+
             // Account for Levelup Data
             if (availableOptions.ContainsKey("Level Ups") && availableOptions["Level Ups"]["Levels"])
             {
@@ -728,12 +735,12 @@ namespace KH3Randomizer.Data
         }
 
         public byte[] GenerateRandomizerSeed(string currentSeed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
-                                             Dictionary<string, bool> availablePools, Dictionary<string, Dictionary<string, bool>> availableOptions, List<Tuple<Option, Option>> modifications, byte[] hints)
+                                             Dictionary<string, bool> availablePools, Dictionary<string, bool> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, List<Tuple<Option, Option>> modifications, byte[] hints)
         {
             var dataTableManager = new UE4DataTableInterpreter.DataTableManager();
             var dataTables = dataTableManager.RandomizeDataTables(randomizedOptions);
 
-            var zipArchive = this.CreateZipArchive(dataTables, currentSeed, availablePools, availableOptions, modifications, hints);
+            var zipArchive = this.CreateZipArchive(dataTables, currentSeed, availablePools, availableExtras, availableOptions, modifications, hints);
 
             return zipArchive;
 
@@ -756,7 +763,7 @@ namespace KH3Randomizer.Data
             //return new List<byte[]> { this.GetFile(@$".\Seeds\pakchunk99-randomizer-{currentSeed}.pak"), this.GetFile(@$"{pakPath}\SpoilerLog.json") };
         }
 
-        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, Dictionary<string, bool>> availableOptions, List<Tuple<Option, Option>> modifications, byte[] hints)
+        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, bool> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, List<Tuple<Option, Option>> modifications, byte[] hints)
         {
             var zipPath = @$".\Seeds\pakchunk99-randomizer-{randomSeed}\pakchunk99-randomizer-{randomSeed}.zip";
 
@@ -788,6 +795,7 @@ namespace KH3Randomizer.Data
                 {
                     SeedName = randomSeed,
                     AvailablePools = availablePools,
+                    AvailableExtras = availableExtras,
                     AvailableOptions = availableOptions,
                     Modifications = jsonTupleList
                 };
@@ -1426,6 +1434,132 @@ namespace KH3Randomizer.Data
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Method that cleans up VBonuses. As of now, this takes all of the checks that are
+        /// put onto VBonuses, removes them, and then reassigns them evenly throughout the
+        /// VBonuses.This ensures that you don't encounter empty VBonuses and that these
+        /// checks are spread evenly(at least as much so as the amount of checks allows).
+        /// </summary>
+        public void CleanVBonuses(DataTableEnum dataTableEnum, Random rng, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
+        {
+            if (!randomizedOptions.ContainsKey(dataTableEnum))
+                return;
+
+            // First, empty all VBonuses to get their options in a list
+            var storedOptions = EmptyAvailableVBonuses(dataTableEnum, ref randomizedOptions, availableOptions);
+
+            // Create a Dictionary of the VBonuses that are being used
+            var availableVBonuses = GetAvailableVBonuses(ref randomizedOptions, availableOptions);
+
+            // Copy the Dictionary we made previously
+            var pendingVBonuses = new Dictionary<string, Dictionary<string, string>>(availableVBonuses);
+
+            // Using the copy, spread elements from the list of removed options evenly between VBonuses
+            // Once a VBonus has been given an option, it is removed from the pendingVBonuses
+            // Once pendingVBonuses is empty, it copies the usableVBonuses again and continues
+            // This process goes on until each of the storedOptions has been placed on a VBonus
+            while (storedOptions.Count > 0)
+            {
+                // Get our currentOption (the first element of the list) and the VBonus it will be added to (determined by seed)
+                var currentOption = storedOptions.First();
+                var currentVBonus = pendingVBonuses.ElementAt(rng.Next(0, pendingVBonuses.Count()));
+
+                // Get the slot of the VBonus to place the option into
+                // Bonus 1 > Ability 1 > Bonus 2 > Ability 2
+                var currentBonusOption = new KeyValuePair<string, string>();
+
+                foreach (var bonusOption in currentVBonus.Value)
+                {
+                    if (bonusOption.Value.Contains("NONE"))
+                    {
+                        Console.WriteLine();
+                        currentBonusOption = bonusOption;
+                        break;
+                    }
+                }
+
+                // Add the currentOption to the VBonus
+                randomizedOptions[dataTableEnum][currentVBonus.Key][currentBonusOption.Key] = currentOption.Value;
+
+                // Remove this VBonus from our pending Dictionary and remove the option that has been used
+                pendingVBonuses.Remove(currentVBonus.Key);
+                storedOptions.RemoveAt(0);
+
+                // Every VBonus has gotten an option. Copy the usableVBonuses again and continue
+                if (pendingVBonuses.Count <= 0)
+                {
+                    pendingVBonuses = new Dictionary<string, Dictionary<string, string>>(availableVBonuses);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Method that removes all options from VBonuses to make them all empty. 
+        /// This also returns a list of all of the options that were removed from VBonuses, 
+        /// which can be used later for reassignment.
+        /// </summary>
+        /// <returns>List of all options that were removed from VBonuses</returns>
+        public List<Option> EmptyAvailableVBonuses(DataTableEnum dataTableEnum, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
+        {
+            var removedOptions = new List<Option>();
+            var availableVBonuses = GetAvailableVBonuses(ref randomizedOptions, availableOptions);
+
+            foreach (var bonus in availableVBonuses)
+            {
+                var bonusId = bonus.Key;
+                var bonusValues = bonus.Value;
+
+                foreach (var opt in bonusValues)
+                {
+                    if (!opt.Value.Contains("NONE"))
+                    {
+                        // Save the removed bonus to be reassigned later
+                        var removedOption = new Option { Category = dataTableEnum, SubCategory = bonus.Key, Name = opt.Key, Value = opt.Value };
+                        removedOptions.Add(removedOption);
+
+                        // Change this option to be none
+                        if (opt.Key.Contains("Ability"))
+                        {
+                            randomizedOptions[dataTableEnum][removedOption.SubCategory][removedOption.Name] = "ETresAbilityKind::NONE\u0000";
+                        }
+                        else if (opt.Key.Contains("Bonus"))
+                        {
+                            randomizedOptions[dataTableEnum][removedOption.SubCategory][removedOption.Name] = "ETresVictoryBonusKind::NONE\u0000";
+                        }
+                    }
+                }
+            }
+
+            return removedOptions;
+        }
+
+        /// <summary>
+        /// Method that gets the available VBonuses based on what avaialbeOptions we have.
+        /// This might not be necessary with other methods provided (GetAvailableBonuses), but it works for now.
+        /// Reevaluate this later and see if this can be done in a better way.
+        /// </summary>
+        /// <returns>Dictionary of all the VBonuses for the given availableOptions</returns>
+        public Dictionary<string, Dictionary<string, string>> GetAvailableVBonuses(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
+        {
+            List<string> minigameBonusKeys = new List<string>() { "VBonus_Minigame001", "VBonus_Minigame002", "VBonus_Minigame003", "VBonus_Minigame004", "VBonus_Minigame005", "VBonus_Minigame006" };
+            List<string> flanBonusKeys = new List<string>() { "VBonus_Minigame007", "VBonus_Minigame008", "VBonus_Minigame009", "VBonus_Minigame010", "VBonus_Minigame011", "VBonus_Minigame012", "VBonus_Minigame013" };
+
+
+            Dictionary<string, Dictionary<string, string>> availableVBonuses = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var bonus in randomizedOptions[DataTableEnum.VBonus])
+            {
+                if ((availableOptions["Bonuses"]["Minigames"] && minigameBonusKeys.Contains(bonus.Key)) ||
+                    (availableOptions["Bonuses"]["Flantastic Seven"] && flanBonusKeys.Contains(bonus.Key)) ||
+                    (availableOptions["Bonuses"]["VBonus"] && !minigameBonusKeys.Contains(bonus.Key) && !flanBonusKeys.Contains(bonus.Key) && bonus.Value.Count > 0)
+                    )
+                {
+                    availableVBonuses.Add(bonus.Key, bonus.Value);
+                }
+            }
+
+            return availableVBonuses;
         }
     }
 }

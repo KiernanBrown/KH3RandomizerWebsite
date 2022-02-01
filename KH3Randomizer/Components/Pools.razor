@@ -7,6 +7,7 @@
         <br />
         <br />
 
+        <h4>Pools</h4>
         <div class="row">
             @foreach (var pool in pools)
             {
@@ -39,6 +40,35 @@
                 </div>
             }
         </div>
+
+        <br />
+        <h4>Extras</h4>
+        <div class="row">
+            @foreach (var extra in extras)
+            {
+                <div class="col-md-4" style="margin: 15px 0px;">
+                    <div class="row">
+                        <!-- Slider -->
+                        <div class="col-md-2">
+                            <label class="switch">
+                                <input type="checkbox" @onchange="@((value) => { extras[extra.Key] = (bool)value.Value; })" checked="@extra.Value" disabled="@(extra.Key == "Balanced Bonuses" && !pools["Bonuses"])">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label><b>Balanced Bonuses</b></label>
+                        </div>
+
+                        <div class="col-md-1">
+                            <Tooltip Text="@extrasDescriptions[extra.Key]">
+                                <i class="bi bi-question-circle" style="font-size: 1.2rem;"></i>
+                            </Tooltip>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
     </div>
 
     <button class="btn kh-button" @onclick="ContinueToOptions" style="float: right;">Continue to Options...</button>
@@ -47,8 +77,10 @@
 @code {
     [Parameter] public EventCallback<string> ContinueTo { get; set; }
     [Parameter] public EventCallback<Dictionary<string, bool>> UpdateAvailablePools { get; set; }
+    [Parameter] public EventCallback<Dictionary<string, bool>> UpdateAvailableExtras { get; set; }
 
     [Parameter] public Dictionary<string, bool> AvailablePools { get; set; }
+    [Parameter] public Dictionary<string, bool> AvailableExtras { get; set; }
 
     private bool isOn { get; set; } = false;
     private string allOptionText { get; set; } = "MIXED";
@@ -72,11 +104,22 @@
         { "General Stats", "Keyblade, Accessory and Armor stats, along with Health, Attack and Magic upgrades. Bosses and Enemies included potentially." }
     };
 
+    private Dictionary<string, bool> extras = new Dictionary<string, bool>();
+
+    private Dictionary<string, string> extrasDescriptions = new Dictionary<string, string> {
+        { "Balanced Bonuses", "Evenly distributes checks that appear on Bonuses." }
+    };
+
+
+
     protected override void OnInitialized()
     {
         this.pools = this.AvailablePools;
+        this.extras = this.AvailableExtras;
         this.UpdateOptionsText();
     }
+
+
 
     private void ToggleOptions()
     {
@@ -88,7 +131,13 @@
             this.isOn = true;
 
         foreach (var pool in this.pools.Where(x => x.Key != "Bosses" && x.Key != "Enemies" && x.Key != "General Stats"))
+        {
             this.pools[pool.Key] = this.isOn;
+            if (pool.Key == "Bonuses")
+            {
+                extras["Balanced Bonuses"] = this.isOn;
+            }
+        }
 
         this.UpdateOptionsText();
     }
@@ -112,4 +161,16 @@
 
         this.ContinueTo.InvokeAsync("Options");
     }
+
+    private void HandlePoolValueChange(ChangeEventArgs value, KeyValuePair<string, bool> pool)
+    {
+        bool newValue = (bool)value.Value;
+        pools[pool.Key] = newValue;
+        if (pool.Key == "Bonuses")
+        {
+            extras["Balanced Bonuses"] = newValue;
+        }
+        this.UpdateOptionsText();
+    }
+
 }

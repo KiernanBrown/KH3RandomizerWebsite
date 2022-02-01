@@ -175,11 +175,13 @@
 @code {
     [CascadingParameter] public IModalService Modal { get; set; }
 
+    [Parameter] public EventCallback<Dictionary<string, bool>> UpdateAvailableExtras { get; set; }
     [Parameter] public EventCallback<Dictionary<string, Dictionary<string, bool>>> UpdateAvailableOptions { get; set; }
     [Parameter] public EventCallback<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>> UpdateRandomizedOptions { get; set; }
     [Parameter] public Action<Option, Option> UpdateModifications { get; set; }
 
     [Parameter] public string CurrentSeed { get; set; }
+    [Parameter] public Dictionary<string, bool> AvailableExtras { get; set; }
     [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableOptions { get; set; }
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> RandomizedOptions { get; set; }
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
@@ -190,7 +192,7 @@
 
     [Parameter] public Action<DataTableEnum, string, string, string> SwapOptions { get; set; }
 
-
+    private Dictionary<string, bool> availableExtras = new();
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
     private List<Tuple<Option, Option>> modifications = new();
@@ -212,6 +214,7 @@
 
     protected override void OnParametersSet()
     {
+        this.availableExtras = this.AvailableExtras;
         this.availableOptions = this.AvailableOptions;
         this.randomizedOptions = this.RandomizedOptions;
         this.modifications = this.Modifications;
@@ -242,9 +245,9 @@
         this.availableOptions[option][subOption] = value;
 
         if (!string.IsNullOrEmpty(this.CurrentSeed))
-            this.RandomizerService.RandomizeItems(this.CurrentSeed, ref this.availableOptions, ref this.randomizedOptions);
-        
+            this.RandomizerService.RandomizeItems(this.CurrentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions);
 
+        this.UpdateAvailableExtras.InvokeAsync(this.availableExtras);
         this.UpdateAvailableOptions.InvokeAsync(this.availableOptions);
         this.UpdateRandomizedOptions.InvokeAsync(this.randomizedOptions);
 

@@ -84,8 +84,8 @@
 
         <div style="margin-top: 25px;"></div>
 
-        <OptionsSubsection UpdateAvailableOptions="@this.UpdateAvailableOptions" UpdateRandomizedOptions="@this.UpdateRandomizedOptions" UpdateModifications="@this.UpdateModifications"
-                           CurrentSeed="@this.currentSeed" AvailableOptions="@this.tempOptions" RandomizedOptions="@this.randomizedOptions"
+        <OptionsSubsection UpdateAvailableExtras="@this.UpdateAvailableExtras" UpdateAvailableOptions="@this.UpdateAvailableOptions" UpdateRandomizedOptions="@this.UpdateRandomizedOptions" UpdateModifications="@this.UpdateModifications"
+                           CurrentSeed="@this.currentSeed" AvailableExtras="@this.availableExtras" AvailableOptions="@this.tempOptions" RandomizedOptions="@this.randomizedOptions"
                            ActionType="Modal" SpoilerChecked="false" />
     </div>
 </div>
@@ -100,6 +100,7 @@
     };
 
     private Dictionary<string, bool> availablePools = new();
+    private Dictionary<string, bool> availableExtras = new();
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
 
@@ -123,7 +124,7 @@
 
         this.UpdateCurrentSeed(this.currentSeed);
 
-        this.RandomizerService.RandomizeItems(this.currentSeed, ref this.availableOptions, ref this.randomizedOptions);
+        this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions);
 
         this.UpdateAvailableOptions(this.availableOptions);
         this.UpdateRandomizedOptions(this.randomizedOptions);
@@ -169,6 +170,19 @@
             this.availablePools = availablePools;
 
         this.tempOptions = this.RandomizerService.GetAvailableOptions(this.availablePools, ref this.availableOptions, ref this.randomizedOptions);
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    public void UpdateAvailableExtras(Dictionary<string, bool> availableExtras = null)
+    {
+        if (availableExtras != null)
+            this.availableExtras = availableExtras;
+
+        //this.tempOptions = this.RandomizerService.GetAvailableOptions(this.availablePools, ref this.availableOptions, ref this.randomizedOptions);
 
         InvokeAsync(() =>
         {
@@ -222,10 +236,11 @@
         if (spoilerLogFile != null)
         {
             this.UpdateAvailablePools(spoilerLogFile.AvailablePools);
+            this.UpdateAvailableExtras(spoilerLogFile.AvailableExtras);
             this.UpdateAvailableOptions(spoilerLogFile.AvailableOptions);
             this.UpdateCurrentSeed(spoilerLogFile.SeedName);
 
-            this.RandomizerService.RandomizeItems(this.currentSeed, ref this.availableOptions, ref this.randomizedOptions);
+            this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions);
 
             foreach (var item in spoilerLogFile.Modifications)
             {
