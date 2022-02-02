@@ -144,7 +144,7 @@ namespace KH3Randomizer.Data
                 case "I05013":
                     return "Buster Ring";
                 case "I05014":
-                    return "Brave Ring";
+                    return "Valor Ring";
                 case "I05015":
                     return "Phantom Ring";
                 case "I05016":
@@ -1016,9 +1016,9 @@ namespace KH3Randomizer.Data
                 case "Vbonus_082":
                     return "After the Darkside boss battle in The Final World";
                 case "Vbonus_083":
-                    return "After collecting 200 Soras in The Final World";
+                    return "After collecting 222 Soras in The Final World";
                 case "Vbonus_084":
-                    return "After collecting 300 Soras in The Final World";
+                    return "After collecting 333 Soras in The Final World";
 
                 case "VBonus_Minigame001":
                     return "After obtaining the first A-rank in Verum Rex: Beat of Lead minigame in Toy Box";
@@ -1249,6 +1249,8 @@ namespace KH3Randomizer.Data
                     return "Fire Bangle";
                 case "PRT_ITEM12":
                     return "Firaga Bangle";
+                case "PRT_ITEM13":
+                    return "Firaza Bangle";
 
                 case "PRT_ITEM14":
                     return "Fire Chain";
@@ -1312,6 +1314,9 @@ namespace KH3Randomizer.Data
                 case "PRT_ITEM38":
                     return "Fira Bangle";
 
+                case "PRT_ITEM39":
+                    return "Blizzaza Choker";
+
                 case "PRT_ITEM40":
                     return "Royal Ribbon";
                 case "PRT_ITEM41":
@@ -1367,7 +1372,7 @@ namespace KH3Randomizer.Data
                 case "ACC_ITEM13":
                     return "Buster Ring";
                 case "ACC_ITEM14":
-                    return "Brave Ring";
+                    return "Valor Ring";
                 case "ACC_ITEM15":
                     return "Phantom Ring";
                 case "ACC_ITEM16":
@@ -1913,7 +1918,7 @@ namespace KH3Randomizer.Data
                 case "ETresAbilityKind::AUTO_FINISH":
                     return "Ability: Auto-Finish";
                 case "ETresAbilityKind::FORM_UP":
-                    return "Ability: Form Boost";
+                    return "Ability: Situation Boost";
                 case "ETresAbilityKind::MAGIC_TIME":
                     return "Ability: Grand Magic Extender";
                 case "ETresAbilityKind::AUTO_LOCK_MAGIC":
