@@ -246,6 +246,48 @@ namespace KH3Randomizer.Data
             return option;
         }
 
+        public Option UpdateRandomizedItemWithNone(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
+                                                   ref Dictionary<string, Dictionary<string, bool>> availableOptions, Random rng,
+                                                   DataTableEnum dataTableEnum, string category, string subCategory, string itemToChange, Dictionary<string, bool> replacements)
+        {
+            var option = new Option();
+
+            while (true) // Is there a way we can use a var instead of true?
+            {
+                var swapDataTable = randomizedOptions.ElementAt(rng.Next(0, randomizedOptions.Count()));
+                var swapCategory = swapDataTable.Value.ElementAt(rng.Next(0, randomizedOptions[swapDataTable.Key].Count));
+
+                var testy = Extensions.CategoryToKey(category, dataTableEnum);
+
+                // TODO - Check if unique pool is actually needed once we have a list of replaces
+                if ((replacements.ContainsKey(swapDataTable.Key.DataTableEnumToKey()) && replacements[swapDataTable.Key.DataTableEnumToKey()]) || !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
+                {
+                    Console.WriteLine();
+                    continue;
+                }
+
+                if (swapCategory.Value.Where(x => x.Value.Contains("NONE")).Count() > 0)
+                {
+                    var swapData = swapCategory.Value.Where(x => x.Value.Contains("NONE")).ElementAt(rng.Next(0, swapCategory.Value.Where(x => x.Value.Contains("NONE")).Count()));
+
+                    if (replacements.ContainsKey(swapCategory.Key.CategoryToKey(swapDataTable.Key)))
+                    {
+                        continue;
+                    }
+
+                    randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = itemToChange;
+                    randomizedOptions[dataTableEnum][category][subCategory] = swapData.Value;
+                    
+                    option = new Option { Category = swapDataTable.Key, SubCategory = swapCategory.Key, Name = swapData.Key, Value = swapData.Value };
+
+                    break;
+                }
+            }
+
+
+            return option;
+        }
+
         public void RandomizeItems(string seed, Dictionary<string, bool> availableExtras, ref Dictionary<string, Dictionary<string, bool>> availableOptions,
                                    ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions)
         {
@@ -672,13 +714,6 @@ namespace KH3Randomizer.Data
                 this.RemoveNoneFromEvents(DataTableEnum.Event, rng, ref randomizedOptions, availableOptions);
             }
 
-            // Clean VBonuses
-            // This will reassign VBonuses such that each VBonus will have at least one check on it
-            if (availableOptions.ContainsKey("Bonuses") && availableExtras.ContainsKey("Balanced Bonuses") && availableExtras["Balanced Bonuses"])
-            {
-                this.CleanVBonuses(DataTableEnum.VBonus, rng, ref randomizedOptions, availableOptions);
-            }
-
             // Account for Levelup Data
             if (availableOptions.ContainsKey("Level Ups") && availableOptions["Level Ups"]["Levels"])
             {
@@ -687,35 +722,91 @@ namespace KH3Randomizer.Data
                     var typeA = level.Value["TypeA"];
                     var randValue = randomizedOptions[DataTableEnum.LevelUp][level.Key]["TypeA"];
 
-                    if (typeA.Contains("NONE"))
+                    //if (availableExtras.ContainsKey("Replace Level Ups") && availableExtras["Replace Level Ups"])
+                    if (true)
                     {
-                        randomizedOptions[DataTableEnum.LevelUp][level.Key]["TypeB"] = randValue;
-                        randomizedOptions[DataTableEnum.LevelUp][level.Key]["TypeC"] = randValue;
-
-                        continue;
+                        randomizedOptions[DataTableEnum.LevelUp][level.Key]["TypeB"] = "ETresAbilityKind::NONE\u0000";
+                        randomizedOptions[DataTableEnum.LevelUp][level.Key]["TypeC"] = "ETresAbilityKind::NONE\u0000";
                     }
-
-                    var levelTypeB = "";
-                    var levelTypeC = "";
-
-                    foreach (var subLevel in defaultOptions[DataTableEnum.LevelUp])
+                    else
                     {
-                        if (!string.IsNullOrEmpty(levelTypeB) && !string.IsNullOrEmpty(levelTypeC))
-                            break;
+                        if (typeA.Contains("NONE"))
+                        {
+                            randomizedOptions[DataTableEnum.LevelUp][level.Key]["TypeB"] = randValue;
+                            randomizedOptions[DataTableEnum.LevelUp][level.Key]["TypeC"] = randValue;
 
-                        if (typeA == subLevel.Value["TypeB"])
-                            levelTypeB = subLevel.Key;
+                            continue;
+                        }
 
-                        if (typeA == subLevel.Value["TypeC"])
-                            levelTypeC = subLevel.Key;
+                        var levelTypeB = "";
+                        var levelTypeC = "";
+
+                        foreach (var subLevel in defaultOptions[DataTableEnum.LevelUp])
+                        {
+                            if (!string.IsNullOrEmpty(levelTypeB) && !string.IsNullOrEmpty(levelTypeC))
+                                break;
+
+                            if (typeA == subLevel.Value["TypeB"])
+                                levelTypeB = subLevel.Key;
+
+                            if (typeA == subLevel.Value["TypeC"])
+                                levelTypeC = subLevel.Key;
+                        }
+
+                        if (!string.IsNullOrEmpty(levelTypeB))
+                            randomizedOptions[DataTableEnum.LevelUp][levelTypeB]["TypeB"] = randValue;
+
+                        if (!string.IsNullOrEmpty(levelTypeC))
+                            randomizedOptions[DataTableEnum.LevelUp][levelTypeC]["TypeC"] = randValue;
                     }
-
-                    if (!string.IsNullOrEmpty(levelTypeB))
-                        randomizedOptions[DataTableEnum.LevelUp][levelTypeB]["TypeB"] = randValue;
-
-                    if (!string.IsNullOrEmpty(levelTypeC))
-                        randomizedOptions[DataTableEnum.LevelUp][levelTypeC]["TypeC"] = randValue;
                 }
+
+                //if (availableExtras.ContainsKey("Replace Level Ups") && availableExtras["Replace Level Ups"])
+                if (true)
+                {
+                    this.ReplaceChecks(DataTableEnum.LevelUp, rng, ref randomizedOptions, availableOptions, true);
+                }
+            }
+
+            if (availableOptions.ContainsKey("Events"))
+            {
+                // Replace Reports
+                if (availableOptions["Events"].ContainsKey("Reports") && availableOptions["Events"]["Reports"])
+                {
+                    this.ReplaceChecks(DataTableEnum.Event, "Reports", rng, ref randomizedOptions, availableOptions, true);
+                }
+
+                // Replace Data Battles
+                if (availableOptions["Events"].ContainsKey("Data Battles") && availableOptions["Events"]["Data Battles"])
+                {
+                    this.ReplaceChecks(DataTableEnum.Event, "Data Battles", rng, ref randomizedOptions, availableOptions, true);
+                }
+
+                // Replace Yozora
+                if (availableOptions["Events"].ContainsKey("Yozora") && availableOptions["Events"]["Yozora"])
+                {
+                    this.ReplaceChecks(DataTableEnum.Event, "Yozora", rng, ref randomizedOptions, availableOptions, true);
+                }
+
+                // Replace beat the game on Crit and Yozora Key Item
+                foreach (var check in randomizedOptions[DataTableEnum.Event])
+                {
+                    if (check.Key.ToLower().Contains("EVENT_KEYITEM_004".ToLower()))
+                    {
+                        ReplaceCheck(randomizedOptions, availableOptions, rng, DataTableEnum.Event, check, true);
+                    }
+                    else if (check.Key.ToLower().Contains("EVENT_KEYITEM_005".ToLower()))
+                    {
+                        ReplaceCheck(randomizedOptions, availableOptions, rng, DataTableEnum.Event, check, true);
+                    }
+                }
+            }
+
+            // Clean VBonuses
+            // This will reassign VBonuses such that each VBonus will have at least one check on it
+            if (availableOptions.ContainsKey("Bonuses") && availableExtras.ContainsKey("Balanced Bonuses") && availableExtras["Balanced Bonuses"])
+            {
+                this.CleanVBonuses(DataTableEnum.VBonus, rng, ref randomizedOptions, availableOptions);
             }
 
             // Add back the default values that were not included
@@ -726,7 +817,10 @@ namespace KH3Randomizer.Data
                     var dataTableEnum = this.GetDataTableEnumFromSelection(subOption.Key);
 
                     if (dataTableEnum == DataTableEnum.None)
+                    {
                         dataTableEnum = this.ConvertDisplayStringToEnum(option.Key);
+                        Console.WriteLine();
+                    }
 
                     if (!randomizedOptions.ContainsKey(dataTableEnum))
                         randomizedOptions.Add(dataTableEnum, defaultOptions[dataTableEnum]);
@@ -1548,7 +1642,7 @@ namespace KH3Randomizer.Data
         }
 
         /// <summary>
-        /// Method that gets the available VBonuses based on what avaialbeOptions we have.
+        /// Method that gets the available VBonuses based on what availableOptions we have.
         /// This might not be necessary with other methods provided (GetAvailableBonuses), but it works for now.
         /// Reevaluate this later and see if this can be done in a better way.
         /// </summary>
@@ -1572,6 +1666,56 @@ namespace KH3Randomizer.Data
             }
 
             return availableVBonuses;
+        }
+
+
+        /// <summary>
+        /// Method that updates all checks for a DataTableEnum with none.
+        /// This puts reports back into the pool but stops anything from being stuck on battlegates.
+        /// Temporary/test solution until replacing is implemented globally.
+        /// </summary>
+        public void ReplaceChecks(DataTableEnum dataTableEnum, Random rng, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, bool uniquePool)
+        {
+            Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Reports", true }, { "Data Battles", true }, { "Yozora", true }, { "Level Ups", true } };
+
+            if (!randomizedOptions.ContainsKey(dataTableEnum))
+                return;
+
+            foreach (var check in randomizedOptions[dataTableEnum])
+            {
+                foreach (var bonus in check.Value)
+                {
+                    UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, rng, dataTableEnum, check.Key, bonus.Key, bonus.Value, replacements);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Method that updates all checks for a DataTableEnum's subCategory with none.
+        /// This puts reports back into the pool but stops anything from being stuck on battlegates.
+        /// Temporary/test solution until replacing is implemented globally.
+        /// </summary>
+        public void ReplaceChecks(DataTableEnum dataTableEnum, string subCategory, Random rng, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, bool uniquePool)
+        {
+            if (!randomizedOptions.ContainsKey(dataTableEnum))
+                return;
+
+            foreach (var check in randomizedOptions[dataTableEnum])
+            {
+                if (check.Key.CategoryToKey(dataTableEnum) == subCategory)
+                {
+                    ReplaceCheck(randomizedOptions, availableOptions, rng, dataTableEnum, check, uniquePool);
+                } 
+            }
+        }
+
+        public void ReplaceCheck(Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, Random rng, DataTableEnum dataTableEnum, KeyValuePair<string, Dictionary<string, string>> check, bool uniquePool)
+        {
+            Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Reports", true }, { "Data Battles", true }, { "Yozora", true }, { "Level Ups", true } };
+            foreach (var bonus in check.Value)
+            {
+                UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, rng, dataTableEnum, check.Key, bonus.Key, bonus.Value, replacements);
+            }
         }
     }
 }
