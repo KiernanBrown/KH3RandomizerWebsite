@@ -229,6 +229,18 @@ namespace KH3Randomizer.Data
                 if (!availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
                     continue;
 
+                // Only allow abilities on Starting Stats (Abilities & Critical Abilities), Equippables, Fullcourse Abilities, or Weapon Upgrades
+                if (!itemToChange.Contains("TresAbility") && ((swapDataTable.Key == DataTableEnum.ChrInit && swapCategory.Key.CategoryToKey(swapDataTable.Key) != "Weapon") || swapDataTable.Key == DataTableEnum.EquipItem || swapDataTable.Key == DataTableEnum.FullcourseAbility || swapDataTable.Key == DataTableEnum.WeaponEnhance))
+                {
+                    continue;
+                }
+
+                // Only allow items on Synthesis Items or Lucky emblems
+                if (itemToChange.Contains("TresAbility") && (swapDataTable.Key == DataTableEnum.SynthesisItem || swapDataTable.Key == DataTableEnum.LuckyMark))
+                {
+                    continue;
+                }
+
                 if (swapCategory.Value.Where(x => x.Value.Contains("NONE")).Count() > 0)
                 {
                     var swapData = swapCategory.Value.Where(x => x.Value.Contains("NONE")).ElementAt(rng.Next(0, swapCategory.Value.Where(x => x.Value.Contains("NONE")).Count()));
@@ -246,6 +258,12 @@ namespace KH3Randomizer.Data
             return option;
         }
 
+
+        /// <summary>
+        /// Copy of the above method that takes an additional paramater replacements
+        /// This is a Dictionary of DataTableEnums or subcategories that should not have anything placed on them
+        /// </summary>
+        /// <returns>Option of the items that have been swapped</returns>
         public Option UpdateRandomizedItemWithNone(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
                                                    ref Dictionary<string, Dictionary<string, bool>> availableOptions, Random rng,
                                                    DataTableEnum dataTableEnum, string category, string subCategory, string itemToChange, Dictionary<string, bool> replacements)
@@ -257,12 +275,20 @@ namespace KH3Randomizer.Data
                 var swapDataTable = randomizedOptions.ElementAt(rng.Next(0, randomizedOptions.Count()));
                 var swapCategory = swapDataTable.Value.ElementAt(rng.Next(0, randomizedOptions[swapDataTable.Key].Count));
 
-                var testy = Extensions.CategoryToKey(category, dataTableEnum);
-
-                // TODO - Check if unique pool is actually needed once we have a list of replaces
                 if ((replacements.ContainsKey(swapDataTable.Key.DataTableEnumToKey()) && replacements[swapDataTable.Key.DataTableEnumToKey()]) || !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
                 {
-                    Console.WriteLine();
+                    continue;
+                }
+
+                // Only allow abilities on Starting Stats (Abilities & Critical Abilities), Equippables, Fullcourse Abilities, or Weapon Upgrades
+                if (!itemToChange.Contains("TresAbility") && ((swapDataTable.Key == DataTableEnum.ChrInit && swapCategory.Key.CategoryToKey(swapDataTable.Key) != "Weapon") || swapDataTable.Key == DataTableEnum.EquipItem || swapDataTable.Key == DataTableEnum.FullcourseAbility || swapDataTable.Key == DataTableEnum.WeaponEnhance))
+                {
+                    continue;
+                }
+
+                // Only allow items on Synthesis Items or Lucky emblems
+                if (itemToChange.Contains("TresAbility") && (swapDataTable.Key == DataTableEnum.SynthesisItem || swapDataTable.Key == DataTableEnum.LuckyMark))
+                {
                     continue;
                 }
 
@@ -283,7 +309,6 @@ namespace KH3Randomizer.Data
                     break;
                 }
             }
-
 
             return option;
         }
@@ -764,7 +789,7 @@ namespace KH3Randomizer.Data
                 //if (availableExtras.ContainsKey("Replace Level Ups") && availableExtras["Replace Level Ups"])
                 if (true)
                 {
-                    this.ReplaceChecks(DataTableEnum.LevelUp, rng, ref randomizedOptions, availableOptions, true);
+                    this.ReplaceChecks(DataTableEnum.LevelUp, rng, ref randomizedOptions, availableOptions);
                 }
             }
 
@@ -773,19 +798,19 @@ namespace KH3Randomizer.Data
                 // Replace Reports
                 if (availableOptions["Events"].ContainsKey("Reports") && availableOptions["Events"]["Reports"])
                 {
-                    this.ReplaceChecks(DataTableEnum.Event, "Reports", rng, ref randomizedOptions, availableOptions, true);
+                    this.ReplaceChecks(DataTableEnum.Event, "Reports", rng, ref randomizedOptions, availableOptions);
                 }
 
                 // Replace Data Battles
                 if (availableOptions["Events"].ContainsKey("Data Battles") && availableOptions["Events"]["Data Battles"])
                 {
-                    this.ReplaceChecks(DataTableEnum.Event, "Data Battles", rng, ref randomizedOptions, availableOptions, true);
+                    this.ReplaceChecks(DataTableEnum.Event, "Data Battles", rng, ref randomizedOptions, availableOptions);
                 }
 
                 // Replace Yozora
                 if (availableOptions["Events"].ContainsKey("Yozora") && availableOptions["Events"]["Yozora"])
                 {
-                    this.ReplaceChecks(DataTableEnum.Event, "Yozora", rng, ref randomizedOptions, availableOptions, true);
+                    this.ReplaceChecks(DataTableEnum.Event, "Yozora", rng, ref randomizedOptions, availableOptions);
                 }
 
                 // Replace beat the game on Crit and Yozora Key Item
@@ -793,13 +818,14 @@ namespace KH3Randomizer.Data
                 {
                     if (check.Key.ToLower().Contains("EVENT_KEYITEM_004".ToLower()))
                     {
-                        ReplaceCheck(randomizedOptions, availableOptions, rng, DataTableEnum.Event, check, true);
+                        ReplaceCheck(ref randomizedOptions, availableOptions, rng, DataTableEnum.Event, check);
                     }
                     else if (check.Key.ToLower().Contains("EVENT_KEYITEM_005".ToLower()))
                     {
-                        ReplaceCheck(randomizedOptions, availableOptions, rng, DataTableEnum.Event, check, true);
+                        ReplaceCheck(ref randomizedOptions, availableOptions, rng, DataTableEnum.Event, check);
                     }
                 }
+                //this.ReplaceChecks(DataTableEnum.Event, rng, ref randomizedOptions, availableOptions);
             }
 
             // Clean VBonuses
@@ -819,7 +845,6 @@ namespace KH3Randomizer.Data
                     if (dataTableEnum == DataTableEnum.None)
                     {
                         dataTableEnum = this.ConvertDisplayStringToEnum(option.Key);
-                        Console.WriteLine();
                     }
 
                     if (!randomizedOptions.ContainsKey(dataTableEnum))
@@ -1671,31 +1696,26 @@ namespace KH3Randomizer.Data
 
         /// <summary>
         /// Method that updates all checks for a DataTableEnum with none.
-        /// This puts reports back into the pool but stops anything from being stuck on battlegates.
-        /// Temporary/test solution until replacing is implemented globally.
+        /// Currently used for replaicng Reports, Data Battles, Yozora, and Level Ups for testing
         /// </summary>
-        public void ReplaceChecks(DataTableEnum dataTableEnum, Random rng, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, bool uniquePool)
+        public void ReplaceChecks(DataTableEnum dataTableEnum, Random rng, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
         {
-            Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Reports", true }, { "Data Battles", true }, { "Yozora", true }, { "Level Ups", true } };
+            //Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Reports", true }, { "Data Battles", true }, { "Yozora", true }, { "Level Ups", true } };
+            Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Events", true } };
 
             if (!randomizedOptions.ContainsKey(dataTableEnum))
                 return;
 
             foreach (var check in randomizedOptions[dataTableEnum])
             {
-                foreach (var bonus in check.Value)
-                {
-                    UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, rng, dataTableEnum, check.Key, bonus.Key, bonus.Value, replacements);
-                }
+                ReplaceCheck(ref randomizedOptions, availableOptions, rng, dataTableEnum, check);
             }
         }
 
         /// <summary>
         /// Method that updates all checks for a DataTableEnum's subCategory with none.
-        /// This puts reports back into the pool but stops anything from being stuck on battlegates.
-        /// Temporary/test solution until replacing is implemented globally.
         /// </summary>
-        public void ReplaceChecks(DataTableEnum dataTableEnum, string subCategory, Random rng, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, bool uniquePool)
+        public void ReplaceChecks(DataTableEnum dataTableEnum, string subCategory, Random rng, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
         {
             if (!randomizedOptions.ContainsKey(dataTableEnum))
                 return;
@@ -1704,17 +1724,25 @@ namespace KH3Randomizer.Data
             {
                 if (check.Key.CategoryToKey(dataTableEnum) == subCategory)
                 {
-                    ReplaceCheck(randomizedOptions, availableOptions, rng, dataTableEnum, check, uniquePool);
+                    ReplaceCheck(ref randomizedOptions, availableOptions, rng, dataTableEnum, check);
                 } 
             }
         }
 
-        public void ReplaceCheck(Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, Random rng, DataTableEnum dataTableEnum, KeyValuePair<string, Dictionary<string, string>> check, bool uniquePool)
+        /// <summary>
+        /// Method that updates a check with none.
+        /// Currently used for replaicng Reports, Data Battles, Yozora, and Level Ups for testing
+        /// </summary>
+        public void ReplaceCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, Random rng, DataTableEnum dataTableEnum, KeyValuePair<string, Dictionary<string, string>> check)
         {
-            Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Reports", true }, { "Data Battles", true }, { "Yozora", true }, { "Level Ups", true } };
+            //Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Reports", true }, { "Data Battles", true }, { "Yozora", true }, { "Level Ups", true } };
+            Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Events", true } };
             foreach (var bonus in check.Value)
             {
-                UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, rng, dataTableEnum, check.Key, bonus.Key, bonus.Value, replacements);
+                if (!bonus.Value.Contains("NONE"))
+                {
+                    UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, rng, dataTableEnum, check.Key, bonus.Key, bonus.Value, replacements);
+                }
             }
         }
     }
