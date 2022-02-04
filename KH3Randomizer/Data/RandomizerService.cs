@@ -229,14 +229,8 @@ namespace KH3Randomizer.Data
                 if (!availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
                     continue;
 
-                // Only allow abilities on Starting Stats (Abilities & Critical Abilities), Equippables, Fullcourse Abilities, or Weapon Upgrades
-                if (!itemToChange.Contains("TresAbility") && ((swapDataTable.Key == DataTableEnum.ChrInit && swapCategory.Key.CategoryToKey(swapDataTable.Key) != "Weapon") || swapDataTable.Key == DataTableEnum.EquipItem || swapDataTable.Key == DataTableEnum.FullcourseAbility || swapDataTable.Key == DataTableEnum.WeaponEnhance))
-                {
-                    continue;
-                }
-
-                // Only allow items on Synthesis Items or Lucky emblems
-                if (itemToChange.Contains("TresAbility") && (swapDataTable.Key == DataTableEnum.SynthesisItem || swapDataTable.Key == DataTableEnum.LuckyMark))
+                // Make sure this swap is valid before swapping
+                if (!IsSwapValid(itemToChange, swapDataTable, swapCategory))
                 {
                     continue;
                 }
@@ -280,14 +274,8 @@ namespace KH3Randomizer.Data
                     continue;
                 }
 
-                // Only allow abilities on Starting Stats (Abilities & Critical Abilities), Equippables, Fullcourse Abilities, or Weapon Upgrades
-                if (!itemToChange.Contains("TresAbility") && ((swapDataTable.Key == DataTableEnum.ChrInit && swapCategory.Key.CategoryToKey(swapDataTable.Key) != "Weapon") || swapDataTable.Key == DataTableEnum.EquipItem || swapDataTable.Key == DataTableEnum.FullcourseAbility || swapDataTable.Key == DataTableEnum.WeaponEnhance))
-                {
-                    continue;
-                }
-
-                // Only allow items on Synthesis Items or Lucky emblems
-                if (itemToChange.Contains("TresAbility") && (swapDataTable.Key == DataTableEnum.SynthesisItem || swapDataTable.Key == DataTableEnum.LuckyMark))
+                // Make sure this swap is valid before swapping
+                if (!IsSwapValid(itemToChange, swapDataTable, swapCategory))
                 {
                     continue;
                 }
@@ -736,7 +724,7 @@ namespace KH3Randomizer.Data
             // Account for Events that have None in them
             if (availableOptions.ContainsKey("Events"))
             {
-                this.RemoveNoneFromEvents(DataTableEnum.Event, rng, ref randomizedOptions, availableOptions);
+               this.RemoveNoneFromEvents(DataTableEnum.Event, rng, ref randomizedOptions, availableOptions);
             }
 
             // Account for Levelup Data
@@ -816,16 +804,15 @@ namespace KH3Randomizer.Data
                 // Replace beat the game on Crit and Yozora Key Item
                 foreach (var check in randomizedOptions[DataTableEnum.Event])
                 {
-                    if (check.Key.ToLower().Contains("EVENT_KEYITEM_004".ToLower()))
+                    if (check.Key.Contains("EVENT_KEYITEM_004"))
                     {
                         ReplaceCheck(ref randomizedOptions, availableOptions, rng, DataTableEnum.Event, check);
                     }
-                    else if (check.Key.ToLower().Contains("EVENT_KEYITEM_005".ToLower()))
+                    else if (check.Key.Contains("EVENT_KEYITEM_005"))
                     {
                         ReplaceCheck(ref randomizedOptions, availableOptions, rng, DataTableEnum.Event, check);
                     }
                 }
-                //this.ReplaceChecks(DataTableEnum.Event, rng, ref randomizedOptions, availableOptions);
             }
 
             // Clean VBonuses
@@ -1462,6 +1449,12 @@ namespace KH3Randomizer.Data
                         if (swapCategory.Key == "EVENT_KEYBLADE_012" || swapCategory.Key == "EVENT_KEYBLADE_013" || !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
                             continue;
 
+                        // Make sure this swap is valid before swapping
+                        if (!IsSwapValid(treasureName, swapDataTable, swapCategory))
+                        {
+                            continue;
+                        }
+
                         if (swapCategory.Value.Where(x => !x.Value.Contains("NONE")).Count() > 0)
                         {
                             var swapData = swapCategory.Value.Where(x => !x.Value.Contains("NONE")).ElementAt(rng.Next(0, swapCategory.Value.Where(x => !x.Value.Contains("NONE")).Count()));
@@ -1514,6 +1507,12 @@ namespace KH3Randomizer.Data
 
                                 if (swapCategory.Key == "m_PlayerSora" && !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapData.Key.CategoryToKey(swapDataTable.Key)])
                                     continue;
+
+                                // Make sure this swap is valid before swapping
+                                if (!IsSwapValid(tempEventName, swapDataTable, swapCategory))
+                                {
+                                    continue;
+                                }
 
                                 randomizedOptions[dataTableEnum][tempEventId][key] = swapData.Value;
                                 randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = tempEventName;
@@ -1700,8 +1699,8 @@ namespace KH3Randomizer.Data
         /// </summary>
         public void ReplaceChecks(DataTableEnum dataTableEnum, Random rng, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
         {
-            //Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Reports", true }, { "Data Battles", true }, { "Yozora", true }, { "Level Ups", true } };
-            Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Events", true } };
+            Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Reports", true }, { "Data Battles", true }, { "Yozora", true }, { "Level Ups", true } };
+            //Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Events", true } };
 
             if (!randomizedOptions.ContainsKey(dataTableEnum))
                 return;
@@ -1735,8 +1734,8 @@ namespace KH3Randomizer.Data
         /// </summary>
         public void ReplaceCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, Random rng, DataTableEnum dataTableEnum, KeyValuePair<string, Dictionary<string, string>> check)
         {
-            //Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Reports", true }, { "Data Battles", true }, { "Yozora", true }, { "Level Ups", true } };
-            Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Events", true } };
+            Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Reports", true }, { "Data Battles", true }, { "Yozora", true }, { "Level Ups", true } };
+            //Dictionary<string, bool> replacements = new Dictionary<string, bool>() { { "Events", true } };
             foreach (var bonus in check.Value)
             {
                 if (!bonus.Value.Contains("NONE"))
@@ -1745,5 +1744,30 @@ namespace KH3Randomizer.Data
                 }
             }
         }
+
+        /// <summary>
+        /// Method that checks if a swap is valid
+        /// This should only allow abilities on Starting Stats (Abilities & Critical Abilities), Equippables, Fullcourse Abilities, or Weapon Upgrades
+        /// This should also only allow items on Synthesis Items or Lucky Emblems
+        /// This check is potentially not as robust as it needs to be and it could be addressed later if that's the case
+        /// </summary>
+        /// <returns>bool of if this swap is valid</returns>
+        public bool IsSwapValid(string itemToChange, KeyValuePair<DataTableEnum, Dictionary<string, Dictionary<string, string>>> swapDataTable, KeyValuePair<string, Dictionary<string, string>> swapCategory)
+        {
+            // Only allow abilities on Starting Stats (Abilities & Critical Abilities), Equippables, Fullcourse Abilities, or Weapon Upgrades
+            if (!itemToChange.Contains("ETresAbilityKind::") && ((swapDataTable.Key == DataTableEnum.ChrInit && swapCategory.Key.CategoryToKey(swapDataTable.Key) != "Weapon") || swapDataTable.Key == DataTableEnum.EquipItem || swapDataTable.Key == DataTableEnum.FullcourseAbility || swapDataTable.Key == DataTableEnum.WeaponEnhance))
+            {
+                return false;
+            }
+
+            // Only allow items on Synthesis Items or Lucky Emblems
+            else if (itemToChange.Contains("ETresAbilityKind::") && (swapDataTable.Key == DataTableEnum.SynthesisItem || swapDataTable.Key == DataTableEnum.LuckyMark))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
     }
 }

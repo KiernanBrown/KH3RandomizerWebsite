@@ -46,7 +46,7 @@
             <div class="row">
                 @foreach (var pool in this.availablePools)
                 {
-                    if (pool.Key != "Bosses" && pool.Key != "Enemies" && pool.Key != "Room Transitions" && pool.Key != "General Stats")
+                    if (pool.Key != "General Stats")
                     {
                         <div class="col-md-2">
                             <a class="rounded-selector a-tag-selector @(pool.Value ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { HandlePoolValueChange(pool); })" @onclick:preventDefault>@pool.Key</a>
