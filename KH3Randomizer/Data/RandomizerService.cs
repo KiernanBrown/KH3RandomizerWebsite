@@ -845,45 +845,26 @@ namespace KH3Randomizer.Data
                                 this.ReplaceChecks(replacePool.Key, subPool.Key, ref randomizedOptions, availableOptions);
                                 if (subPool.Key == "Yozora")
                                 {
-                                    var yozoraKeyItemCheck = randomizedOptions[replacePool.Key].FirstOrDefault(check => check.Key.Contains("EVENT_KEYITEM_005"));
-                                    if (yozoraKeyItemCheck.Key != null)
-                                    {
-                                        ReplaceCheck(ref randomizedOptions, availableOptions, replacePool.Key, yozoraKeyItemCheck);
-                                        blockedChecks.Add(yozoraKeyItemCheck.Key);
-                                    }
+                                    ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, "EVENT_KEYITEM_005");
                                 }
                             }
                         }
                     }
                 }
+                
+                // Replace Arendelle Small Chest 13 and Synthesis Item 80 (IS_79)
+                // The chest appears to be bugged and doesn't give any rewards?
+                // The synth item is the photo mission for Demon Tower, which isn't possible without battlegates 
+                // Remove these when the chest and battlegates are functioning properly
+                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.TreasureFZ, "FZ_SBOX_013");
+                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.SynthesisItem, "IS_79");
 
-                // Replace Arendelle Small Chest 13
-                // This chest appears to be bugged and doesn't give any rewards?
-                // Remove this when the chest is working again
-                var arendelleEmptyChest = randomizedOptions[DataTableEnum.TreasureFZ].FirstOrDefault(check => check.Key.Contains("FZ_SBOX_013"));
-                if (arendelleEmptyChest.Key != null)
-                {
-                    ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.TreasureFZ, arendelleEmptyChest);
-                    blockedChecks.Add(arendelleEmptyChest.Key);
-                }
-
-                // Replace Synthesis Item 80 (IS_79)
-                // This is the photo mission for Demon Tower, which isn't possible without battlegates
-                // Remove this when battlegates are accessible
-                var demonTowerMission = randomizedOptions[DataTableEnum.SynthesisItem].FirstOrDefault(check => check.Key.Contains("IS_79"));
-                if (demonTowerMission.Key != null)
-                {
-                    ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.SynthesisItem, demonTowerMission);
-                    blockedChecks.Add(demonTowerMission.Key);
-                }
-
-                // Replace beat the game on crit check
-                var critKeyItemCheck = randomizedOptions[DataTableEnum.Event].FirstOrDefault(check => check.Key.Contains("EVENT_KEYITEM_004"));
-                if (critKeyItemCheck.Key != null)
-                {
-                    ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, critKeyItemCheck);
-                    blockedChecks.Add(critKeyItemCheck.Key);
-                }
+                // Replace beat the game on crit and the two moogle proof checks
+                // These need to be randomized in for proofs and oblivion/oathkeeper, but they are not accessible
+                // Oblivion/Oathkeeper were being checked in multiple places before, but it might be easier to just pull them out here
+                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, "EVENT_KEYITEM_004");
+                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, "EVENT_KEYBLADE_012");
+                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, "EVENT_KEYBLADE_013");
 
                 // Clean VBonuses
                 // This will reassign VBonuses such that each VBonus will have at least one check on it
@@ -1785,7 +1766,6 @@ namespace KH3Randomizer.Data
 
         /// <summary>
         /// Method that updates all checks for a DataTableEnum with none.
-        /// Currently used for replaicng Reports, Data Battles, Yozora, and Level Ups for testing
         /// </summary>
         public void ReplaceChecks(DataTableEnum dataTableEnum, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
         {
@@ -1817,7 +1797,6 @@ namespace KH3Randomizer.Data
 
         /// <summary>
         /// Method that updates a check with none.
-        /// Currently used for replaicng Reports, Data Battles, Yozora, and Level Ups for testing
         /// </summary>
         public void ReplaceCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, DataTableEnum dataTableEnum, KeyValuePair<string, Dictionary<string, string>> check)
         {
@@ -1827,6 +1806,19 @@ namespace KH3Randomizer.Data
                 {
                     UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, dataTableEnum, check.Key, bonus.Key, bonus.Value, replacements);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Method that uses the above method to replace a check given a DataTableEnum and a string to look for
+        /// </summary>
+        public void ReplaceCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, DataTableEnum dataTableEnum, string key)
+        {
+            var checkToReplace = randomizedOptions[dataTableEnum].FirstOrDefault(check => check.Key.Contains(key));
+            if (checkToReplace.Key != null)
+            {
+                ReplaceCheck(ref randomizedOptions, availableOptions, dataTableEnum, checkToReplace);
+                blockedChecks.Add(checkToReplace.Key);
             }
         }
 

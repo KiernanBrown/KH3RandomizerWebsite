@@ -11,7 +11,7 @@ namespace KH3Randomizer.Data
         public byte[] GenerateHints(string seed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, string hintType, Dictionary<string, bool> availableHints)
         {
             var hints = new byte[0];
-            var hintList = new List<string>();
+            List<string> hintList = new List<string>();
 
             if (hintType.Equals("Off"))
                 return hints;
@@ -100,10 +100,46 @@ namespace KH3Randomizer.Data
             var hash = seed.StringToSeed();
             var rng = new Random((int)hash);
 
-            hintList.Shuffle(rng);
+            // Instead of just shuffling, place reports in spots that won't hint themselves, then fill the rest
+            // Grab the secret report hints from the end of the hint list
+            int reportCount = availableHints.Where((hint) => hint.Key.Contains("Report") && hint.Value).Count();
+            var reportHints = hintList.Skip(hintList.Count() - reportCount);
+            var otherHints = hintList.Take(hintList.Count() - reportCount).ToList();
+            var shuffledHints = new string[hintList.Count()];
+
+            // Place report hints in spots where they won't hint themselves
+            for (int i = 0; i < reportCount; i++)
+            {
+                // Bounds for what this report hints, we want this report to be outside this
+                int lowerBound = i * 4;
+                int upperBound = i + 3;
+
+                bool validPlacement = false;
+                while (!validPlacement)
+                {
+                    int hintIndex = rng.Next(0, hintList.Count() - 1);
+                    if ((hintIndex < lowerBound || hintIndex > upperBound) && shuffledHints[hintIndex] == null)
+                    {
+                        shuffledHints[hintIndex] = reportHints.ElementAt(i);
+                        validPlacement = true;
+                    }
+                }
+            }
+
+            // Fill the rest of the array with the other hints
+            for (int i = 0; i < hintList.Count(); i++)
+            {
+                if (shuffledHints[i] != null)
+                {
+                    continue;
+                }
+                int hintIndex = rng.Next(0, otherHints.Count() - 1);
+                shuffledHints[i] = otherHints[hintIndex];
+                otherHints.RemoveAt(hintIndex);
+            }
 
             var mobile = new Mobile();
-            hints = mobile.Process(hintList).ToArray();
+            hints = mobile.Process(shuffledHints.ToList()).ToArray();
 
             return hints;
         }
@@ -811,16 +847,16 @@ namespace KH3Randomizer.Data
 
                         #region The Final World
                         case "Vbonus_082":
-                            world = "The Final World (Olympus Intro)";
+                            world = "The Final World (Darkside Boss)";
                             description = "(Darkside Boss)";
                             break;
                         case "Vbonus_083":
                             world = "The Final World";
-                            description = "(Collect 200 Soras)";
+                            description = "(Collect 222 Soras)";
                             break;
                         case "Vbonus_084":
                             world = "The Final World";
-                            description = "(Collect 300 Soras)";
+                            description = "(Collect 333 Soras)";
                             break;
                         #endregion The Final World
 
@@ -906,6 +942,10 @@ namespace KH3Randomizer.Data
                         case "VBonus_DLC_006":
                             world = "Re:Mind (The Keyblade Graveyard)";
                             description = "(Terra-Xehanort & Vanitas Boss)";
+                            break;
+                        case "VBonus_DLC_007":
+                            world = "Re:Mind (The Keyblade Graveyard)";
+                            description = "(Saix Boss)";
                             break;
                         case "VBonus_DLC_008":
                             world = "Re:Mind (The Keyblade Graveyard)";
