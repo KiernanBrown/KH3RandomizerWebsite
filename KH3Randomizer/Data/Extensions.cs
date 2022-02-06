@@ -1750,34 +1750,35 @@ namespace KH3Randomizer.Data
                 #endregion Maps
 
                 #region Secret Reports
-                case "REPORT_ITEM01":
-                    return "Secret Report 1";
+                // Reports seem to be off by one, not sure what REPORT_ITEM01 actually is
+                /*case "REPORT_ITEM01":
+                    return "Secret Report 1";*/
                 case "REPORT_ITEM02":
-                    return "Secret Report 2";
+                    return "Secret Report 1";
                 case "REPORT_ITEM03":
-                    return "Secret Report 3";
+                    return "Secret Report 2";
                 case "REPORT_ITEM04":
-                    return "Secret Report 4";
+                    return "Secret Report 3";
                 case "REPORT_ITEM05":
-                    return "Secret Report 5";
+                    return "Secret Report 4";
                 case "REPORT_ITEM06":
-                    return "Secret Report 6";
+                    return "Secret Report 5";
                 case "REPORT_ITEM07":
-                    return "Secret Report 7";
+                    return "Secret Report 6";
                 case "REPORT_ITEM08":
-                    return "Secret Report 8";
+                    return "Secret Report 7";
                 case "REPORT_ITEM09":
-                    return "Secret Report 9";
+                    return "Secret Report 8";
                 case "REPORT_ITEM10":
-                    return "Secret Report 10";
+                    return "Secret Report 9";
                 case "REPORT_ITEM11":
-                    return "Secret Report 11";
+                    return "Secret Report 10";
                 case "REPORT_ITEM12":
-                    return "Secret Report 12";
+                    return "Secret Report 11";
                 case "REPORT_ITEM13":
-                    return "Secret Report 13";
+                    return "Secret Report 12";
                 case "REPORT_ITEM14":
-                    return "Secret Report 14";
+                    return "Secret Report 13";
                 #endregion Secret Reports
 
                 #region Abilities
