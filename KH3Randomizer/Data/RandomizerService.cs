@@ -312,7 +312,7 @@ namespace KH3Randomizer.Data
             return option;
         }
 
-        public void RandomizeItems(string seed, Dictionary<string, bool> availableExtras, ref Dictionary<string, Dictionary<string, bool>> availableOptions,
+        public void RandomizeItems(string seed, Dictionary<string, Extra> availableExtras, ref Dictionary<string, Dictionary<string, bool>> availableOptions,
                                    ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions)
         {
             var hash = seed.StringToSeed();
@@ -323,7 +323,8 @@ namespace KH3Randomizer.Data
             // Category > Id > Item > Value
             var defaultOptions = JsonSerializer.Deserialize<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>>(streamReader.ReadToEnd());
 
-            List<string> importantChecks = new List<string>() { "Proof of Promises", "Proof of Times Past", "Proof of Fantasy" };
+            List<string> proofs = new List<string>() { "Proof of Promises", "Proof of Times Past", "Proof of Fantasy" };
+            List<string> importantChecks = new List<string>(proofs);
             List<string> foundChecks = new List<string>();
 
             while (foundChecks.Count != importantChecks.Count)
@@ -660,6 +661,12 @@ namespace KH3Randomizer.Data
                                              swapDataTable.Key == DataTableEnum.TreasureRA || swapDataTable.Key == DataTableEnum.TreasureTS || swapDataTable.Key == DataTableEnum.TreasureTT) && subSynthesisItem.Value.ToLower().Contains("none"))
                                         continue;
 
+                                    // Block proofs from appearing on synth if that extra isn't enabled
+                                    if (proofs.Contains(swapData.Value.ValueIdToDisplay()) && !availableExtras["Synthesizable Proofs"].Enabled)
+                                    {
+                                        continue;
+                                    }
+
                                     randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = subSynthesisItem.Value;
                                     randomizedOptions[DataTableEnum.SynthesisItem][synthesisItem.Key][subSynthesisItem.Key] = swapData.Value;
 
@@ -694,29 +701,55 @@ namespace KH3Randomizer.Data
                         {
                             if (option.Value.Contains("POLE_SPIN"))
                             {
-                                var swapLogic = this.IsPoleSpinDisallowed(category.Key, subCategory.Key);
-
-                                while (swapLogic) // Is there a way we can use a var instead of true?
+                                if (availableExtras["Pole Spin Start"].Enabled)
                                 {
-                                    var tempOptions = randomizedOptions.Where(x => x.Key == DataTableEnum.EquipItem || x.Key == DataTableEnum.WeaponEnhance || x.Key == DataTableEnum.TreasureFZ);
-
-                                    var swapDataTable = randomizedOptions.ElementAt(rng.Next(0, tempOptions.Count()));
-                                    var swapCategory = swapDataTable.Value.ElementAt(rng.Next(0, randomizedOptions[swapDataTable.Key].Count));
-
-                                    if (swapCategory.Key == "EVENT_KEYBLADE_012" || swapCategory.Key == "EVENT_KEYBLADE_013" || !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
-                                        continue;
-
-                                    if (!this.IsPoleSpinDisallowed(swapDataTable.Key, swapCategory.Key) && swapCategory.Value.Where(x => x.Value.Contains("ETresAbilityKind::")).Count() > 0)
+                                    // Pole Spin is already a starting ability
+                                    if (category.Key == DataTableEnum.ChrInit && subCategory.Key.CategoryToKey(category.Key) == "Abilities")
                                     {
-                                        var swapData = swapCategory.Value.Where(x => x.Value.Contains("ETresAbilityKind::")).ElementAt(rng.Next(0, swapCategory.Value.Where(x => x.Value.Contains("ETresAbilityKind::")).Count()));
+                                        break;
+                                    }
 
-                                        if (swapCategory.Key == "m_PlayerSora" && !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapData.Key.CategoryToKey(swapDataTable.Key)])
+                                    var chrInitValues = randomizedOptions[DataTableEnum.ChrInit].Values.ElementAt(0);
+                                    var startingAbilities = chrInitValues.Where((x) => x.Key.CategoryToKey(DataTableEnum.ChrInit) == "Abilities");
+                                    var emptyAbilities = startingAbilities.Where((x) => x.Value.Contains("NONE"));
+
+                                    // Find a starting ability that is none and replace it
+                                    // If all starting abilities are filled, replace one randomly
+                                    var swapData = startingAbilities.ElementAt(rng.Next(0, startingAbilities.Count()));
+                                    if (emptyAbilities.Count() > 0)
+                                    {
+                                        swapData = emptyAbilities.First();
+                                    }
+
+                                    randomizedOptions[DataTableEnum.ChrInit]["m_PlayerSora"][swapData.Key] = option.Value;
+                                    randomizedOptions[category.Key][subCategory.Key][option.Key] = swapData.Value;
+                                }
+                                else
+                                {
+                                    var swapLogic = this.IsPoleSpinDisallowed(category.Key, subCategory.Key);
+
+                                    while (swapLogic) // Is there a way we can use a var instead of true?
+                                    {
+                                        var tempOptions = randomizedOptions.Where(x => x.Key == DataTableEnum.EquipItem || x.Key == DataTableEnum.WeaponEnhance || x.Key == DataTableEnum.TreasureFZ);
+
+                                        var swapDataTable = randomizedOptions.ElementAt(rng.Next(0, tempOptions.Count()));
+                                        var swapCategory = swapDataTable.Value.ElementAt(rng.Next(0, randomizedOptions[swapDataTable.Key].Count));
+
+                                        if (swapCategory.Key == "EVENT_KEYBLADE_012" || swapCategory.Key == "EVENT_KEYBLADE_013" || !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
                                             continue;
 
-                                        randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = option.Value;
-                                        randomizedOptions[category.Key][subCategory.Key][option.Key] = swapData.Value;
+                                        if (!this.IsPoleSpinDisallowed(swapDataTable.Key, swapCategory.Key) && swapCategory.Value.Where(x => x.Value.Contains("ETresAbilityKind::")).Count() > 0)
+                                        {
+                                            var swapData = swapCategory.Value.Where(x => x.Value.Contains("ETresAbilityKind::")).ElementAt(rng.Next(0, swapCategory.Value.Where(x => x.Value.Contains("ETresAbilityKind::")).Count()));
 
-                                        break;
+                                            if (swapCategory.Key == "m_PlayerSora" && !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapData.Key.CategoryToKey(swapDataTable.Key)])
+                                                continue;
+
+                                            randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = option.Value;
+                                            randomizedOptions[category.Key][subCategory.Key][option.Key] = swapData.Value;
+
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -844,7 +877,7 @@ namespace KH3Randomizer.Data
 
                 // Clean VBonuses
                 // This will reassign VBonuses such that each VBonus will have at least one check on it
-                if (availableOptions.ContainsKey("Bonuses") && availableExtras.ContainsKey("Balanced Bonuses") && availableExtras["Balanced Bonuses"])
+                if (availableExtras["Balanced Bonuses"].Enabled)
                 {
                     this.CleanVBonuses(DataTableEnum.VBonus, ref randomizedOptions, availableOptions);
                 }
@@ -889,7 +922,7 @@ namespace KH3Randomizer.Data
         }
 
         public byte[] GenerateRandomizerSeed(string currentSeed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
-                                             Dictionary<string, bool> availablePools, Dictionary<string, bool> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, List<Tuple<Option, Option>> modifications, byte[] hints)
+                                             Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, List<Tuple<Option, Option>> modifications, byte[] hints)
         {
             var dataTableManager = new UE4DataTableInterpreter.DataTableManager();
             var dataTables = dataTableManager.RandomizeDataTables(randomizedOptions);
@@ -917,7 +950,7 @@ namespace KH3Randomizer.Data
             //return new List<byte[]> { this.GetFile(@$".\Seeds\pakchunk99-randomizer-{currentSeed}.pak"), this.GetFile(@$"{pakPath}\SpoilerLog.json") };
         }
 
-        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, bool> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, List<Tuple<Option, Option>> modifications, byte[] hints)
+        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, List<Tuple<Option, Option>> modifications, byte[] hints)
         {
             var zipPath = @$".\Seeds\pakchunk99-randomizer-{randomSeed}\pakchunk99-randomizer-{randomSeed}.zip";
 

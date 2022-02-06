@@ -50,8 +50,8 @@
             <div class="review-content" style="max-height: 500px; overflow-y: auto;">
                 @foreach (var extra in extras)
                 {
-                    <div style="display: inline-flex; width: 100%">
-                        <span class="sub-option-bubble" style="@extraColors[extra]">@extra</span>
+                    <div style="display: inline">
+                        <span class="sub-option-bubble" style="@extraColor">@extra</span>
                     </div>
                 }
             </div>
@@ -113,7 +113,7 @@
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> RandomizedOptions { get; set; }
 
     [Parameter] public Dictionary<string, bool> AvailablePools { get; set; }
-    [Parameter] public Dictionary<string, bool> AvailableExtras { get; set; }
+    [Parameter] public Dictionary<string, Extra> AvailableExtras { get; set; }
     [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableOptions { get; set; }
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
     [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableHints { get; set; }
@@ -125,13 +125,13 @@
     private List<string> modifications { get; set; } = new();
 
     private Dictionary<string, string> poolColors = new();
-    private Dictionary<string, string> extraColors = new();
+    private string extraColor = "background: linear-gradient(to right, #753da3, #ad70df);";
     private Dictionary<string, string> optionColors = new();
 
     protected override void OnInitialized()
     {
         this.pools = this.AvailablePools.Where(x => x.Value).Select(x => x.Key).ToList();
-        this.extras = this.AvailableExtras.Where(x => x.Value).Select(x => x.Key).ToList();
+        this.extras = this.AvailableExtras.Where(x => x.Value.Enabled).Select(x => x.Key).ToList();
         this.options = new();
 
         foreach (var pool in pools)
@@ -168,11 +168,7 @@
             { "Synthesis Items", "background-color: #70c0df;" }
         };
 
-        this.extraColors = new()
-        {
-            { "Balanced Bonuses", "background: linear-gradient(to right, #b541ae, #ff6cf7);" },
-        };
-
+        extraColor = "background: linear-gradient(to right, #753da3, #ad70df);";
 
         this.optionColors = new()
         {

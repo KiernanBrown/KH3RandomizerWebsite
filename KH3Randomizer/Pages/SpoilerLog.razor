@@ -62,7 +62,7 @@
                 @foreach (var extra in this.availableExtras)
                 {
                     <div class="col-md-2">
-                        <a class="@(extra.Key == "Balanced Bonuses" && availablePools["Bonuses"] ? "rounded-selector a-tag-selector" : "rounded-disabled") @(extra.Value ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { HandleExtraValueChange(extra); })" @onclick:preventDefault>@extra.Key</a>
+                        <a class="@(availablePools[extra.Value.RequiredPool] ? "rounded-selector a-tag-selector" : "rounded-disabled") @(extra.Value.Enabled ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { HandleExtraValueChange(extra.Value); })" @onclick:preventDefault>@extra.Key</a>
                     </div>
                 }
             </div>
@@ -112,12 +112,14 @@
         { "Fullcourse Abilities", true }, { "Level Ups", true }, { "Weapon Upgrades", true }, { "Equippables", true }, { "Synthesis Items", true}
     };
 
-    private Dictionary<string, bool> allExtras = new Dictionary<string, bool> {
-        { "Balanced Bonuses", true }
+    private Dictionary<string, Extra> allExtras = new Dictionary<string, Extra> {
+        { "Balanced Bonuses", new Extra("Balanced Bonuses", true, "Bonuses", "Evenly distribute checks that appear on Bonuses.") },
+        { "Pole Spin Start", new Extra("Pole Spin Start", false, "Starting Stats", "Ensures Poll Spin as a starting ability.") },
+        { "Synthesizable Proofs", new Extra("Synthesizable Proofs", true, "Synthesis Items", "Allows Proofs to be placed in Moogle Synthesis.") }
     };
 
     private Dictionary<string, bool> availablePools = new();
-    private Dictionary<string, bool> availableExtras = new();
+    private Dictionary<string, Extra> availableExtras = new();
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
 
@@ -195,7 +197,7 @@
         });
     }
 
-    public void UpdateAvailableExtras(Dictionary<string, bool> availableExtras = null)
+    public void UpdateAvailableExtras(Dictionary<string, Extra> availableExtras = null)
     {
         if (availableExtras != null)
             this.availableExtras = availableExtras;
@@ -287,20 +289,27 @@
         bool newValue = !pool.Value;
         availablePools[pool.Key] = newValue;
         this.UpdateAvailablePools();
-        if (pool.Key == "Bonuses")
+
+        // Update extras that have this as a required pool
+        var matchingExtras = availableExtras.Where((e) => e.Value.RequiredPool == pool.Key);
+
+        foreach (var extra in matchingExtras)
         {
-            availableExtras["Balanced Bonuses"] = newValue;
+            // If the pool is enabled, set to default. Otherwise, set to false.
+            // Might need to update available extras here
+            extra.Value.Enabled = newValue ? extra.Value.DefaultEnabled : false;
         }
     }
 
-    private void HandleExtraValueChange(KeyValuePair<string, bool> extra)
+    private void HandleExtraValueChange(Extra extra)
     {
-        bool newValue = !extra.Value;
-        if (extra.Key == "Balanced Bonuses" && availablePools["Bonuses"])
+        bool newValue = !extra.Enabled;
+
+        if (availablePools[extra.RequiredPool])
         {
-            availableExtras[extra.Key] = newValue;
+            extra.Enabled = !extra.Enabled;
+            // Might need to update avaialbe extras here
             this.UpdateAvailableExtras();
         }
-
     }
 }

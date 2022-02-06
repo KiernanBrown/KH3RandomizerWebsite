@@ -57,14 +57,14 @@
     [Parameter] public EventCallback<string> ContinueTo { get; set; }
 
     [Parameter] public EventCallback<string> UpdateCurrentSeed { get; set; }
-    [Parameter] public EventCallback<Dictionary<string, bool>> UpdateAvailableExtras { get; set; }
+    [Parameter] public EventCallback<Dictionary<string, Extra>> UpdateAvailableExtras { get; set; }
     [Parameter] public EventCallback<Dictionary<string, Dictionary<string, bool>>> UpdateAvailableOptions { get; set; }
     [Parameter] public EventCallback<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>> UpdateRandomizedOptions { get; set; }
     [Parameter] public Action<Option, Option> UpdateModifications { get; set; }
 
     [Parameter] public string CurrentSeed { get; set; }
     [Parameter] public Dictionary<string, bool> AvailablePools { get; set; }
-    [Parameter] public Dictionary<string, bool> AvailableExtras { get; set; }
+    [Parameter] public Dictionary<string, Extra> AvailableExtras { get; set; }
     [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableOptions { get; set; }
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> RandomizedOptions { get; set; }
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
@@ -74,7 +74,7 @@
     private Dictionary<string, Dictionary<string, bool>> tempOptions = new();
 
     private Dictionary<string, bool> availablePools = new();
-    private Dictionary<string, bool> availableExtras = new();
+    private Dictionary<string, Extra> availableExtras = new();
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
     private List<Tuple<Option, Option>> modifications = new();

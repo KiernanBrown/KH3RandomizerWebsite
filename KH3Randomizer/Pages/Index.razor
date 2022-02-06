@@ -8,7 +8,7 @@
 
     @if (this.currentSection == "Pools")
     {
-        <Pools ContinueTo="@(ContinueTo)" AvailablePools="@this.availablePools" 
+        <Pools ContinueTo="@(ContinueTo)" AvailablePools="@this.availablePools"
                AvailableExtras="@this.availableExtras"
                UpdateAvailablePools="@(pools => UpdateAvailablePools(pools))"
                UpdateAvailableExtras="@(extras => UpdateAvailableExtras(extras))">
@@ -46,9 +46,11 @@
         { "General Stats", false }
     };
 
-    private Dictionary<string, bool> availableExtras = new Dictionary<string, bool>
+    private Dictionary<string, Extra> availableExtras = new Dictionary<string, Extra>
     {
-        { "Balanced Bonuses", true }
+        { "Balanced Bonuses", new Extra("Balanced Bonuses", true, "Bonuses", "Evenly distribute checks that appear on Bonuses.") },
+        { "Pole Spin Start", new Extra("Pole Spin Start", false, "Starting Stats", "Ensures Poll Spin as a starting ability.") },
+        { "Synthesizable Proofs", new Extra("Synthesizable Proofs", true, "Synthesis Items", "Allows Proofs to be placed in Moogle Synthesis.") }
     };
 
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
@@ -148,7 +150,7 @@
         });
     }
 
-    public void UpdateAvailableExtras(Dictionary<string, bool> availableExtras)
+    public void UpdateAvailableExtras(Dictionary<string, Extra> availableExtras)
     {
         this.availableExtras = availableExtras;
 

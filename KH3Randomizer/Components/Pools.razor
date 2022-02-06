@@ -51,17 +51,17 @@
                         <!-- Slider -->
                         <div class="col-md-2">
                             <label class="switch">
-                                <input type="checkbox" @onchange="@((value) => { extras[extra.Key] = (bool)value.Value; })" checked="@extra.Value" disabled="@(extra.Key == "Balanced Bonuses" && !pools["Bonuses"])">
+                                <input type="checkbox" @onchange="@((value) => { extra.Value.Enabled = (bool)value.Value; })" checked="@extra.Value.Enabled" disabled="@(!pools[extra.Value.RequiredPool])">
                                 <span class="slider round"></span>
                             </label>
                         </div>
 
                         <div class="col-md-6">
-                            <label><b>@extra.Key</b></label>
+                            <label><b>@extra.Value.Name</b></label>
                         </div>
 
                         <div class="col-md-1">
-                            <Tooltip Text="@extrasDescriptions[extra.Key]">
+                            <Tooltip Text="@extra.Value.Description">
                                 <i class="bi bi-question-circle" style="font-size: 1.2rem; color: dodgerblue;"></i>
                             </Tooltip>
                         </div>
@@ -77,10 +77,10 @@
 @code {
     [Parameter] public EventCallback<string> ContinueTo { get; set; }
     [Parameter] public EventCallback<Dictionary<string, bool>> UpdateAvailablePools { get; set; }
-    [Parameter] public EventCallback<Dictionary<string, bool>> UpdateAvailableExtras { get; set; }
+    [Parameter] public EventCallback<Dictionary<string, Extra>> UpdateAvailableExtras { get; set; }
 
     [Parameter] public Dictionary<string, bool> AvailablePools { get; set; }
-    [Parameter] public Dictionary<string, bool> AvailableExtras { get; set; }
+    [Parameter] public Dictionary<string, Extra> AvailableExtras { get; set; }
 
     private bool isOn { get; set; } = false;
     private string allOptionText { get; set; } = "MIXED";
@@ -102,13 +102,7 @@
         { "General Stats", "Keyblade, Accessory and Armor stats, along with Health, Attack and Magic upgrades. Bosses and Enemies included potentially." }
     };
 
-    private Dictionary<string, bool> extras = new Dictionary<string, bool>();
-
-    private Dictionary<string, string> extrasDescriptions = new Dictionary<string, string> {
-        { "Balanced Bonuses", "Evenly distribute checks that appear on Bonuses." }, // Requires Bonuses
-        { "Replace Reports", "Randomizes checks from Reports while keeping battlegates empty. Temporary fix for testing." }, // Requires Events
-        { "Poll Spin Start", "Ensures you start with Poll Spin." } // Requires Starting Stats
-    };
+    private Dictionary<string, Extra> extras = new Dictionary<string, Extra>();
 
     protected override void OnInitialized()
     {
@@ -131,10 +125,11 @@
         foreach (var pool in this.pools.Where(x => x.Key != "General Stats"))
         {
             this.pools[pool.Key] = this.isOn;
-            if (pool.Key == "Bonuses")
-            {
-                extras["Balanced Bonuses"] = this.isOn;
-            }
+        }
+
+        foreach (var extra in this.extras)
+        {
+            extra.Value.Enabled = this.isOn ? extra.Value.DefaultEnabled : false;
         }
 
         this.UpdateOptionsText();
@@ -165,10 +160,16 @@
     {
         bool newValue = (bool)value.Value;
         pools[pool.Key] = newValue;
-        if (pool.Key == "Bonuses")
+
+        // Update extras that have this as a required pool
+        var matchingExtras = extras.Where((e) => e.Value.RequiredPool == pool.Key);
+
+        foreach (var extra in matchingExtras)
         {
-            extras["Balanced Bonuses"] = newValue;
+            // If the pool is enabled, set to default. Otherwise, set to false.
+            extra.Value.Enabled = newValue ? extra.Value.DefaultEnabled : false;
         }
+
         this.UpdateOptionsText();
     }
 }
