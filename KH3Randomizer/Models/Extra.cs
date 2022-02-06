@@ -13,12 +13,12 @@ namespace KH3Randomizer.Models
         public string RequiredPool { get; set; }
         public string Description { get; set; }
 
-        public Extra (string name, bool value, string pool, string description)
+        public Extra (string Name, bool Enabled, string RequiredPool, string Description)
         {
-            Name = name;
-            Enabled = DefaultEnabled = value;
-            RequiredPool = pool;
-            Description = description;
+            this.Name = Name;
+            this.Enabled = DefaultEnabled = Enabled;
+            this.RequiredPool = RequiredPool;
+            this.Description = Description;
         }
     }
 }
