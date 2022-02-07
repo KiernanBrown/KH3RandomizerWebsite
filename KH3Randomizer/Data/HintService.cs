@@ -112,7 +112,7 @@ namespace KH3Randomizer.Data
             {
                 // Bounds for what this report hints, we want this report to be outside this
                 int lowerBound = i * 4;
-                int upperBound = i + 3;
+                int upperBound = lowerBound + 3;
 
                 bool validPlacement = false;
                 while (!validPlacement)

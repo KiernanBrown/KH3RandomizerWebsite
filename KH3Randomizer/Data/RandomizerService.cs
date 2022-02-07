@@ -13,7 +13,7 @@ namespace KH3Randomizer.Data
     {
         private Random rng;
         private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>() {
-            { DataTableEnum.Event, new Dictionary<string, bool> { { "Reports", true } } },
+            { DataTableEnum.Event, new Dictionary<string, bool> { { "Reports", true }, { "Data Battles", true }, { "Yozora", true } } },
             { DataTableEnum.LevelUp, new Dictionary<string, bool> { { "Levels", true } } }
         };
         private List<string> blockedChecks = new List<string>();
@@ -857,7 +857,10 @@ namespace KH3Randomizer.Data
                 // The synth item is the photo mission for Demon Tower, which isn't possible without battlegates 
                 // Remove these when the chest and battlegates are functioning properly
                 ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.TreasureFZ, "FZ_SBOX_013");
-                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.SynthesisItem, "IS_79");
+                if (availableOptions.ContainsKey(DataTableEnum.SynthesisItem.DataTableEnumToKey()))
+                {
+                    ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.SynthesisItem, "IS_79");
+                }
 
                 // Replace beat the game on crit and the two moogle proof checks
                 // These need to be randomized in for proofs and oblivion/oathkeeper, but they are not accessible
