@@ -1813,7 +1813,7 @@ namespace KH3Randomizer.Data
                 case "ETresAbilityKind::HIGHJUMP":
                     return "Ability: High Jump";
                 case "ETresAbilityKind::DOUBLEFLIGHT":
-                    return "Ability: Double Flight";
+                    return "Ability: Doubleflight";
                 case "ETresAbilityKind::SUPERJUMP":
                     return "Ability: Super Jump";
                 case "ETresAbilityKind::SUPERSLIDE":
@@ -2123,6 +2123,49 @@ namespace KH3Randomizer.Data
 
                 default:
                     return "";
+            }
+        }
+
+        public static DataTableEnum KeyToDataTableEnum(this string key)
+        {
+            switch (key)
+            {
+                case "Starting Stats":
+                    return DataTableEnum.ChrInit;
+                case "Equippables":
+                    return DataTableEnum.EquipItem;
+                case "Events":
+                    return DataTableEnum.Event;
+                case "Fullcourse Abilities":
+                    return DataTableEnum.FullcourseAbility;
+                case "Level Ups":
+                    return DataTableEnum.LevelUp;
+                case "Lucky Emblems":
+                    return DataTableEnum.LuckyMark;
+                case "Bonuses":
+                    return DataTableEnum.VBonus;
+                case "Weapon Upgrades":
+                    return DataTableEnum.WeaponEnhance;
+                case "Synthesis Items":
+                    return DataTableEnum.SynthesisItem;
+
+                // TODO support strings for treasures
+                // These will probably be structured as "Treasures TT", "Treasures FZ", etc.
+                /*case DataTableEnum.TreasureHE:
+                case DataTableEnum.TreasureTT:
+                case DataTableEnum.TreasureRA:
+                case DataTableEnum.TreasureTS:
+                case DataTableEnum.TreasureFZ:
+                case DataTableEnum.TreasureMI:
+                case DataTableEnum.TreasureCA:
+                case DataTableEnum.TreasureBX:
+                case DataTableEnum.TreasureKG:
+                case DataTableEnum.TreasureEW:
+                case DataTableEnum.TreasureBT:
+                    return "Treasures";*/
+
+                default:
+                    return DataTableEnum.None;
             }
         }
 

@@ -49,8 +49,12 @@
     private Dictionary<string, Extra> availableExtras = new Dictionary<string, Extra>
     {
         { "Balanced Bonuses", new Extra("Balanced Bonuses", true, "Bonuses", "Evenly distribute checks that appear on Bonuses.") },
-        { "Pole Spin Start", new Extra("Pole Spin Start", false, "Starting Stats", "Ensures Poll Spin as a starting ability.") },
-        { "Synthesizable Proofs", new Extra("Synthesizable Proofs", true, "Synthesis Items", "Allows Proofs to be placed in Moogle Synthesis.") }
+        { "Pole Spin Start", new Extra("Pole Spin Start", false, "Starting Stats", "Ensures Poll Spin is a starting ability.") },
+        { "Synthesizable Proofs", new Extra("Allow Synthesizable Proofs", true, "Synthesis Items", "Allows Proofs to be placed in Moogle Synthesis.") },
+        // { "Allow Ultima", new Extra("Allow Ultima", true, "", "Allows Ultima to be randomized into the pool.") },
+        { "Key Abilities Fullcourse", new Extra("Allow Key Abilities on Fullcourse", true, "Fullcourse Abilities", "Allows Key Abilities to be randomzied onto Fullcourse Abilities.") },
+        { "Key Abilities Upgrades", new Extra("Allow Key Abilities on Weapon Upgrades", true, "Weapon Upgrades", "Allows Key Abilities to be randomized onto Weapon Upgrades.") },
+        { "Key Abilities Equippables", new Extra("Allow Key Abilities on Equippables", true, "Equippables", "Allows Key Abilities to be randomized onto Equippables.") },
     };
 
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();

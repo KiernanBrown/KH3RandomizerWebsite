@@ -12,11 +12,17 @@ namespace KH3Randomizer.Data
     public class RandomizerService
     {
         private Random rng;
-        private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>() {
+        private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>() 
+        {
             { DataTableEnum.Event, new Dictionary<string, bool> { { "Reports", true } } },
             { DataTableEnum.LevelUp, new Dictionary<string, bool> { { "Levels", true } } }
         };
         private List<string> blockedChecks = new List<string>();
+        private List<string> keyAbilities = new List<string>()
+        {
+            "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin", 
+            "Ability: Second Chance", "Ability: Withstand Combo"
+        };
 
         public Dictionary<string, Dictionary<string, bool>> GetAvailableOptions(Dictionary<string, bool> availablePools, ref Dictionary<string, Dictionary<string, bool>> availableOptions, 
                                                                                 ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, bool backTo = false)
@@ -275,7 +281,17 @@ namespace KH3Randomizer.Data
                 var swapDataTable = randomizedOptions.ElementAt(rng.Next(0, randomizedOptions.Count()));
                 var swapCategory = swapDataTable.Value.ElementAt(rng.Next(0, randomizedOptions[swapDataTable.Key].Count));
 
-                if ((replacements.ContainsKey(swapDataTable.Key) && replacements[swapDataTable.Key].GetValueOrDefault(swapCategory.Key.CategoryToKey(swapDataTable.Key))) || !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
+                if (!availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
+                {
+                    continue;
+                }
+
+                if (replacements.ContainsKey(swapDataTable.Key) && replacements[swapDataTable.Key].Count == 0)
+                {
+                    continue;
+                }
+
+                if ((replacements.ContainsKey(swapDataTable.Key) && replacements[swapDataTable.Key].Count > 0 && replacements[swapDataTable.Key].GetValueOrDefault(swapCategory.Key.CategoryToKey(swapDataTable.Key))))
                 {
                     continue;
                 }
@@ -290,7 +306,7 @@ namespace KH3Randomizer.Data
                 {
                     var swapData = swapCategory.Value.Where(x => x.Value.Contains("NONE")).ElementAt(rng.Next(0, swapCategory.Value.Where(x => x.Value.Contains("NONE")).Count()));
 
-                    if (replacements.ContainsKey(swapDataTable.Key) && replacements[swapDataTable.Key].GetValueOrDefault(swapCategory.Key.CategoryToKey(swapDataTable.Key)))
+                    if (swapDataTable.Key == DataTableEnum.ChrInit && swapData.Key.CategoryToKey(swapDataTable.Key) == "Critical Abilities")
                     {
                         continue;
                     }
@@ -677,6 +693,42 @@ namespace KH3Randomizer.Data
                     }
                 }
 
+                // Account for key abilities
+                Dictionary<DataTableEnum, Dictionary<string, bool>> dataTablesToCheck = new Dictionary<DataTableEnum, Dictionary<string, bool>>();
+
+                foreach (var extra in availableExtras)
+                {
+                    if (extra.Key.Contains("Key Abilities") && availableOptions.ContainsKey(extra.Value.RequiredPool) && !extra.Value.Enabled)
+                    {
+                        var c1 = DataTableEnum.EquipItem.DataTableEnumToKey();
+                        dataTablesToCheck.Add(extra.Value.RequiredPool.KeyToDataTableEnum(), new Dictionary<string, bool> { });
+                    }
+                }
+
+                if (dataTablesToCheck.Count > 0)
+                {
+                    Dictionary<DataTableEnum, Dictionary<string, bool>> blockedDataTables = new Dictionary<DataTableEnum, Dictionary<string, bool>>(replacements);
+                    blockedDataTables.Add(DataTableEnum.ChrInit, new Dictionary<string, bool> { { "Critical Abilities", true } });
+                    foreach (var dt in dataTablesToCheck)
+                    {
+                        blockedDataTables.Add(dt.Key, dt.Value);
+                    }
+
+                    foreach (var category in randomizedOptions)
+                    {
+                        foreach (var subCategory in category.Value)
+                        {
+                            foreach (var option in subCategory.Value)
+                            {
+                                if (keyAbilities.Contains(option.Value.ValueIdToDisplay()) && dataTablesToCheck.ContainsKey(category.Key)) 
+                                {
+                                    UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, category.Key, subCategory.Key, option.Key, option.Value, blockedDataTables);
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Account for Pole Spin not being locked behind Frozen
 
                 // List of places it can't be
@@ -836,11 +888,15 @@ namespace KH3Randomizer.Data
                 // Replace checks
                 foreach (var replacePool in replacements)
                 {
-                    if (replacePool.Value.Count > 0 && replacePool.Key != DataTableEnum.LevelUp)
+                    if (replacements[replacePool.Key].Count == 0 && replacePool.Key != DataTableEnum.LevelUp)
+                    {
+                        this.ReplaceChecks(replacePool.Key, ref randomizedOptions, availableOptions);
+                    }
+                    else if (replacePool.Value.Count > 0 && replacePool.Key != DataTableEnum.LevelUp)
                     {
                         foreach (var subPool in replacePool.Value)
                         {
-                            if (replacements[replacePool.Key][subPool.Key])
+                           if (replacements[replacePool.Key].Count > 0 && replacements[replacePool.Key][subPool.Key])
                             {
                                 this.ReplaceChecks(replacePool.Key, subPool.Key, ref randomizedOptions, availableOptions);
                                 if (subPool.Key == "Yozora")

@@ -51,7 +51,7 @@
                         <!-- Slider -->
                         <div class="col-md-2">
                             <label class="switch">
-                                <input type="checkbox" @onchange="@((value) => { extra.Value.Enabled = (bool)value.Value; })" checked="@extra.Value.Enabled" disabled="@(!pools[extra.Value.RequiredPool])">
+                                <input type="checkbox" @onchange="@((value) => { extra.Value.Enabled = (bool)value.Value; })" checked="@extra.Value.Enabled" disabled="@IsExtraDisabled(extra.Value)">
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -171,5 +171,14 @@
         }
 
         this.UpdateOptionsText();
+    }
+
+    private bool IsExtraDisabled(Extra extra)
+    {
+        if (extra.RequiredPool != "")
+        {
+            return !pools[extra.RequiredPool];
+        }
+        return false;
     }
 }

@@ -343,9 +343,9 @@ namespace KH3Randomizer.Data
                     return "ETresAbilityKind::REFLECT_GUARD\u0000";
                 case "Dodge Roll":
                     return "ETresAbilityKind::DODGE\u0000";
-                case "Air-Slide":
+                case "Air Slide":
                     return "ETresAbilityKind::AIRSLIDE\u0000";
-                case "Double Flight":
+                case "Doubleflight":
                     return "ETresAbilityKind::DOUBLEFLIGHT\u0000";
                 case "Second Chance":
                     return "ETresAbilityKind::LAST_LEAVE\u0000";
