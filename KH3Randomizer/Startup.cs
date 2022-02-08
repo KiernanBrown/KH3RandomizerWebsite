@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ElectronNET.API;
 
 namespace KH3Randomizer
 {
@@ -61,6 +62,12 @@ namespace KH3Randomizer
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+
+            if (HybridSupport.IsElectronActive)
+            {
+                // Open the Electron-Window here
+                Task.Run(async () => await Electron.WindowManager.CreateWindowAsync());
+            }
         }
     }
 }

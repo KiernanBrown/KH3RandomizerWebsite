@@ -13,7 +13,7 @@ namespace KH3Randomizer.Data
     {
         private Random rng;
         private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>() {
-            { DataTableEnum.Event, new Dictionary<string, bool> { { "Reports", true }, { "Data Battles", true }, { "Yozora", true } } },
+            { DataTableEnum.Event, new Dictionary<string, bool> { { "Reports", true } } },
             { DataTableEnum.LevelUp, new Dictionary<string, bool> { { "Levels", true } } }
         };
         private List<string> blockedChecks = new List<string>();
