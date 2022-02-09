@@ -535,7 +535,7 @@ namespace KH3Randomizer.Data
                     photoMissionDescription = " (Toy Box Cactaur Photo Mission)";
                     break;
                 case 78:
-                    photoMissionDescription = " (100 Acrew Wood Scarecrow Photo Mission)";
+                    photoMissionDescription = " (100 Acre Wood Scarecrow Photo Mission)";
                     break;
                 case 79:
                     photoMissionDescription = " (Demon Tower Photo Mission)";
@@ -1095,7 +1095,7 @@ namespace KH3Randomizer.Data
                             break;
                         case "EVENT_HEARTBINDER_003":
                             world = "Monstropolis";
-                            description = "(After Putting Out the Fires)";
+                            description = "(After Tank Yard Heartless)";
                             break;
                         case "EVENT_HEARTBINDER_004":
                             world = "San Fransokyo";
@@ -1186,7 +1186,7 @@ namespace KH3Randomizer.Data
                             break;
                         case "EVENT_DATAB_002":
                             world = "Radiant Garden";
-                            description = "(Defeat Data Ansem: Seeker of Darkness)";
+                            description = "(Defeat Data Ansem)";
                             break;
                         case "EVENT_DATAB_003":
                             world = "Radiant Garden";
