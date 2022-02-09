@@ -22,6 +22,7 @@ namespace KH3Randomizer.Data
                 if (!available)
                     continue;
 
+                var hintDisplayName = hintName;
                 var skipAmount = 0;
                 if (hintName.EndsWith("ra"))
                     skipAmount = 1;
@@ -29,6 +30,32 @@ namespace KH3Randomizer.Data
                     skipAmount = 2;
                 else
                     levelUpTracker = new List<string>();
+
+                // Change base, ra, ga spells to base spell element
+                if (hintName == "Fire" || (skipAmount > 0 && hintName.Contains("Fi")))
+                {
+                    hintDisplayName = "Fire Element";
+                }
+                else if (hintName == "Blizzard" || (skipAmount > 0 && hintName.Contains("Blizz")))
+                {
+                    hintDisplayName = "Blizzard Element";
+                }
+                else if (hintName == "Thunder" || (skipAmount > 0 && hintName.Contains("Thund")))
+                {
+                    hintDisplayName = "Thunder Element";
+                }
+                else if (hintName == "Cure" || (skipAmount > 0 && hintName.Contains("Cur")))
+                {
+                    hintDisplayName = "Cure Element";
+                }
+                else if (hintName == "Aero" || (skipAmount > 0 && hintName.Contains("Aero")))
+                {
+                    hintDisplayName = "Aero Element";
+                }
+                else if (hintName == "Water" || (skipAmount > 0 && hintName.Contains("Water")))
+                {
+                    hintDisplayName = "Water Element";
+                }
 
                 var hintLocation = string.Empty;
                 var tempSkipAmount = levelUpTracker.Count;
@@ -90,7 +117,7 @@ namespace KH3Randomizer.Data
                 var hintText = string.Empty;
 
                 if (hintType.Equals("Verbose"))
-                    hintText = $"{hintName.ValueIdToDisplay()} is {hintLocation}";
+                    hintText = $"{hintDisplayName.ValueIdToDisplay()} is {hintLocation}";
                 else if (hintType.Equals("Vague"))
                     hintText = $"There is 1 check {hintLocation}";
 
@@ -539,23 +566,23 @@ namespace KH3Randomizer.Data
                         #region Olympus
                         case "Vbonus_001":
                             world = "Olympus";
-                            description = "(Clearing Heartless)";
+                            description = "(Cliff Ascent Heartless)";
                             break;
                         case "Vbonus_002":
                             world = "Olympus";
-                            description = "(Thebes Courtyard Flame Cores)";
+                            description = "(Thebes Agora Flame Cores)";
                             break;
                         case "Vbonus_005":
                             world = "Olympus";
-                            description = "(Near Plateau Flame Cores)";
+                            description = "(Thebes Overlook Flame Cores)";
                             break;
                         case "Vbonus_006":
                             world = "Olympus";
-                            description = "(Garden Flame Cores)";
+                            description = "(Thebes Garden Flame Cores)";
                             break;
                         case "Vbonus_007":
                             world = "Olympus";
-                            description = "(Timed Heartless)";
+                            description = "(Thebes Alleyway Heartless)";
                             break;
                         case "Vbonus_008":
                             world = "Olympus";
@@ -571,7 +598,7 @@ namespace KH3Randomizer.Data
                             break;
                         case "Vbonus_013":
                             world = "Olympus";
-                            description = "(Wind Titan Boss)";
+                            description = "(Tornado Titan Boss)";
                             break;
                         #endregion Olympus
 
@@ -582,11 +609,11 @@ namespace KH3Randomizer.Data
                             break;
                         case "Vbonus_015":
                             world = "Twilight Town";
-                            description = "(Power Wild Heartless)";
+                            description = "(The Woods Powerwild Heartless)";
                             break;
                         case "Vbonus_016":
                             world = "Twilight Town";
-                            description = "(Nobody & Heartless Mansion)";
+                            description = "(The Old Mansion Nobodies & Heartless)";
                             break;
                         #endregion Twilight Town
 
@@ -597,11 +624,11 @@ namespace KH3Randomizer.Data
                             break;
                         case "Vbonus_018":
                             world = "Toy Box";
-                            description = "(Gigas Heartless Lobby)";
+                            description = "(Galaxy Toys Main Floor: 1F Gigas)";
                             break;
                         case "Vbonus_019":
                             world = "Toy Box";
-                            description = "(Gigas Dragon Heartless)";
+                            description = "(Galaxy Toys Action Figures Supreme Smashers)";
                             break;
                         case "Vbonus_020":
                             world = "Toy Box";
@@ -624,15 +651,15 @@ namespace KH3Randomizer.Data
                         #region Kingdom of Corona
                         case "Vbonus_024":
                             world = "Kingdom of Corona";
-                            description = "(Puffball Heartless)";
+                            description = "(Hills Heartless 1)";
                             break;
                         case "Vbonus_025":
                             world = "Kingdom of Corona";
-                            description = "(Rapunzel's First Battle)";
+                            description = "(Hills Heartless 2)";
                             break;
                         case "Vbonus_026":
                             world = "Kingdom of Corona";
-                            description = "(Reaper Nobody Clearing)";
+                            description = "(Hills Reapers)";
                             break;
                         case "Vbonus_027":
                             world = "Kingdom of Corona";
@@ -640,11 +667,11 @@ namespace KH3Randomizer.Data
                             break;
                         case "Vbonus_028":
                             world = "Kingdom of Corona";
-                            description = "(Reaper Nobody Castle Town)";
+                            description = "(The Kingdom Nobodies)";
                             break;
                         case "Vbonus_029":
                             world = "Kingdom of Corona";
-                            description = "(Puffball Heartless on the Way to Tower)";
+                            description = "(Tower Heartless)";
                             break;
                         case "Vbonus_030":
                             world = "Kingdom of Corona";
@@ -655,35 +682,35 @@ namespace KH3Randomizer.Data
                         #region Monstropolis
                         case "Vbonus_032":
                             world = "Monstropolis";
-                            description = "(Unversed Lobby)";
+                            description = "(Lobby & Offices Unversed)";
                             break;
                         case "Vbonus_033":
                             world = "Monstropolis";
-                            description = "(Unversed Scare Floor)";
+                            description = "(Laugh Floor Unversed)";
                             break;
                         case "Vbonus_034":
                             world = "Monstropolis";
-                            description = "(Boo Laugh Door Warehouse)";
+                            description = "(Upper Level Heartless)";
                             break;
                         case "Vbonus_035":
                             world = "Monstropolis";
-                            description = "(Unversed & Heartless Electrified Room)";
+                            description = "(Second Floor Unversed & Heartless)";
                             break;
                         case "Vbonus_036":
                             world = "Monstropolis";
-                            description = "(Boo Laugh Main Control Room)";
+                            description = "(Second Floor Unversed)";
                             break;
                         case "Vbonus_037":
                             world = "Monstropolis";
-                            description = "(1st Flame Battle)";
+                            description = "(Accessway Unversed & Heartless)";
                             break;
                         case "Vbonus_038":
                             world = "Monstropolis";
-                            description = "(2nd Flame Battle)";
+                            description = "(Tank Yard Heartless)";
                             break;
                         case "Vbonus_039":
                             world = "Monstropolis";
-                            description = "(Unversed Empty Tank)";
+                            description = "(Tank Yard Unversed)";
                             break;
                         case "Vbonus_040":
                             world = "Monstropolis";
@@ -694,23 +721,23 @@ namespace KH3Randomizer.Data
                         #region Arendelle
                         case "Vbonus_041":
                             world = "Arendelle";
-                            description = "(Rock Troll Mini-Boss)";
+                            description = "(Rock Troll & Winterhorns Mini-Boss)";
                             break;
                         case "Vbonus_042":
                             world = "Arendelle";
-                            description = "(1st Ninja Nobody)";
+                            description = "(1st Ninja Nobodies)";
                             break;
                         case "Vbonus_043":
                             world = "Arendelle";
-                            description = "(2nd Ninja Nobody)";
+                            description = "(2nd Ninja Nobodies)";
                             break;
                         case "Vbonus_044":
                             world = "Arendelle";
-                            description = "(3rd Ninja Nobody)";
+                            description = "(3rd Ninja Nobodies)";
                             break;
                         case "Vbonus_045":
                             world = "Arendelle";
-                            description = "(4th Ninja Nobody)";
+                            description = "(4th Ninja Nobodies)";
                             break;
                         case "Vbonus_047":
                             world = "Arendelle";
@@ -718,11 +745,11 @@ namespace KH3Randomizer.Data
                             break;
                         case "Vbonus_048":
                             world = "Arendelle";
-                            description = "(Ice Dragon Heartless)";
+                            description = "(Frost Serpent Heartless)";
                             break;
                         case "Vbonus_049":
                             world = "Arendelle";
-                            description = "(Heartless Forest)";
+                            description = "(Valley of Ice Heartless)";
                             break;
                         case "Vbonus_050":
                             world = "Arendelle";
@@ -733,7 +760,7 @@ namespace KH3Randomizer.Data
                         #region San Fransokyo
                         case "Vbonus_051":
                             world = "San Fransokyo";
-                            description = "(Rock Troll Mini-Boss)";
+                            description = "(Metal Troll Mini-Boss)";
                             break;
                         case "Vbonus_052":
                             world = "San Fransokyo";
@@ -871,19 +898,19 @@ namespace KH3Randomizer.Data
                             break;
                         case "VBonus_Minigame003":
                             world = "Arendelle";
-                            description = "(A-rank Snow Slide)";
+                            description = "(A-rank Frozen Slider)";
                             break;
                         case "VBonus_Minigame004":
                             world = "Arendelle";
-                            description = "(All Treasures Snow Slide)";
+                            description = "(All Treasures Frozen Slider)";
                             break;
                         case "VBonus_Minigame005":
                             world = "San Fransokyo";
-                            description = "(A-rank Flash Tracer 1)";
+                            description = "(A-rank Flash Tracer 1 (Fred))";
                             break;
                         case "VBonus_Minigame006":
                             world = "San Fransokyo";
-                            description = "(A-rank Flash Tracer 2)";
+                            description = "(A-rank Flash Tracer 2 (Go Go))";
                             break;
                         #endregion Mini-Games
 
@@ -959,7 +986,7 @@ namespace KH3Randomizer.Data
 
                         case "VBonus_DLC_015":
                             world = "Re:Mind (End)";
-                            description = "(Replica-Xehanort Boss)";
+                            description = "(Armored Xehanort Boss)";
                             break;
                         #endregion Re:Mind
 

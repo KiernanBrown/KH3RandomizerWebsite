@@ -861,43 +861,43 @@ namespace KH3Randomizer.Data
             switch (input.Replace("\u0000", ""))
             {
                 case "Vbonus_001":
-                    return "After the first battle in the clearing in Olympus";
+                    return "After the first battle in Olympus - Cliff Ascent";
                 case "Vbonus_002":
-                    return "After the Flame Core battle in the Thebes courtyard in Olympus";
+                    return "After the 1st Flame Core battle in Olympus - Thebes: Agora";
                 case "Vbonus_005":
-                    return "After the second Flame Core battle near the plateau in Olympus";
+                    return "After the 2nd Flame Core battle in Olympus - Thebes: Overlook";
                 case "Vbonus_006":
-                    return "After the Flame Core battle in the garden in Olympus";
+                    return "After the 3rd Flame Core battle in Olympus - Thebes: Gardens";
                 case "Vbonus_007":
-                    return "After the timed Heartless battle in Olympus";
+                    return "After the timed Heartless battle in Olympus - Thebes: Alleyway";
                 case "Vbonus_008":
-                    return "After the Rock Troll battle in the Thebes courtyard in Olympus";
+                    return "After the Rock Troll battle in Olympus - Thebes: Agora";
                 case "Vbonus_009":
                     return "After the Water Core(?) battle on the way up mountain in Olympus";
                 case "Vbonus_010":
                     return "After the Rock Titan boss battle in Olympus";
                 case "Vbonus_011":
-                    return "After the Satyr Mob battle in Olympus";
+                    return "After the Satyr Mob battle in Olympus - Realm of the Gods: Courtyard";
                 case "Vbonus_013":
-                    return "After the Wind Titan boss battle in Olympus";
+                    return "After the Tornado Titan boss battle in Olympus";
 
                 case "Vbonus_014":
-                    return "After the Demon Tide battle in the town square in Twilight Town";
+                    return "After the Demon Tide battle in Twilight Town - Tram Common";
                 case "Vbonus_015":
-                    return "After the Power Wild Mob battle in the forest in Twilight Town";
+                    return "After the Powerwild Mob battle in Twilight Town - The Woods";
                 case "Vbonus_016":
-                    return "After the Heartless & Nobody Mob battle outside the mansion in Twilight Town";
+                    return "After the Heartless & Nobody Mob battle in Twilight Town - The Old Mansion";
 
                 case "Vbonus_017":
-                    return "After the Heartless Mob battle in Andy's room in Toy Box";
+                    return "After the Heartless Mob battle in Toy Box - Andy's House";
                 case "Vbonus_018":
-                    return "After the Gigas Heartless Mob battle in Galaxy Toys lobby in Toy Box";
+                    return "After the Gigas Mob battle in Toy Box - Galaxy Toys Main Floor: 1F";
                 case "Vbonus_019":
-                    return "After the Gigas Dragon Heartless Mob battle in Toy Box";
+                    return "After the Supreme Smashes battle in Toy Box - Action Figures";
                 case "Vbonus_020":
-                    return "After the Angelic Amber boss battle in Babies and Toddlers in Toy Box";
+                    return "After the Angelic Amber boss battle in Toy Box - Babies & Toddlers: Dolls";
                 case "Vbonus_021":
-                    return "After the UFO battle outside Play Place in Toy Box";
+                    return "After the UFO battle in Toy Box - Babies & Toddlers: Outdoors";
                 case "Vbonus_022":
                     return "After the Verum Rex: Beat of Lead minigame in Toy Box";
                 case "Vbonus_023":
@@ -905,72 +905,72 @@ namespace KH3Randomizer.Data
 
 
                 case "Vbonus_024":
-                    return "After the Puffball Mob battle in Kingdom of Corona";
+                    return "After the 1st Heartless Mob battle in Kingdom of Corona - Hills";
                 case "Vbonus_025":
-                    return "After the first battle with Rapunzel in Kingdom of Corona";
+                    return "After the 2nd Heartless Mob battle in Kingdom of Corona - Hills";
                 case "Vbonus_026":
-                    return "After the first Reaper Nobody battle in Kingdom of Corona";
+                    return "After the Reapers Nobody battle in Kingdom of Corona - Hills";
                 case "Vbonus_027":
                     return "After the Chaos Carriage Heartless battle in Kingdom of Corona";
                 case "Vbonus_028":
-                    return "After the Reaper Nobody battle in the Castle Town in Kingdom of Corona";
+                    return "After the Reapers Nobody battle in the Castle Town in Kingdom of Corona";
                 case "Vbonus_029":
-                    return "After the Puffball Mob battle on the way to the tower in Kingdom of Corona";
+                    return "After the Heartless Mob battle in Kingdom of Corona - Tower";
                 case "Vbonus_030":
-                    return "After the Grim Guardianess boss battle in Kingdom of Corona";
-                
+                    return "After the Grim Guardianess boss battle in Kingdom of Corona - Tower";
+
                 case "Vbonus_032":
-                    return "After the Unversed battle in the lobby in Monstropolis";
+                    return "After the Unversed battle in Monstropolis - Lobby & Offices";
                 case "Vbonus_033":
-                    return "After the Unversed battle on the scare floor in Monstropolis";
+                    return "After the Unversed battle in Monstropolis - Laugh Floor";
                 case "Vbonus_034":
-                    return "After the battle to make Boo laugh in the door storage in Monstropolis";
+                    return "After the battle to make Boo laugh in in Monstropolis - The Door Vault: Upper Level";
                 case "Vbonus_035":
-                    return "After the Heartless & Unversed battle in the electric fence room in Monstropolis";
+                    return "After the Heartless & Unversed battle in Monstropolis - The Factory: Second Floor";
                 case "Vbonus_036":
-                    return "After the battle to make Boo laugh in the main control room in Monstropolis";
+                    return "After the battle to make Boo laugh in Monstropolis - The Factory: Second Floor";
                 case "Vbonus_037":
-                    return "After the first battle in the flames outside the factory in Monstropolis";
+                    return "After the Heartless & Unversed battle in Monstropolis - The Power Plant: Accessway";
                 case "Vbonus_038":
-                    return "After the second battle in the flames outside the factory in Monstropolis";
+                    return "After the Heartless Mob battle in Monstropolis  - The Power Plant: Tank Yard";
                 case "Vbonus_039":
-                    return "After the Unversed battle in empty tank in Monstropolis";
+                    return "After the Unversed battle in Monstropolis - The Power Plant: Tank Yard";
                 case "Vbonus_040":
-                    return "After the Lump of Horror boss battle in Monstropolis";
+                    return "After the Lump of Horror boss battle in Monstropolis - The Door Vault: Service Area";
 
                 case "Vbonus_041":
                     return "After the Rock Troll battle in Arendelle";
                 case "Vbonus_042":
-                    return "After the first Ninja Nobody battle in the ice labyrinth in Arendelle";
+                    return "After the first Ninja Nobody battle in Arendelle - The Labyrinth of Ice";
                 case "Vbonus_043":
-                    return "After the second Ninja Nobody battle in the ice labyrinth in Arendelle";
+                    return "After the second Ninja Nobody battle in Arendelle - The Labyrinth of Ice";
                 case "Vbonus_044":
-                    return "After the third Ninja Nobody battle in the ice labyrinth in Arendelle";
+                    return "After the third Ninja Nobody battle in Arendelle - The Labyrinth of Ice";
                 case "Vbonus_045":
-                    return "After the fourth Ninja Nobody battle in the ice labyrinth in Arendelle";
+                    return "After the fourth Ninja Nobody battle in Arendelle - The Labyrinth of Ice";
                 case "Vbonus_047":
                     return "After the Marshmallow boss battle in Arendelle";
                 case "Vbonus_048":
-                    return "After the 3 Ice Dragon Heartless battle in Arendelle";
+                    return "After the 3 Frost Serpent Heartless battle in Arendelle";
                 case "Vbonus_049":
-                    return "After the Heartless Mob battle in the forest in Arendelle";
+                    return "After the Heartless Mob battle in Valley of Ice in Arendelle";
                 case "Vbonus_050":
                     return "After the Skoll boss battle in Arendelle";
 
                 case "Vbonus_051":
-                    return "After the Rock Troll battle on the bridge in San Fransokyo";
+                    return "After the Metal Troll battle on the bridge in San Fransokyo";
                 case "Vbonus_052":
                     return "After the meeting Hiro in the garage in San Fransokyo";
                 case "Vbonus_053":
-                    return "After the Heartless Mob battle on the roof in San Fransokyo";
+                    return "After the Heartless Mob battle on the roof in San Fransokyo - The City (Day)";
                 case "Vbonus_054":
-                    return "After the Catastrochorus boss battle in the city in San Fransokyo";
+                    return "After the Catastrochorus boss battle in San Fransokyo - The City (Day)";
                 case "Vbonus_055":
-                    return "After the rescue mission for the Big Hero 6 team in the city in San Fransokyo";
+                    return "After the rescue mission for the Big Hero 6 team in San Fransokyo - The City (Night)";
                 case "Vbonus_056":
-                    return "After the Darkube boss battle in San Fransokyo";
+                    return "After the Darkube boss battle in San Fransokyo - The City (Night)";
                 case "Vbonus_057":
-                    return "After the Dark Baymax boss battle in San Fransokyo";
+                    return "After the Dark Baymax boss battle in San Fransokyo - The City (Day)";
 
                 case "Vbonus_058":
                     return "After catching the Black Pearl in Davy Jones Locker in The Caribbean";
@@ -1023,16 +1023,16 @@ namespace KH3Randomizer.Data
                 case "VBonus_Minigame001":
                     return "After obtaining the first A-rank in Verum Rex: Beat of Lead minigame in Toy Box";
                 case "VBonus_Minigame002":
-                    return "After obtaining the first A-rank in the Festival Dancing minigame in Kingdom of Corona";
+                    return "After obtaining the first A-rank in the Festival Dance minigame in Kingdom of Corona";
                 case "VBonus_Minigame003":
-                    return "After obtaining the first A-rank in the Snow Slide minigame in Arendelle";
+                    return "After obtaining the first A-rank in the Frozen Slider minigame in Arendelle";
                 case "VBonus_Minigame004":
-                    return "After obtaining all the treasures in the Snow Slide minigame in Arendelle";
+                    return "After obtaining all the treasures in the Frozen Slider minigame in Arendelle";
                 case "VBonus_Minigame005":
-                    return "After obtaining the first A-Rank in the Flash Tracer 1 minigame in San Fransokyo";
+                    return "After obtaining the first A-Rank in the Flash Tracer 1 (Fred) minigame in San Fransokyo";
                 case "VBonus_Minigame006":
-                    return "After obtaining the first A-Rank in the Flash Tracer 2 minigame in San Fransokyo";
-                
+                    return "After obtaining the first A-Rank in the Flash Tracer 2 (Go Go) minigame in San Fransokyo";
+
                 case "VBonus_Minigame007":
                     return "After obtaining the first A-Rank in the Cherry Flan minigame in Olympus";
                 case "VBonus_Minigame008":
@@ -1069,17 +1069,18 @@ namespace KH3Randomizer.Data
                     return "After the Shadow Heartless battle in Scala Ad Caelum (Re:Mind)";
                 case "VBonus_DLC_010":
                     return "After the Darkside boss battle in Scala Ad Caelum (Re:Mind)";
-                
+
                 case "VBonus_DLC_011":
                     return "After collecting all of Kairi's heart fragments in Re:Mind";
                 case "VBonus_DLC_012":
-                    return "After the 13 Replicas boss battle as the Guardians of Light in Re:Mind";
+                    return "After the Replica Xehanorts boss battle as the Guardians of Light in Re:Mind";
                 case "VBonus_DLC_013":
-                    return "After the Replicanorts boss battle as King Mickey in Re:Mind";
+                    return "After the Replica Xehanorts boss battle as King Mickey in Re:Mind";
                 case "VBonus_DLC_014":
                     return "After connecting all the keyholes in Re:Mind";
                 case "VBonus_DLC_015":
-                    return "After the Replica-Xehanort boss battle in Re:Mind";
+                    return "After the Armored Xehanort boss battle in Re:Mind";
+
 
                 default:
                     return input;
