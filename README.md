@@ -25,7 +25,7 @@ If you don't already have the KH3 Randomizer + GoA Mod Pack set up, you can find
 * Navigate to your Epic Games Kingdom Hearts 3 installation folder. Once there, you'll want to follow this path: \KINGDOM HEARTS III\Content\Paks which will lead you to your Paks folder. Inside this folder, create a new folder and call it ~mods
 * Place the pakchunk9-GardenOfAssemblageRandomizer_99_P.pak file that you downloaded before into this newly created ~mods folder.
 
-You will also need to make sure that you have the most recent version of the [UnrealPak Tool](https://github.com/allcoolthingsatoneplace/UnrealPakTool/releases/) downloaded. This tool is used to turn the seed you create from this site into a pak file that can be used with KH3.
+You will also need to make sure that you have the most recent version of [unrealpak](http://modderbase.com/showthread.php?tid=834) downloaded. This tool is used to turn the seed you create from this site into a pak file that can be used with KH3.
 
 ## Seed Generation Instructions <a name="instructions"></a>
 1. Choose whatever pools and extras that you want to have active on your seed and continue to the Options page.
