@@ -7,12 +7,16 @@
         <div class="row">
             <div class="kh-input col-md-10">
                 <div class="row">
-                    <div class="col-md-2">
+                    <div class="col-md-1" style="padding-right: 0px;">
                         <label for="seed" style="font-size: 1.3rem; padding: 5px 0px 0px 0px;">Seed Name: </label>
+                    </div>
+                    <div class="col-md-1" style="margin-top: 8px;">
+                        <i class="@(this.isSpoilerChecked ? "clickable-icon bi bi-dice-6" : "hidden-icon bi bi-dice-6")" @onclick="GenerateRandomSeedName"></i>
                     </div>
                     <div class="col-md-6">
                         <input id="seed" name="seed" class="kh-inputfield" @onchange="RandomizeOptions" placeholder="Enter a seed name..." value="@(string.IsNullOrEmpty(this.currentSeed) ? "" : this.currentSeed)" disabled="@(!this.isSpoilerChecked)" />
                     </div>
+
                     <div class="col-md-1" style="margin-top: 8px; float: right;">
                         <Tooltip Text="This is what is used to randomize the items. You can generate a duplicate seed if the same name is used.">
                             <i class="bi bi-question-circle" style="font-size: 1.2rem;"></i>
@@ -26,8 +30,6 @@
                             <input type="checkbox" checked="@(this.isSpoilerChecked)" @onchange="ToggleSpoilerChecked">
                             <span class="slider round"></span>
                         </label>
-
-
                     </div>
                 </div>
             </div>
@@ -47,7 +49,7 @@
     </div>
 
     <button class="btn kh-button" onclick="@BackTo" style="float: left;">Back to Pools...</button>
-    <button class="btn kh-button" onclick="@ContinueTo" style="float: right;">Continue to Hints...</button>
+    <button class="btn kh-button" @onclick="ContinueToHints" style="float: right;">Continue to Hints...</button>
 </div>
 
 @code {
@@ -183,5 +185,44 @@
         {
             StateHasChanged();
         });
+    }
+
+    private async void ContinueToHints()
+    {
+        //this.RandomizerService.SetAvailablePools(this.pools);
+        if (CurrentSeed == null || CurrentSeed == "")
+        {
+            var parameters = new ModalParameters();
+            var options = new ModalOptions { Class = "modal-custom" };
+
+            var unnamedSeedModal = Modal.Show<UnnamedSeedModal>("Unnamed Seed", parameters, options);
+            var result = await unnamedSeedModal.Result;
+
+            if (!result.Cancelled && result.Data != null && result.Data == "User closed modal")
+            {
+                await this.ContinueTo.InvokeAsync("Hints");
+            }
+        }
+        else
+        {
+            await this.ContinueTo.InvokeAsync("Hints");
+        }
+    }
+
+    private void GenerateRandomSeedName()
+    {
+        if (this.isSpoilerChecked)
+        {
+            Random rng = new Random((int)DateTime.UtcNow.Ticks);
+            string seedName = "";
+
+            // Make a 12 digit string for the seed name
+            for (int i = 0; i < 12; i++)
+            {
+                seedName += rng.Next(0, 10).ToString();
+            }
+
+            this.RandomizeOptions(new ChangeEventArgs { Value = seedName });
+        }
     }
 }

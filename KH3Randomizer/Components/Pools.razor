@@ -129,7 +129,7 @@
 
         foreach (var extra in this.extras)
         {
-            extra.Value.Enabled = this.isOn ? extra.Value.DefaultEnabled : false;
+            extra.Value.Enabled = this.isOn;
         }
 
         this.UpdateOptionsText();

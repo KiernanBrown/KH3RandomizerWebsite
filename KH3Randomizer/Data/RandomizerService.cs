@@ -394,6 +394,12 @@ namespace KH3Randomizer.Data
                                 if (id == "m_PlayerSora" && !availableOptions[dataTableEnum.DataTableEnumToKey()][value.Key.CategoryToKey(dataTableEnum)])
                                     continue;
 
+                                // Remove Ultima if it's not enabled
+                                if (value.Value.ValueIdToDisplay().Contains("Ultima Weapon") && !availableExtras["Allow Ultima"].Enabled)
+                                {
+                                    continue;
+                                }
+
                                 swapList.Add(value.Value);
                             }
                         }
@@ -402,6 +408,12 @@ namespace KH3Randomizer.Data
 
                         randomizedOptions.Add(dataTableEnum, copy);
                     }
+                }
+
+                // Add Ultima if it's enabled and Synthesis Items aren't
+                if (availableExtras["Allow Ultima"].Enabled && !availableOptions.ContainsKey("Synthesis Items") || (availableExtras["Allow Ultima"].Enabled && availableOptions.ContainsKey("Synthesis Items") && !availableOptions["Synthesis Items"]["Synthesis Items"]))
+                {
+                    swapList.Add("WEP_KEYBLADE_SO_015\u0000");
                 }
 
                 // Shuffle these around with our rng created from the seed

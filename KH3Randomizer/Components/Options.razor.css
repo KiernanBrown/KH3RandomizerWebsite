@@ -175,3 +175,20 @@ input:checked + .slider:before {
 .spoiler-overlay {
     filter: blur(6px);
 }
+
+/* Transparent icons to hide them */
+.hidden-icon {
+    transition: opacity 0.4s;
+    opacity: 0;
+    font-size: 1.2rem;
+    float: right;
+}
+
+/* Clickable icons have a pointer when hovering */
+.clickable-icon {
+    transition: opacity 0.4s;
+    cursor: pointer;
+    opacity: 1.0;
+    font-size: 1.2rem;
+    float: right;
+}
