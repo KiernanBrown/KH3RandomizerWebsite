@@ -10,6 +10,7 @@ Some major changes that this fork makes compared to the original site can be see
 ## Table of Contents
 * [Setup](#setup)
 * [Seed Generation Instructions](#instructions)
+* [Planned Changes](#changes)
 * [Bug Reports](#bugs)
 
 ## Setup <a name="setup"></a>
@@ -44,5 +45,8 @@ You will also need to make sure that you have the most recent version of [unreal
 7. Place your seed's pak file that you just made into your ~mods folder in your Kingdom Hearts 3 installation folder.
 8. You're all set to go!
 
+## Planned Changes <a name="changes"></a>
+I have a [public trello that you can find here](https://trello.com/b/jGIE27bG) which details any changes/features that are currently planned. If you have any other ideas that you think would be good additions, feel free to let me know by sending me a message on Discord (SwiftShadow#5004)!
+
 ## Bug Reports <a name="bugs"></a>
-If you experience any issues with this project, feel free to let me know by sending me a message on Discord (SwiftShadow#5004). Please note that this side of the project is only focused on the website end and seed generation, so if you have a general bug report that relates to the Randomizer + GoA mod itself, it would be best to go through [this bug report form.](https://forms.gle/bN8YFXhxRUwWSWbp7) If your bug report does pertain to a seed that you were trying, it would be extremely helpful if you can include the pak file for your seed and the version number of the website that you used (you can find this on the bottom left hand corner of any page). Thank you so much for taking the time to test this out and I appreciate any feedback you can provide! 
+Any currently known bugs with the seed generator will be kept both on [the issues page of this GitHub](https://github.com/KiernanBrown/KH3RandomizerWebsite/issues) and [the bugs section of my trello](https://trello.com/b/jGIE27bG). If you experience any other issues with this project, feel free to let me know by sending me a message on Discord (SwiftShadow#5004) and I'll add them to these lists. If your bug report does pertain to a seed that you were trying, it would be extremely helpful if you can include the pak file for your seed and the version number of the website that you used (you can find this on the bottom left hand corner of any page). Please note that this side of the project is only focused on the website end and seed generation, so if you have a general bug report that relates to the Randomizer + GoA mod itself, it would be best to go through [this bug report form](https://forms.gle/bN8YFXhxRUwWSWbp7) so that WaterKH and CriticPerfect are made aware of it as well! Thank you so much for taking the time to test this out and I appreciate any feedback you can provide! 
