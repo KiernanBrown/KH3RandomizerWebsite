@@ -1121,7 +1121,7 @@ namespace KH3Randomizer.Data
                     swapLogic = true;
                 }
                 else if (category == DataTableEnum.Event && (subCategory != "EVENT_007" || subCategory != "TresUIMobilePortalDataAsset" ||
-                    subCategory != "EVENT_KEYBLADE_007" || subCategory != "EVENT_REPORT_009a" || subCategory != "EVENT_REPORT_009b"))
+                    subCategory != "EVENT_KEYBLADE_007" || subCategory != "EVENT_KEYBLADE_010" || subCategory != "EVENT_REPORT_009a" || subCategory != "EVENT_REPORT_009b"))
                 {
                     swapLogic = true;
                 }
