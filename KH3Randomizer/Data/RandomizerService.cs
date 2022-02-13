@@ -340,8 +340,17 @@ namespace KH3Randomizer.Data
             var defaultOptions = JsonSerializer.Deserialize<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>>(streamReader.ReadToEnd());
 
             List<string> proofs = new List<string>() { "Proof of Promises", "Proof of Times Past", "Proof of Fantasy" };
-            List<string> importantChecks = new List<string>(proofs);
-            importantChecks.Add("Ability: Pole Spin");
+            List<string> importantChecks = new List<string>();
+            if (availableOptions.ContainsKey(DataTableEnum.Event.DataTableEnumToKey()))
+            {
+                importantChecks.AddRange(proofs);
+            }
+            if (availableOptions.ContainsKey(DataTableEnum.ChrInit.DataTableEnumToKey())) 
+            {
+                // && availableOptions[DataTableEnum.ChrInit.DataTableEnumToKey()][]
+                importantChecks.Add("Ability: Pole Spin");
+            }
+
             List<string> foundChecks = new List<string>();
 
             while (foundChecks.Count != importantChecks.Count)
@@ -908,24 +917,27 @@ namespace KH3Randomizer.Data
                 // Replace checks
                 foreach (var replacePool in replacements)
                 {
-                    if (replacements[replacePool.Key].Count == 0 && replacePool.Key != DataTableEnum.LevelUp)
+                    if (availableOptions.ContainsKey(replacePool.Key.DataTableEnumToKey()))
                     {
-                        this.ReplaceChecks(replacePool.Key, ref randomizedOptions, availableOptions);
-                    }
-                    else if (replacePool.Value.Count > 0 && replacePool.Key != DataTableEnum.LevelUp)
-                    {
-                        foreach (var subPool in replacePool.Value)
+                        if (replacements[replacePool.Key].Count == 0 && replacePool.Key != DataTableEnum.LevelUp)
                         {
-                           if (replacements[replacePool.Key].Count > 0 && replacements[replacePool.Key][subPool.Key])
+                            this.ReplaceChecks(replacePool.Key, ref randomizedOptions, availableOptions);
+                        }
+                        else if (replacePool.Value.Count > 0 && replacePool.Key != DataTableEnum.LevelUp)
+                        {
+                            foreach (var subPool in replacePool.Value)
                             {
-                                this.ReplaceChecks(replacePool.Key, subPool.Key, ref randomizedOptions, availableOptions);
-                                if (subPool.Key == "Yozora")
+                                if (replacements[replacePool.Key].Count > 0 && replacements[replacePool.Key][subPool.Key])
                                 {
-                                    ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, "EVENT_KEYITEM_005");
+                                    this.ReplaceChecks(replacePool.Key, subPool.Key, ref randomizedOptions, availableOptions);
+                                    if (subPool.Key == "Yozora")
+                                    {
+                                        ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, "EVENT_KEYITEM_005");
+                                    }
                                 }
                             }
                         }
-                    }
+                    } 
                 }
                 
                 // Replace Arendelle Small Chest 13 and Synthesis Item 80 (IS_79)
@@ -933,10 +945,7 @@ namespace KH3Randomizer.Data
                 // The synth item is the photo mission for Demon Tower, which isn't possible without battlegates 
                 // Remove these when the chest and battlegates are functioning properly
                 ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.TreasureFZ, "FZ_SBOX_013");
-                if (availableOptions.ContainsKey(DataTableEnum.SynthesisItem.DataTableEnumToKey()))
-                {
-                    ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.SynthesisItem, "IS_79");
-                }
+                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.SynthesisItem, "IS_79");
 
                 // Replace beat the game on crit and the two moogle proof checks
                 // These need to be randomized in for proofs and oblivion/oathkeeper, but they are not accessible
@@ -1879,6 +1888,10 @@ namespace KH3Randomizer.Data
         /// </summary>
         public void ReplaceCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, DataTableEnum dataTableEnum, KeyValuePair<string, Dictionary<string, string>> check)
         {
+            if (!availableOptions.ContainsKey(dataTableEnum.DataTableEnumToKey()))
+            {
+                return;
+            }
             foreach (var bonus in check.Value)
             {
                 if (!bonus.Value.Contains("NONE"))
@@ -1893,6 +1906,10 @@ namespace KH3Randomizer.Data
         /// </summary>
         public void ReplaceCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, DataTableEnum dataTableEnum, string key)
         {
+            if (!availableOptions.ContainsKey(dataTableEnum.DataTableEnumToKey()))
+            {
+                return;
+            }
             var checkToReplace = randomizedOptions[dataTableEnum].FirstOrDefault(check => check.Key.Contains(key));
             if (checkToReplace.Key != null)
             {

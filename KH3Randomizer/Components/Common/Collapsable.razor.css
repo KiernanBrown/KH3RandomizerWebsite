@@ -12,8 +12,8 @@
 }
 
 .collapsable-panel {
-    padding: 2vh 30px;
-    max-height: 65vh;
+    padding: 40px 30px;
+    max-height: 750px;
     background-color: #F2F2F2;
     /*border: 1px solid #d5d1d1;*/
     border-top: unset;
