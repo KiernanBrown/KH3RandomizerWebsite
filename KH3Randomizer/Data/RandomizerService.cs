@@ -20,7 +20,7 @@ namespace KH3Randomizer.Data
         private List<string> blockedChecks = new List<string>();
         private List<string> keyAbilities = new List<string>()
         {
-            "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin", 
+            "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin", "Ability: Glide",
             "Ability: Second Chance", "Ability: Withstand Combo"
         };
 
@@ -341,6 +341,7 @@ namespace KH3Randomizer.Data
 
             List<string> proofs = new List<string>() { "Proof of Promises", "Proof of Times Past", "Proof of Fantasy" };
             List<string> importantChecks = new List<string>(proofs);
+            importantChecks.Add("Ability: Pole Spin");
             List<string> foundChecks = new List<string>();
 
             while (foundChecks.Count != importantChecks.Count)
@@ -712,7 +713,6 @@ namespace KH3Randomizer.Data
                 {
                     if (extra.Key.Contains("Key Abilities") && availableOptions.ContainsKey(extra.Value.RequiredPool) && !extra.Value.Enabled)
                     {
-                        var c1 = DataTableEnum.EquipItem.DataTableEnumToKey();
                         dataTablesToCheck.Add(extra.Value.RequiredPool.KeyToDataTableEnum(), new Dictionary<string, bool> { });
                     }
                 }
@@ -739,6 +739,28 @@ namespace KH3Randomizer.Data
                             }
                         }
                     }
+                }
+
+                // Account for Treasures that have None in them
+                if (availableOptions.ContainsKey("Treasures"))
+                {
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureBT, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureBX, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureCA, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureEW, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureFZ, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureHE, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureKG, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureMI, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureRA, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureTS, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureTT, ref randomizedOptions, availableOptions);
+                }
+
+                // Account for Events that have None in them
+                if (availableOptions.ContainsKey("Events"))
+                {
+                    this.RemoveNoneFromEvents(DataTableEnum.Event, ref randomizedOptions, availableOptions);
                 }
 
                 // Account for Pole Spin not being locked behind Frozen
@@ -794,9 +816,9 @@ namespace KH3Randomizer.Data
 
                                     while (swapLogic) // Is there a way we can use a var instead of true?
                                     {
-                                        var tempOptions = randomizedOptions.Where(x => x.Key == DataTableEnum.EquipItem || x.Key == DataTableEnum.WeaponEnhance || x.Key == DataTableEnum.TreasureFZ);
+                                        var tempOptions = randomizedOptions.Where(x => x.Key != DataTableEnum.EquipItem && x.Key != DataTableEnum.WeaponEnhance && x.Key != DataTableEnum.TreasureFZ);
 
-                                        var swapDataTable = randomizedOptions.ElementAt(rng.Next(0, tempOptions.Count()));
+                                        var swapDataTable = tempOptions.ElementAt(rng.Next(0, tempOptions.Count()));
                                         var swapCategory = swapDataTable.Value.ElementAt(rng.Next(0, randomizedOptions[swapDataTable.Key].Count));
 
                                         if (swapCategory.Key == "EVENT_KEYBLADE_012" || swapCategory.Key == "EVENT_KEYBLADE_013" || !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
@@ -809,6 +831,14 @@ namespace KH3Randomizer.Data
                                             if (swapCategory.Key == "m_PlayerSora" && !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapData.Key.CategoryToKey(swapDataTable.Key)])
                                                 continue;
 
+                                            // Stop Pole Spin from being a crit ability
+                                            if (swapDataTable.Key == DataTableEnum.ChrInit && swapData.Key.CategoryToKey(swapDataTable.Key).Contains("Critical"))
+                                                continue;
+
+                                            // Stop Pole Spin from being on levels past 20
+                                            if (swapDataTable.Key == DataTableEnum.LevelUp && (int.Parse(swapCategory.Key) > 20 || swapData.Key != "TypeA"))
+                                                continue;
+
                                             randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = option.Value;
                                             randomizedOptions[category.Key][subCategory.Key][option.Key] = swapData.Value;
 
@@ -819,28 +849,6 @@ namespace KH3Randomizer.Data
                             }
                         }
                     }
-                }
-
-                // Account for Treasures that have None in them
-                if (availableOptions.ContainsKey("Treasures"))
-                {
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureBT, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureBX, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureCA, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureEW, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureFZ, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureHE, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureKG, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureMI, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureRA, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureTS, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureTT, ref randomizedOptions, availableOptions);
-                }
-
-                // Account for Events that have None in them
-                if (availableOptions.ContainsKey("Events"))
-                {
-                    this.RemoveNoneFromEvents(DataTableEnum.Event, ref randomizedOptions, availableOptions);
                 }
 
                 // Account for Levelup Data
