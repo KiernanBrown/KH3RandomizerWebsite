@@ -1,17 +1,61 @@
-# KH3 Randomizer Website
-This is an Electron.NET project that is used to generate seeds for the KH3 Randomizer! This project is a fork of WaterKH's original [KH3 Randomizer Website](https://github.com/WaterKH/KH3RandomizerWebsite) and is meant to be used with WaterKH and CriticPerfect's [KH3 Randomizer + GoA Mod Pack.](https://github.com/Water-and-Critic/KH3-Rando-GoA)
-
-Some major changes that this fork makes compared to the original site can be seen as follows:
-* Added additional extras that can be chosen on the Pools page. These will be expanded upon in the future and they aim to provide more options for people to play the randomizer in a way they enjoy most.
-* By default, this project will replace all checks that are on Reports and Level Ups. This means that any bonuses that would normally be placed on either battlegates or level up rewards will instead be put elsewhere in the pool.
-  * Battlegates are inaccessible until you beat the game, so any checks that would be placed there are currently inaccessible. If you want to have hints, having Secret Reports actually be in the pool is necessary, so this change allows for them to be obtainable without potentially locking checks behind inaccessible battlegates.
-  * Level Ups also seem to be working inconsistently at this point in time and have a chance to not give you items/magic/abilities for a seed, so with this setup, Level Ups will only give you their normal stat bonuses instead of potentially locking you out of important checks.
+# KH3 Randomizer Seed Generator
+This is an Electron.NET project that is used to generate seeds for the KH3 Randomizer! This project is a fork of WaterKH's original [KH3 Randomizer Website](https://github.com/WaterKH/KH3RandomizerWebsite) and is meant to be used with WaterKH and CriticPerfect's [KH3 Randomizer + GoA Mod Pack.](https://github.com/Water-and-Critic/KH3-Rando-GoA) This fork heavily relies on the existing infrastructure that was set up by Water and the changes that are being made are more focused on the seed generation aspect of things. The goal of this fork is to provide more options during seed generation that people can experiment with, and these changes should make their way to the main branch of the project at some point in the future.
 
 ## Table of Contents
+* [Changes](#changes)
 * [Setup](#setup)
 * [Seed Generation Instructions](#instructions)
 * [Planned Changes](#changes)
 * [Bug Reports](#bugs)
+
+## Changes <a name="changes"></a>
+All of the major changes that have been made on this fork can be seen below:
+### <b>Extras</b>
+Added the following extras that can be chosen on the Pools page. These will be expanded upon in the future and they aim to provide more options for people to play the randomizer in a way they enjoy most.
+<details><summary>All Extras</summary>
+
+<ul>
+  <li>Balanced Bonuses: Evenly distributes checks across bonuses.</li>
+  <li>Pole Spin Start: Ensures you start with Pole Spin as a starting ability.</li>
+  <li>Synthesizable Proofs: Allows you to toggle whether Proofs can appear in the Moogle Synthesis menu.</li>
+  <li>Allow Ultima: Either puts Ultima Weapon into the pool or removes it from the pool regardless of if Synthesis Items are enabled.</li>
+  <li>Allow Key Abilities on Fullcourse/Equippables/Weapon Upgrades: Allows/disallows key abilities from being on abilities gained from fullcourse meals/equippables/weapon upgrades. These extras work with a predefined Key Abilities list that contains the following Abilities:</li>
+  <ul>
+    <li>Block</li>
+    <li>Dodge Roll</li>
+    <li>Air Slide</li>
+    <li>Glide</li>
+    <li>Pole Spin</li>
+    <li>Second Chance</li>
+    <li>Withstand Combo</li>
+  </ul>
+</ul>
+</details>
+
+### <b>Replacements</b>
+By default, this project will replace all checks that are on Reports, Level Ups, and Yozora. This means that any bonuses that would normally be placed on either battlegates or level up rewards will instead be put elsewhere in the pool.
+<details><summary>More Details</summary>
+
+<ul>
+  <li>Battlegates are inaccessible until you beat the game, so any checks that would be placed there are currently inaccessible. If you want to have hints, having Secret Reports actually be in the pool is necessary, so this change allows for them to be obtainable without potentially locking checks behind inaccessible battlegates.</li>
+  <li>Level Ups also seem to be working inconsistently at this point in time and have a chance to not give you items/magic/abilities for a seed, so with this setup, Level Ups will only give you their normal stat bonuses instead of potentially locking you out of important checks.</li>
+  <li>Defeating Yozora ends up taking away your Proof of Fantasy, so replacing his rewards stops him from being a necessary fight for the time being.</li>
+  <li>Arendelle Small Chest 13 is also being replaced since it seems to have an issue with givint its rewards 100% of the time. This will be disabled once whatever is going on there is fixed.</li>
+</ul>
+</details>
+
+### <b>Other Changes</b>
+* Hints for checks that are on Moogle Photo Missions are a bit more descriptive now.
+* Reports should no longer hint themselves.
+* Added a button on the Options page that will generate a random seed name for you.
+* Added a warning for users trying to continue from the Options page to the Hints page without entering a seed name.
+* Changed references to magic in verbose hints to be in the form of [base spell] element instead of base spell/ra/ga.
+  * For example: The three fire checks will now all be referred to as Fire Element instead of Fire, Fira, and Firaga.
+
+### <b>Bug Fixes</b>
+* Fixed an issue where seed randomization could hang when trying to place Pole Spin in a valid spot.
+* Fixed some Bonus descriptions, missing synthesized armor names, and accessory mistranslations.
+* Fixed an issue where seeds could be missing a proof.
 
 ## Setup <a name="setup"></a>
 - Download the newest version of this project from [the releases page here.](https://github.com/KiernanBrown/KH3RandomizerWebsite/releases)
