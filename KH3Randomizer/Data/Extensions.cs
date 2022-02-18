@@ -75,7 +75,17 @@ namespace KH3Randomizer.Data
             else if (inputSplit[0] == "IW")
                 return $"Level {(int.Parse(inputSplit[1]) % 10) + 1}";
             else if (inputSplit[0] == "IS")
-                return $"Synthesis Item {int.Parse(inputSplit[1]) + 1}";
+            {
+                int synthNum = int.Parse(inputSplit[1]);
+                if (synthNum < 61)
+                    return $"Synthesis Item {synthNum + 1}";
+                else if (synthNum < 81)
+                {
+                    return GetPhotoMission(synthNum);
+                }
+                else
+                    return $"Synthesis Item {synthNum - 19}";
+            }
 
             switch (input.Replace("\u0000", ""))
             {
@@ -2266,7 +2276,18 @@ namespace KH3Randomizer.Data
 
                     break;
                 case DataTableEnum.SynthesisItem:
-                    return "Synthesis Items";
+                    var synthSplit = category.Split('_');
+                    if (synthSplit.Length > 1)
+                    {
+                        var synthSplitCategory = int.Parse(synthSplit[1]);
+                        if (synthSplitCategory > 60 && synthSplitCategory < 81)
+                            return "Photo Mission Items";
+                        else
+                            return "Synthesis Items";
+                    }
+                    else
+                        return "Synthesis Items";
+
 
                 case DataTableEnum.TreasureHE:
                     return "Olympus";
@@ -2296,6 +2317,77 @@ namespace KH3Randomizer.Data
             }
 
             return "";
+        }
+
+        public static string GetPhotoMission(this int synthItemNum)
+        {
+            string photoMission = "";
+            switch (synthItemNum)
+            {
+                case 61:
+                    photoMission = "Flame Core Photo Mission";
+                    break;
+                case 62:
+                    photoMission = "Water Core Photo Mission";
+                    break;
+                case 63:
+                    photoMission = "Toy Box Beasts & Bugs Photo Mission";
+                    break;
+                case 64:
+                    photoMission = "Rapunzel's Tower Photo Mission";
+                    break;
+                case 65:
+                    photoMission = "Chief Puff Photo Mission";
+                    break;
+                case 66:
+                    photoMission = "CDA Agent Photo Mission";
+                    break;
+                case 67:
+                    photoMission = "Hercules Statue Photo Mission";
+                    break;
+                case 68:
+                    photoMission = "Thoroughfare Festival Photo Mission";
+                    break;
+                case 69:
+                    photoMission = "Secluded Forge Fire Photo Mission";
+                    break;
+                case 70:
+                    photoMission = "Ice Palace Photo Mission";
+                    break;
+                case 71:
+                    photoMission = "Zeus Photo Mission";
+                    break;
+                case 72:
+                    photoMission = "Olaf Photo Mission";
+                    break;
+                case 73:
+                    photoMission = "San Fransokyo Evening Star Photo Mission";
+                    break;
+                case 74:
+                    photoMission = "Twilight Town Tram Photo Mission";
+                    break;
+                case 75:
+                    photoMission = "Port Royal Waterfall Photo Mission";
+                    break;
+                case 76:
+                    photoMission = "San Fransokyo Fish-Shaped Turbines Photo Mission";
+                    break;
+                case 77:
+                    photoMission = "Toy Box Cactaur Photo Mission";
+                    break;
+                case 78:
+                    photoMission = "100 Acre Wood Scarecrow Photo Mission";
+                    break;
+                case 79:
+                    photoMission = "Demon Tower Photo Mission";
+                    break;
+                case 80:
+                    photoMission = "All Party Members Photo Mission";
+                    break;
+                default:
+                    break;
+            }
+            return photoMission;
         }
     }
 }

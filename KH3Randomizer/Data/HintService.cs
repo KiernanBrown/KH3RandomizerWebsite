@@ -257,8 +257,7 @@ namespace KH3Randomizer.Data
                         {
                             if (hintType.Equals("Verbose"))
                             {
-                                string photoMissionDescription = GetPhotoMission(synthItemNum);
-                                hintLocation = $"in the Moogle Synthesis Shop{photoMissionDescription}.";
+                                hintLocation = $"in the Moogle Synthesis Shop ({synthItemNum.GetPhotoMission()}).";
                             }
 
                             else if (hintType.Equals("Vague"))
@@ -477,77 +476,6 @@ namespace KH3Randomizer.Data
                 default:
                     return "UNKNOWN";
             }
-        }
-
-        public string GetPhotoMission(int synthItemNum)
-        {
-            string photoMissionDescription = "";
-            switch (synthItemNum)
-            {
-                case 61:
-                    photoMissionDescription = " (Flame Core Photo Mission)";
-                    break;
-                case 62:
-                    photoMissionDescription = " (Water Core Photo Mission)";
-                    break;
-                case 63:
-                    photoMissionDescription = " (Toy Box Beasts & Bugs Photo Mission)";
-                    break;
-                case 64:
-                    photoMissionDescription = " (Rapunzel's Tower Photo Mission)";
-                    break;
-                case 65:
-                    photoMissionDescription = " (Chief Puff Photo Mission)";
-                    break;
-                case 66:
-                    photoMissionDescription = " (CDA Agent Photo Mission)";
-                    break;
-                case 67:
-                    photoMissionDescription = " (Hercules Statue Photo Mission)";
-                    break;
-                case 68:
-                    photoMissionDescription = " (Thoroughfare Festival Photo Mission)";
-                    break;
-                case 69:
-                    photoMissionDescription = " (Secluded Forge Fire Photo Mission)";
-                    break;
-                case 70:
-                    photoMissionDescription = " (Ice Palace Photo Mission)";
-                    break;
-                case 71:
-                    photoMissionDescription = " (Zeus Photo Mission)";
-                    break;
-                case 72:
-                    photoMissionDescription = " (Olaf Photo Mission)";
-                    break;
-                case 73:
-                    photoMissionDescription = " (San Fransokyo Evening Star Photo Mission)";
-                    break;
-                case 74:
-                    photoMissionDescription = " (Twilight Town Tram Photo Mission)";
-                    break;
-                case 75:
-                    photoMissionDescription = " (Port Royal Waterfall Photo Mission)";
-                    break;
-                case 76:
-                    photoMissionDescription = " (San Fransokyo Fish-Shaped Turbines Photo Mission)";
-                    break;
-                case 77:
-                    photoMissionDescription = " (Toy Box Cactaur Photo Mission)";
-                    break;
-                case 78:
-                    photoMissionDescription = " (100 Acre Wood Scarecrow Photo Mission)";
-                    break;
-                case 79:
-                    photoMissionDescription = " (Demon Tower Photo Mission)";
-                    break;
-                case 80:
-                    photoMissionDescription = " (All Party Members Photo Mission)";
-                    break;
-                default:
-                    break;
-            }
-            return photoMissionDescription;
         }
 
         public Tuple<string, string> GetLocation(DataTableEnum category, string subCategory)

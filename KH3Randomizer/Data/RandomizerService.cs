@@ -140,7 +140,7 @@ namespace KH3Randomizer.Data
                     case "Synthesis Items":
                         availableOptions.Add("Synthesis Items", new Dictionary<string, bool>
                         {
-                            { "Synthesis Items", true }
+                            { "Synthesis Items", true }, { "Photo Mission Items", true }
                         });
 
                         randomizedOptions.Add(DataTableEnum.SynthesisItem, defaultOptions[DataTableEnum.SynthesisItem]);
@@ -664,10 +664,12 @@ namespace KH3Randomizer.Data
                 }
 
                 // Account for Synth Data (It will always needs items)
-                if (availableOptions.ContainsKey("Synthesis Items") && availableOptions["Synthesis Items"]["Synthesis Items"])
+                if (availableOptions.ContainsKey("Synthesis Items") && (availableOptions["Synthesis Items"]["Synthesis Items"] || availableOptions["Synthesis Items"]["Photo Mission Items"]))
                 {
                     foreach (var synthesisItem in randomizedOptions[DataTableEnum.SynthesisItem])
                     {
+                        if (!availableOptions["Synthesis Items"][synthesisItem.Key.CategoryToKey(DataTableEnum.SynthesisItem)])
+                            continue;
                         foreach (var subSynthesisItem in synthesisItem.Value)
                         {
                             if (!subSynthesisItem.Value.Contains("::"))
@@ -962,8 +964,17 @@ namespace KH3Randomizer.Data
                 // The chest appears to be bugged and doesn't give any rewards?
                 // The synth item is the photo mission for Demon Tower, which isn't possible without battlegates 
                 // Remove these when the chest and battlegates are functioning properly (chest is being reenabled for more testing)
-                //ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.TreasureFZ, "FZ_SBOX_013");
-                ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.SynthesisItem, "IS_79");
+                /*
+                if (availableOptions.ContainsKey("Treasures") && availableOptions["Treasures"]["Arendelle"])
+                {
+                    ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.TreasureFZ, "FZ_SBOX_013");
+                }
+                */
+                if (availableOptions.ContainsKey("Synthesis Items") && availableOptions["Synthesis Items"]["Photo Mission Items"])
+                {
+                    ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.SynthesisItem, "IS_79");
+                }
+
 
                 // Replace beat the game on crit and the two moogle proof checks
                 // These need to be randomized in for proofs and oblivion/oathkeeper, but they are not accessible
@@ -1444,7 +1455,9 @@ namespace KH3Randomizer.Data
                 var synthesisItemSubsets = new Dictionary<string, Dictionary<string, string>>();
 
                 if (currentSelection.Equals("Synthesis Items"))
-                    synthesisItemSubsets = randomizedOptions[DataTableEnum.SynthesisItem].ToDictionary(x => x.Key, y => y.Value);
+                    synthesisItemSubsets = randomizedOptions[DataTableEnum.SynthesisItem].Where(x => x.Key.CategoryToKey(DataTableEnum.SynthesisItem).Contains("Synthesis Items")).ToDictionary(x => x.Key, y => y.Value);
+                else if (currentSelection.Equals("Photo Mission Items"))
+                    synthesisItemSubsets = randomizedOptions[DataTableEnum.SynthesisItem].Where(x => x.Key.CategoryToKey(DataTableEnum.SynthesisItem).Contains("Photo Mission Items")).ToDictionary(x => x.Key, y => y.Value);
 
                 foreach (var tempSynthesisItem in synthesisItemSubsets)
                 {
