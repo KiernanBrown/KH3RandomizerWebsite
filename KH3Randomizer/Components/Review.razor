@@ -115,6 +115,7 @@
     [Parameter] public Dictionary<string, bool> AvailablePools { get; set; }
     [Parameter] public Dictionary<string, Extra> AvailableExtras { get; set; }
     [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableOptions { get; set; }
+    [Parameter] public Dictionary<DataTableEnum, Dictionary<string, bool>> Replacements { get; set; }
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
     [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableHints { get; set; }
     [Parameter] public string HintSelectionType { get; set; }
@@ -122,6 +123,7 @@
     private List<string> pools { get; set; } = new();
     private List<string> extras { get; set; } = new();
     private Dictionary<string, string> options { get; set; } = new();
+    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements { get; set; }
     private List<string> modifications { get; set; } = new();
 
     private Dictionary<string, string> poolColors = new();
@@ -132,6 +134,7 @@
     {
         this.pools = this.AvailablePools.Where(x => x.Value).Select(x => x.Key).ToList();
         this.extras = this.AvailableExtras.Where(x => x.Value.Enabled).Select(x => x.Key).ToList();
+        this.replacements = this.Replacements;
         this.options = new();
 
         foreach (var pool in pools)
@@ -200,7 +203,7 @@
 
         hintResults = this.HintService.GenerateHints(this.CurrentSeed, this.RandomizedOptions, this.HintSelectionType, hints);
 
-        var file = this.RandomizerService.GenerateRandomizerSeed(this.CurrentSeed, this.RandomizedOptions, this.AvailablePools, this.AvailableExtras, this.AvailableOptions, this.Modifications, hintResults);
+        var file = this.RandomizerService.GenerateRandomizerSeed(this.CurrentSeed, this.RandomizedOptions, this.AvailablePools, this.AvailableExtras, this.AvailableOptions, this.Replacements, this.Modifications, hintResults);
 
         js.InvokeAsync<object>("saveAsFile", "pakchunk99-randomizer-" + this.CurrentSeed + ".zip", Convert.ToBase64String(file));
         // js.InvokeAsync<object>("saveAsFile", "pakchunk99-randomizer-" + this.CurrentSeed + ".pak", Convert.ToBase64String(files[0]));

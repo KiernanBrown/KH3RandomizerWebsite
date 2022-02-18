@@ -14,11 +14,21 @@
                UpdateAvailableExtras="@(extras => UpdateAvailableExtras(extras))">
         </Pools>
     }
+    else if (this.currentSection == "SubPools")
+    {
+        <SubPools ContinueTo="@(() => ContinueTo("Options"))" BackTo="@(() => BackTo("Pools"))" AvailablePools="@this.availablePools"
+               AvailableExtras="@this.availableExtras"
+               AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions"
+               Replacements="@this.replacements"
+               UpdateAvailableOptions="@(options => UpdateAvailableOptions(options))" UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))"
+               UpdateReplacements="@(replacements => UpdateReplacements(replacements))">
+        </SubPools>
+    }
     else if (this.currentSection == "Options")
     {
-        <Options ContinueTo="@(() => ContinueTo("Hints"))" BackTo="@(() => BackTo("Pools"))"
+        <Options ContinueTo="@(() => ContinueTo("Hints"))" BackTo="@(() => BackTo("SubPools"))"
                  UpdateAvailableOptions="@(options => UpdateAvailableOptions(options))" UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateModifications="@((option1, option2) => UpdateModifications(option1, option2))"
-                 CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Modifications="@this.modifications" IsGoingBack="this.isGoingBack">
+                 CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements" Modifications="@this.modifications" IsGoingBack="this.isGoingBack">
         </Options>
     }
     else if (this.currentSection == "Hints")
@@ -28,7 +38,7 @@
     else if (this.currentSection == "Review")
     {
         <Review BackTo="@(() => BackTo("Hints"))" CurrentSeed="@this.CurrentSeed" RandomizedOptions="@this.randomizedOptions"
-                AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" Modifications="@this.modifications"
+                AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" Replacements="@this.replacements" Modifications="@this.modifications"
                 AvailableHints="@this.availableHints" HintSelectionType="@this.hintSelectionType"></Review>
     }
 </div>
@@ -55,6 +65,28 @@
         { "Key Abilities Upgrades", new Extra("Allow Key Abilities on Weapon Upgrades", true, "Weapon Upgrades", "Allows Key Abilities to be randomized onto Weapon Upgrades.") },
         { "Key Abilities Equippables", new Extra("Allow Key Abilities on Equippables", true, "Equippables", "Allows Key Abilities to be randomized onto Equippables.") },
         { "Allow Ultima", new Extra("Allow Ultima", true, "", "Allows Ultima to be randomized into the pool.") }
+    };
+
+    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>()
+    {
+        { DataTableEnum.Event, new Dictionary<string, bool>
+            { { "Keyblades", false }, { "Heartbinders", false }, { "Reports", true }, { "Data Battles", false }, { "Yozora", true }, { "Complete All Classic Kingdom Minigames", true }, { "Complete All Bistro Recipes", true } }
+        },
+        { DataTableEnum.LuckyMark, new Dictionary<string, bool>
+            { { "Lucky Emblems", false } }
+        },
+        { DataTableEnum.VBonus, new Dictionary<string, bool>
+            { { "Flantastic Seven", false }, { "Minigames", false } }
+        },
+        { DataTableEnum.FullcourseAbility, new Dictionary<string, bool>
+            { { "Abilities", false } }
+        },
+        { DataTableEnum.LevelUp, new Dictionary<string, bool>
+            { { "Levels", true } }
+        },
+        { DataTableEnum.WeaponEnhance, new Dictionary<string, bool>
+            { { "Weapon Upgrades", false } }
+        }
     };
 
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
@@ -144,15 +176,6 @@
         });
     }
 
-    public void UpdateAvailableOptions(Dictionary<string, Dictionary<string, bool>> availableOptions)
-    {
-        this.availableOptions = availableOptions;
-
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
-    }
 
     public void UpdateAvailableExtras(Dictionary<string, Extra> availableExtras)
     {
@@ -164,9 +187,29 @@
         });
     }
 
+    public void UpdateAvailableOptions(Dictionary<string, Dictionary<string, bool>> availableOptions)
+    {
+        this.availableOptions = availableOptions;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
     public void UpdateRandomizedOptions(Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions)
     {
         this.randomizedOptions = randomizedOptions;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    public void UpdateReplacements(Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
+    {
+        this.replacements = replacements;
 
         InvokeAsync(() =>
         {

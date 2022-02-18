@@ -97,7 +97,7 @@
 
         <div style="margin-top: 25px;"></div>
 
-        <OptionsSubsection UpdateAvailableExtras="@this.UpdateAvailableExtras" UpdateAvailableOptions="@this.UpdateAvailableOptions" UpdateRandomizedOptions="@this.UpdateRandomizedOptions" UpdateModifications="@this.UpdateModifications"
+        <OptionsSubsection UpdateAvailableOptions="@this.UpdateAvailableOptions" UpdateRandomizedOptions="@this.UpdateRandomizedOptions" UpdateModifications="@this.UpdateModifications"
                            CurrentSeed="@this.currentSeed" AvailableExtras="@this.availableExtras" AvailableOptions="@this.tempOptions" RandomizedOptions="@this.randomizedOptions"
                            ActionType="Modal" SpoilerChecked="false" />
     </div>
@@ -126,6 +126,7 @@
     private Dictionary<string, Extra> availableExtras = new();
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
+    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new();
 
     private Dictionary<string, Dictionary<string, bool>> tempOptions = new();
 
@@ -148,7 +149,7 @@
 
         this.UpdateCurrentSeed(this.currentSeed);
 
-        this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions);
+        this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements);
 
         this.UpdateAvailableOptions(this.availableOptions);
         this.UpdateRandomizedOptions(this.randomizedOptions);
@@ -235,6 +236,16 @@
         });
     }
 
+    public void UpdateReplacements(Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
+    {
+        this.replacements = replacements;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
     public void UpdateModifications(Option initalOption, Option swapOption)
     {
         if (initalOption == null && swapOption == null)
@@ -263,8 +274,9 @@
             this.UpdateAvailableExtras(spoilerLogFile.AvailableExtras);
             this.UpdateAvailableOptions(spoilerLogFile.AvailableOptions);
             this.UpdateCurrentSeed(spoilerLogFile.SeedName);
+            this.UpdateReplacements(spoilerLogFile.Replacements);
 
-            this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions);
+            this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements);
 
             foreach (var item in spoilerLogFile.Modifications)
             {

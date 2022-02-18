@@ -213,11 +213,12 @@ namespace KH3Randomizer.Data
                     break;
                 case DataTableEnum.Event:
                     var eventLocation = this.GetLocation(category, subCategory);
+                    string preposition = subCategory.Contains("KEYITEM_003") ? "on" : "in";
 
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in {eventLocation.Item1} {eventLocation.Item2}.";
+                        hintLocation = $"{preposition} {eventLocation.Item1} {eventLocation.Item2}.";
                     else if (hintType.Equals("Vague"))
-                        hintLocation = $"in {eventLocation.Item1}.";
+                        hintLocation = $"{preposition} {eventLocation.Item1}.";
 
                     break;
                 case DataTableEnum.EquipItem:
@@ -874,7 +875,7 @@ namespace KH3Randomizer.Data
 
                         #region The Final World
                         case "Vbonus_082":
-                            world = "The Final World (Darkside Boss)";
+                            world = "The Final World (Tutorial Before Olympus)";
                             description = "(Darkside Boss)";
                             break;
                         case "Vbonus_083":
@@ -1171,6 +1172,10 @@ namespace KH3Randomizer.Data
                         case "EVENT_KEYITEM_002":
                             world = "San Fransokyo";
                             description = "(Hiro's Garage First Visit)";
+                            break;
+                        case "EVENT_KEYITEM_003":
+                            world = "Lucky Emblem Milestones";
+                            description = "(Find All Lucky Emblems)";
                             break;
                         case "EVENT_KEYITEM_005":
                         case "EVENT_YOZORA_001":

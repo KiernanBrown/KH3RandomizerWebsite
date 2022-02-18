@@ -71,7 +71,7 @@
         </div>
     </div>
 
-    <button class="btn kh-button" @onclick="ContinueToOptions" style="float: right;">Continue to Options...</button>
+    <button class="btn kh-button" @onclick="ContinueToOptions" style="float: right;">Continue to Sub Pools...</button>
 </div>
 
 @code {
@@ -153,7 +153,7 @@
         this.UpdateAvailablePools.InvokeAsync(this.pools);
         this.UpdateAvailableExtras.InvokeAsync(this.extras);
 
-        this.ContinueTo.InvokeAsync("Options");
+        this.ContinueTo.InvokeAsync("SubPools");
     }
 
     private void HandlePoolValueChange(ChangeEventArgs value, KeyValuePair<string, bool> pool)

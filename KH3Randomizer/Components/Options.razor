@@ -43,12 +43,12 @@
 
         <br />
 
-        <OptionsSubsection UpdateAvailableExtras="@this.UpdateAvailableExtras" UpdateAvailableOptions="@this.UpdateAvailableOptions" UpdateRandomizedOptions="@this.UpdateRandomizedOptions" UpdateModifications="@this.UpdateModifications"
-                           CurrentSeed="@this.currentSeed" AvailableExtras="@this.availableExtras" AvailableOptions="@this.tempOptions" RandomizedOptions="@this.randomizedOptions"
+        <OptionsSubsection UpdateAvailableOptions="@this.UpdateAvailableOptions" UpdateRandomizedOptions="@this.UpdateRandomizedOptions" UpdateModifications="@this.UpdateModifications"
+                           CurrentSeed="@this.currentSeed" AvailableExtras="@this.availableExtras" AvailableOptions="@this.tempOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements"
                            SpoilerChecked="@this.isSpoilerChecked" />
     </div>
 
-    <button class="btn kh-button" onclick="@BackTo" style="float: left;">Back to Pools...</button>
+    <button class="btn kh-button" onclick="@BackTo" style="float: left;">Back to Sub Pools...</button>
     <button class="btn kh-button" @onclick="ContinueToHints" style="float: right;">Continue to Hints...</button>
 </div>
 
@@ -59,7 +59,6 @@
     [Parameter] public EventCallback<string> ContinueTo { get; set; }
 
     [Parameter] public EventCallback<string> UpdateCurrentSeed { get; set; }
-    [Parameter] public EventCallback<Dictionary<string, Extra>> UpdateAvailableExtras { get; set; }
     [Parameter] public EventCallback<Dictionary<string, Dictionary<string, bool>>> UpdateAvailableOptions { get; set; }
     [Parameter] public EventCallback<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>> UpdateRandomizedOptions { get; set; }
     [Parameter] public Action<Option, Option> UpdateModifications { get; set; }
@@ -69,6 +68,7 @@
     [Parameter] public Dictionary<string, Extra> AvailableExtras { get; set; }
     [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableOptions { get; set; }
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> RandomizedOptions { get; set; }
+    [Parameter] public Dictionary<DataTableEnum, Dictionary<string, bool>> Replacements { get; set; }
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
     [Parameter] public bool IsGoingBack { get; set; }
 
@@ -79,6 +79,7 @@
     private Dictionary<string, Extra> availableExtras = new();
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
+    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements { get; set; }
     private List<Tuple<Option, Option>> modifications = new();
 
     private string currentSelection = "";
@@ -91,11 +92,11 @@
         this.availableExtras = this.AvailableExtras;
         this.availableOptions = this.AvailableOptions;
         this.randomizedOptions = this.RandomizedOptions;
+        this.replacements = this.Replacements;
         this.modifications = this.Modifications;
 
         this.tempOptions = this.RandomizerService.GetAvailableOptions(this.AvailablePools, ref this.availableOptions, ref this.randomizedOptions, this.IsGoingBack);
         //this.tempRandomizedItems = this.RandomizerService.GetRandomizedItems();
-        this.UpdateAvailableExtras.InvokeAsync(this.availableExtras);
         this.UpdateAvailableOptions.InvokeAsync(this.availableOptions);
         this.UpdateRandomizedOptions.InvokeAsync(this.randomizedOptions);
 
@@ -111,6 +112,7 @@
         this.availableExtras = this.AvailableExtras;
         this.availableOptions = this.AvailableOptions;
         this.randomizedOptions = this.RandomizedOptions;
+        this.replacements = this.Replacements;
         this.modifications = this.Modifications;
 
         base.OnParametersSet();
@@ -138,9 +140,8 @@
         this.UpdateCurrentSeed.InvokeAsync(this.currentSeed);
 
         //this.RandomizerService.SetAvailableOptions(this.tempOptions);
-        this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions);
+        this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements);
 
-        this.UpdateAvailableExtras.InvokeAsync(this.availableExtras);
         this.UpdateAvailableOptions.InvokeAsync(this.availableOptions);
         this.UpdateRandomizedOptions.InvokeAsync(this.randomizedOptions);
 

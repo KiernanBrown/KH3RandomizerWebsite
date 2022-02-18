@@ -12,11 +12,6 @@ namespace KH3Randomizer.Data
     public class RandomizerService
     {
         private Random rng;
-        private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>() 
-        {
-            { DataTableEnum.Event, new Dictionary<string, bool> { { "Reports", true }, { "Yozora", true } } },
-            { DataTableEnum.LevelUp, new Dictionary<string, bool> { { "Levels", true } } }
-        };
         private List<string> blockedChecks = new List<string>();
         private List<string> keyAbilities = new List<string>()
         {
@@ -329,7 +324,7 @@ namespace KH3Randomizer.Data
         }
 
         public void RandomizeItems(string seed, Dictionary<string, Extra> availableExtras, ref Dictionary<string, Dictionary<string, bool>> availableOptions,
-                                   ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions)
+                                   ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
         {
             var hash = seed.StringToSeed();
             rng = new Random((int)hash);
@@ -732,7 +727,10 @@ namespace KH3Randomizer.Data
                     blockedDataTables.Add(DataTableEnum.ChrInit, new Dictionary<string, bool> { { "Critical Abilities", true } });
                     foreach (var dt in dataTablesToCheck)
                     {
-                        blockedDataTables.Add(dt.Key, dt.Value);
+                        if (!blockedDataTables.ContainsKey(dt.Key))
+                        {
+                            blockedDataTables.Add(dt.Key, dt.Value);
+                        }
                     }
 
                     foreach (var category in randomizedOptions)
@@ -910,7 +908,7 @@ namespace KH3Randomizer.Data
                     // Replace Level Ups
                     if (replacements.ContainsKey(DataTableEnum.LevelUp) && replacements[DataTableEnum.LevelUp].GetValueOrDefault("Levels"))
                     {
-                        this.ReplaceChecks(DataTableEnum.LevelUp, ref randomizedOptions, availableOptions);
+                        this.ReplaceChecks(DataTableEnum.LevelUp, ref randomizedOptions, availableOptions, replacements);
                     }
                 }
 
@@ -921,7 +919,19 @@ namespace KH3Randomizer.Data
                     {
                         if (replacements[replacePool.Key].Count == 0 && replacePool.Key != DataTableEnum.LevelUp)
                         {
-                            this.ReplaceChecks(replacePool.Key, ref randomizedOptions, availableOptions);
+                            this.ReplaceChecks(replacePool.Key, ref randomizedOptions, availableOptions, replacements);
+                        }
+                        else if (replacePool.Key == DataTableEnum.WeaponEnhance && replacements[replacePool.Key]["Weapon Upgrades"])
+                        {
+                            // Replace each check in WeaponEnhance
+                            // WeaponEnhance has subcategories for each keyblade, but we want to replace them all for now
+                            foreach (var check in randomizedOptions[DataTableEnum.WeaponEnhance])
+                            {
+                                if (availableOptions["Weapon Upgrades"][check.Key.CategoryToKey(DataTableEnum.WeaponEnhance)])
+                                {
+                                    this.ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.WeaponEnhance, check.Key);
+                                }
+                            }
                         }
                         else if (replacePool.Value.Count > 0 && replacePool.Key != DataTableEnum.LevelUp)
                         {
@@ -929,10 +939,18 @@ namespace KH3Randomizer.Data
                             {
                                 if (replacements[replacePool.Key].Count > 0 && replacements[replacePool.Key][subPool.Key])
                                 {
-                                    this.ReplaceChecks(replacePool.Key, subPool.Key, ref randomizedOptions, availableOptions);
+                                    this.ReplaceChecks(replacePool.Key, subPool.Key, ref randomizedOptions, availableOptions, replacements);
                                     if (subPool.Key == "Yozora")
                                     {
-                                        ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, "EVENT_KEYITEM_005");
+                                        ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYITEM_005");
+                                    }
+                                    if (subPool.Key == "Complete All Classic Kingdom Minigames" && !replacements[DataTableEnum.Event]["Keyblades"])
+                                    {
+                                        ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "TresUIMobilePortalDataAsset");
+                                    }
+                                    if (subPool.Key == "Complete All Bistro Recipes" && !replacements[DataTableEnum.Event]["Keyblades"])
+                                    {
+                                        ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYBLADE_010");
                                     }
                                 }
                             }
@@ -943,22 +961,22 @@ namespace KH3Randomizer.Data
                 // Replace Arendelle Small Chest 13 and Synthesis Item 80 (IS_79)
                 // The chest appears to be bugged and doesn't give any rewards?
                 // The synth item is the photo mission for Demon Tower, which isn't possible without battlegates 
-                // Remove these when the chest and battlegates are functioning properly
-                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.TreasureFZ, "FZ_SBOX_013");
-                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.SynthesisItem, "IS_79");
+                // Remove these when the chest and battlegates are functioning properly (chest is being reenabled for more testing)
+                //ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.TreasureFZ, "FZ_SBOX_013");
+                ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.SynthesisItem, "IS_79");
 
                 // Replace beat the game on crit and the two moogle proof checks
                 // These need to be randomized in for proofs and oblivion/oathkeeper, but they are not accessible
                 // Oblivion/Oathkeeper were being checked in multiple places before, but it might be easier to just pull them out here
-                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, "EVENT_KEYITEM_004");
-                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, "EVENT_KEYBLADE_012");
-                ReplaceCheck(ref randomizedOptions, availableOptions, DataTableEnum.Event, "EVENT_KEYBLADE_013");
+                ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYITEM_004");
+                ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYBLADE_012");
+                ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYBLADE_013");
 
                 // Clean VBonuses
                 // This will reassign VBonuses such that each VBonus will have at least one check on it
                 if (availableExtras["Balanced Bonuses"].Enabled)
                 {
-                    this.CleanVBonuses(DataTableEnum.VBonus, ref randomizedOptions, availableOptions);
+                    this.CleanVBonuses(DataTableEnum.VBonus, ref randomizedOptions, availableOptions, replacements);
                 }
 
                 // Add back the default values that were not included
@@ -1001,12 +1019,12 @@ namespace KH3Randomizer.Data
         }
 
         public byte[] GenerateRandomizerSeed(string currentSeed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
-                                             Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, List<Tuple<Option, Option>> modifications, byte[] hints)
+                                             Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<Tuple<Option, Option>> modifications, byte[] hints)
         {
             var dataTableManager = new UE4DataTableInterpreter.DataTableManager();
             var dataTables = dataTableManager.RandomizeDataTables(randomizedOptions);
 
-            var zipArchive = this.CreateZipArchive(dataTables, currentSeed, availablePools, availableExtras, availableOptions, modifications, hints);
+            var zipArchive = this.CreateZipArchive(dataTables, currentSeed, availablePools, availableExtras, availableOptions, replacements, modifications, hints);
 
             return zipArchive;
 
@@ -1029,7 +1047,7 @@ namespace KH3Randomizer.Data
             //return new List<byte[]> { this.GetFile(@$".\Seeds\pakchunk99-randomizer-{currentSeed}.pak"), this.GetFile(@$"{pakPath}\SpoilerLog.json") };
         }
 
-        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, List<Tuple<Option, Option>> modifications, byte[] hints)
+        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<Tuple<Option, Option>> modifications, byte[] hints)
         {
             var zipPath = @$".\Seeds\pakchunk99-randomizer-{randomSeed}\pakchunk99-randomizer-{randomSeed}.zip";
 
@@ -1063,6 +1081,7 @@ namespace KH3Randomizer.Data
                     AvailablePools = availablePools,
                     AvailableExtras = availableExtras,
                     AvailableOptions = availableOptions,
+                    Replacements = replacements,
                     Modifications = jsonTupleList
                 };
 
@@ -1720,16 +1739,16 @@ namespace KH3Randomizer.Data
         /// VBonuses. This ensures that you don't encounter empty VBonuses and that these
         /// checks are spread evenly (at least as much so as the amount of checks allows).
         /// </summary>
-        public void CleanVBonuses(DataTableEnum dataTableEnum, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
+        public void CleanVBonuses(DataTableEnum dataTableEnum, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
         {
             if (!randomizedOptions.ContainsKey(dataTableEnum))
                 return;
 
             // First, empty all VBonuses to get their options in a list
-            var storedOptions = EmptyAvailableVBonuses(dataTableEnum, ref randomizedOptions, availableOptions);
+            var storedOptions = EmptyAvailableVBonuses(dataTableEnum, ref randomizedOptions, availableOptions, replacements);
 
             // Create a Dictionary of the VBonuses that are being used
-            var availableVBonuses = GetAvailableVBonuses(ref randomizedOptions, availableOptions);
+            var availableVBonuses = GetAvailableVBonuses(ref randomizedOptions, availableOptions, replacements);
 
             // Copy the Dictionary we made previously
             var pendingVBonuses = new Dictionary<string, Dictionary<string, string>>(availableVBonuses);
@@ -1791,10 +1810,10 @@ namespace KH3Randomizer.Data
         /// which can be used later for reassignment.
         /// </summary>
         /// <returns>List of strings for all of the checks that were removed from VBonuses</returns>
-        public List<string> EmptyAvailableVBonuses(DataTableEnum dataTableEnum, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
+        public List<string> EmptyAvailableVBonuses(DataTableEnum dataTableEnum, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
         {
             var removedChecks = new List<string>();
-            var availableVBonuses = GetAvailableVBonuses(ref randomizedOptions, availableOptions);
+            var availableVBonuses = GetAvailableVBonuses(ref randomizedOptions, availableOptions, replacements);
 
             foreach (var bonus in availableVBonuses)
             {
@@ -1831,7 +1850,7 @@ namespace KH3Randomizer.Data
         /// Reevaluate this later and see if this can be done in a better way.
         /// </summary>
         /// <returns>Dictionary of all the VBonuses for the given availableOptions</returns>
-        public Dictionary<string, Dictionary<string, string>> GetAvailableVBonuses(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
+        public Dictionary<string, Dictionary<string, string>> GetAvailableVBonuses(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
         {
             List<string> minigameBonusKeys = new List<string>() { "VBonus_Minigame001", "VBonus_Minigame002", "VBonus_Minigame003", "VBonus_Minigame004", "VBonus_Minigame005", "VBonus_Minigame006" };
             List<string> flanBonusKeys = new List<string>() { "VBonus_Minigame007", "VBonus_Minigame008", "VBonus_Minigame009", "VBonus_Minigame010", "VBonus_Minigame011", "VBonus_Minigame012", "VBonus_Minigame013" };
@@ -1840,6 +1859,11 @@ namespace KH3Randomizer.Data
             Dictionary<string, Dictionary<string, string>> availableVBonuses = new Dictionary<string, Dictionary<string, string>>();
             foreach (var bonus in randomizedOptions[DataTableEnum.VBonus])
             {
+                if (replacements[DataTableEnum.VBonus].ContainsKey(bonus.Key.CategoryToKey(DataTableEnum.VBonus)) && replacements[DataTableEnum.VBonus][bonus.Key.CategoryToKey(DataTableEnum.VBonus)])
+                {
+                    continue;
+                }
+
                 if ((availableOptions["Bonuses"]["Minigames"] && minigameBonusKeys.Contains(bonus.Key)) ||
                     (availableOptions["Bonuses"]["Flantastic Seven"] && flanBonusKeys.Contains(bonus.Key)) ||
                     (availableOptions["Bonuses"]["VBonus"] && !minigameBonusKeys.Contains(bonus.Key) && !flanBonusKeys.Contains(bonus.Key) && bonus.Value.Count > 0)
@@ -1855,21 +1879,21 @@ namespace KH3Randomizer.Data
         /// <summary>
         /// Method that updates all checks for a DataTableEnum with none.
         /// </summary>
-        public void ReplaceChecks(DataTableEnum dataTableEnum, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
+        public void ReplaceChecks(DataTableEnum dataTableEnum, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
         {
             if (!randomizedOptions.ContainsKey(dataTableEnum))
                 return;
 
             foreach (var check in randomizedOptions[dataTableEnum])
             {
-                ReplaceCheck(ref randomizedOptions, availableOptions, dataTableEnum, check);
+                ReplaceCheck(ref randomizedOptions, availableOptions, dataTableEnum, check, replacements);
             }
         }
 
         /// <summary>
         /// Method that updates all checks for a DataTableEnum's subCategory with none.
         /// </summary>
-        public void ReplaceChecks(DataTableEnum dataTableEnum, string subCategory, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions)
+        public void ReplaceChecks(DataTableEnum dataTableEnum, string subCategory, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
         {
             if (!randomizedOptions.ContainsKey(dataTableEnum))
                 return;
@@ -1878,15 +1902,15 @@ namespace KH3Randomizer.Data
             {
                 if (check.Key.CategoryToKey(dataTableEnum) == subCategory)
                 {
-                    ReplaceCheck(ref randomizedOptions, availableOptions, dataTableEnum, check);
-                } 
+                    ReplaceCheck(ref randomizedOptions, availableOptions, dataTableEnum, check, replacements);
+                }
             }
         }
 
         /// <summary>
         /// Method that updates a check with none.
         /// </summary>
-        public void ReplaceCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, DataTableEnum dataTableEnum, KeyValuePair<string, Dictionary<string, string>> check)
+        public void ReplaceCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, DataTableEnum dataTableEnum, KeyValuePair<string, Dictionary<string, string>> check, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
         {
             if (!availableOptions.ContainsKey(dataTableEnum.DataTableEnumToKey()))
             {
@@ -1904,7 +1928,7 @@ namespace KH3Randomizer.Data
         /// <summary>
         /// Method that uses the above method to replace a check given a DataTableEnum and a string to look for
         /// </summary>
-        public void ReplaceCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, DataTableEnum dataTableEnum, string key)
+        public void ReplaceCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, DataTableEnum dataTableEnum, string key)
         {
             if (!availableOptions.ContainsKey(dataTableEnum.DataTableEnumToKey()))
             {
@@ -1913,7 +1937,7 @@ namespace KH3Randomizer.Data
             var checkToReplace = randomizedOptions[dataTableEnum].FirstOrDefault(check => check.Key.Contains(key));
             if (checkToReplace.Key != null)
             {
-                ReplaceCheck(ref randomizedOptions, availableOptions, dataTableEnum, checkToReplace);
+                ReplaceCheck(ref randomizedOptions, availableOptions, dataTableEnum, checkToReplace, replacements);
                 blockedChecks.Add(checkToReplace.Key);
             }
         }
