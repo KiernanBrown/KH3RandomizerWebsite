@@ -750,28 +750,6 @@ namespace KH3Randomizer.Data
                     }
                 }
 
-                // Account for Treasures that have None in them
-                if (availableOptions.ContainsKey("Treasures"))
-                {
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureBT, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureBX, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureCA, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureEW, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureFZ, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureHE, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureKG, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureMI, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureRA, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureTS, ref randomizedOptions, availableOptions);
-                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureTT, ref randomizedOptions, availableOptions);
-                }
-
-                // Account for Events that have None in them
-                if (availableOptions.ContainsKey("Events"))
-                {
-                    this.RemoveNoneFromEvents(DataTableEnum.Event, ref randomizedOptions, availableOptions);
-                }
-
                 // Account for Pole Spin not being locked behind Frozen
 
                 // List of places it can't be
@@ -823,9 +801,27 @@ namespace KH3Randomizer.Data
                                 {
                                     var swapLogic = this.IsPoleSpinDisallowed(category.Key, subCategory.Key);
 
+                                    if (!availableExtras["Key Abilities Fullcourse"].Enabled)
+                                    {
+                                        swapLogic = true;
+                                    }
+
                                     while (swapLogic) // Is there a way we can use a var instead of true?
                                     {
                                         var tempOptions = randomizedOptions.Where(x => x.Key != DataTableEnum.EquipItem && x.Key != DataTableEnum.WeaponEnhance && x.Key != DataTableEnum.TreasureFZ);
+
+                                        if (!availableExtras["Key Abilities Fullcourse"].Enabled)
+                                        {
+                                            tempOptions = tempOptions.Where(x => x.Key != DataTableEnum.FullcourseAbility);
+                                        }
+                                        if (!availableExtras["Key Abilities Upgrades"].Enabled)
+                                        {
+                                            tempOptions = tempOptions.Where(x => x.Key != DataTableEnum.WeaponEnhance);
+                                        }
+                                        if (!availableExtras["Key Abilities Equippables"].Enabled)
+                                        {
+                                            tempOptions = tempOptions.Where(x => x.Key != DataTableEnum.EquipItem);
+                                        }
 
                                         var swapDataTable = tempOptions.ElementAt(rng.Next(0, tempOptions.Count()));
                                         var swapCategory = swapDataTable.Value.ElementAt(rng.Next(0, randomizedOptions[swapDataTable.Key].Count));
@@ -833,9 +829,11 @@ namespace KH3Randomizer.Data
                                         if (swapCategory.Key == "EVENT_KEYBLADE_012" || swapCategory.Key == "EVENT_KEYBLADE_013" || !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
                                             continue;
 
-                                        if (!this.IsPoleSpinDisallowed(swapDataTable.Key, swapCategory.Key) && swapCategory.Value.Where(x => x.Value.Contains("ETresAbilityKind::")).Count() > 0)
+                                        var poleSpinLocations = swapCategory.Value.Where(x => x.Value.Contains("ETresAbilityKind::") || x.Value.Contains("NONE"));
+
+                                        if (!this.IsPoleSpinDisallowed(swapDataTable.Key, swapCategory.Key) && poleSpinLocations.Count() > 0)
                                         {
-                                            var swapData = swapCategory.Value.Where(x => x.Value.Contains("ETresAbilityKind::")).ElementAt(rng.Next(0, swapCategory.Value.Where(x => x.Value.Contains("ETresAbilityKind::")).Count()));
+                                            var swapData = poleSpinLocations.ElementAt(rng.Next(0, poleSpinLocations.Count()));
 
                                             if (swapCategory.Key == "m_PlayerSora" && !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapData.Key.CategoryToKey(swapDataTable.Key)])
                                                 continue;
@@ -858,6 +856,28 @@ namespace KH3Randomizer.Data
                             }
                         }
                     }
+                }
+
+                // Account for Treasures that have None in them
+                if (availableOptions.ContainsKey("Treasures"))
+                {
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureBT, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureBX, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureCA, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureEW, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureFZ, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureHE, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureKG, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureMI, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureRA, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureTS, ref randomizedOptions, availableOptions);
+                    this.RemoveNoneFromTreasure(DataTableEnum.TreasureTT, ref randomizedOptions, availableOptions);
+                }
+
+                // Account for Events that have None in them
+                if (availableOptions.ContainsKey("Events"))
+                {
+                    this.RemoveNoneFromEvents(DataTableEnum.Event, ref randomizedOptions, availableOptions);
                 }
 
                 // Account for Levelup Data
@@ -1146,7 +1166,8 @@ namespace KH3Randomizer.Data
         {
             bool swapLogic;
 
-            if (category != DataTableEnum.TreasureFZ && category != DataTableEnum.EquipItem && category != DataTableEnum.WeaponEnhance)
+            if (category != DataTableEnum.TreasureFZ && category != DataTableEnum.EquipItem && category != DataTableEnum.WeaponEnhance 
+                && category != DataTableEnum.TreasureKG && category != DataTableEnum.TreasureEW && category != DataTableEnum.TreasureBT && category != DataTableEnum.VBonus)
             {
                 if ((category == DataTableEnum.LevelUp || category == DataTableEnum.LuckyMark) && int.Parse(subCategory) <= 20)
                 {
