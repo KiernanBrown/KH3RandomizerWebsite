@@ -335,15 +335,23 @@ namespace KH3Randomizer.Data
             var defaultOptions = JsonSerializer.Deserialize<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>>(streamReader.ReadToEnd());
 
             List<string> proofs = new List<string>() { "Proof of Promises", "Proof of Times Past", "Proof of Fantasy" };
+            List<string> reports = new List<string>() { "Secret Report 1", "Secret Report 2", "Secret Report 3", "Secret Report 4", "Secret Report 5", "Secret Report 6", "Secret Report 7", "Secret Report 8", "Secret Report 9", "Secret Report 10", "Secret Report 11", "Secret Report 12", "Secret Report 13" };
+            List<string> links = new List<string>() { "Dream Heartbinder", "Pixel Heartbinder", "\'Ohana Heartbinder", "Pride Heartbinder", "Ocean Heartbinder" };
+            List<string> magics = new List<string>() { "Magic: Fire", "Magic: Fire", "Magic: Fire", "Magic: Blizzard", "Magic: Blizzard", "Magic: Blizzard", "Magic: Thunder", "Magic: Thunder", "Magic: Thunder", "Magic: Cure", "Magic: Cure", "Magic: Cure", "Magic: Aero", "Magic: Aero", "Magic: Aero", "Magic: Water", "Magic: Water", "Magic: Water" };
             List<string> importantChecks = new List<string>();
             if (availableOptions.ContainsKey(DataTableEnum.Event.DataTableEnumToKey()))
             {
+                importantChecks.AddRange(reports);
+                importantChecks.AddRange(links);
                 importantChecks.AddRange(proofs);
             }
             if (availableOptions.ContainsKey(DataTableEnum.ChrInit.DataTableEnumToKey())) 
             {
-                // && availableOptions[DataTableEnum.ChrInit.DataTableEnumToKey()][]
                 importantChecks.Add("Ability: Pole Spin");
+            }
+            if (availableOptions.ContainsKey(DataTableEnum.VBonus.DataTableEnumToKey()))
+            {
+                importantChecks.AddRange(magics);
             }
 
             List<string> foundChecks = new List<string>();
@@ -1028,6 +1036,7 @@ namespace KH3Randomizer.Data
                 }
 
                 // Do one more pass through to make sure that important checks are in the pool
+                // This might not be necessary, but it can't hurt to check
                 foreach (var option in randomizedOptions)
                 {
                     foreach (var reward in option.Value)
