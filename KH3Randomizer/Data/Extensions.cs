@@ -2228,12 +2228,59 @@ namespace KH3Randomizer.Data
                 case DataTableEnum.LuckyMark:
                     return "Lucky Emblems";
                 case DataTableEnum.VBonus:
-                    if (!category.Contains("Minigame"))
-                        return "VBonus";
+                    if (category.ToLower().Contains("vbonus") && !category.Contains("Minigame"))
+                    {
+                        var bonusSplit = category.Split('_');
+                        var bonusCategory = 0;
+                        if (bonusSplit.Length == 2)
+                        {
+                            bonusCategory = int.Parse(bonusSplit[1]);
+                            if (bonusCategory < 14)
+                                return "Olympus VBonus";
+                            else if (bonusCategory < 17)
+                                return "Twilight Town VBonus";
+                            else if (bonusCategory < 24)
+                                return "Toy Box VBonus";
+                            else if (bonusCategory < 31)
+                                return "Kingdom of Corona VBonus";
+                            else if (bonusCategory < 41)
+                                return "Monstropolis VBonus";
+                            else if (bonusCategory < 51)
+                                return "Arendelle VBonus";
+                            else if (bonusCategory < 58)
+                                return "San Fransokyo VBonus";
+                            else if (bonusCategory < 67)
+                                return "The Caribbean VBonus";
+                            else if (bonusCategory < 68)
+                                return "The Dark World VBonus";
+                            else if (bonusCategory < 77)
+                                return "Keyblade Graveyard VBonus";
+                            else if (bonusCategory < 85)
+                                return "The Final World VBonus";
+                        }
+                        else if (bonusSplit.Length == 3)
+                        {
+                            bonusCategory = int.Parse(bonusSplit[2]);
+                            if (bonusCategory < 9)
+                                return "Re:Mind Keyblade Graveyard VBonus";
+                            else
+                                return "Scala Ad Caelum VBonus";
+                        }
+                        else
+                        {
+                            Console.WriteLine();
+                        }
+                    }
+                        
                     else if (category.Contains("Minigame") && int.Parse(category[^3..]) >= 7)
                         return "Flantastic Seven";
                     else if (category.Contains("Minigame") && int.Parse(category[^3..]) < 7)
                         return "Minigames";
+
+                    else
+                    {
+                        Console.WriteLine();
+                    }
 
                     break;
                 case DataTableEnum.WeaponEnhance:

@@ -90,7 +90,11 @@ namespace KH3Randomizer.Data
                     case "Bonuses":
                         availableOptions.Add("Bonuses", new Dictionary<string, bool>
                         {
-                            { "VBonus", true }, { "Flantastic Seven", true }, { "Minigames", true }
+                            { "Olympus VBonus", true }, { "Twilight Town VBonus", true }, { "Toy Box VBonus", true },
+                            { "Kingdom of Corona VBonus", true }, { "Monstropolis VBonus", true }, { "Arendelle VBonus", true }, 
+                            { "San Fransokyo VBonus", true }, { "The Caribbean VBonus", true }, { "The Dark World VBonus", true }, 
+                            { "Keyblade Graveyard VBonus", true }, { "The Final World VBonus", true }, { "Re:Mind Keyblade Graveyard VBonus", true }, 
+                            { "Scala Ad Caelum VBonus", true }, { "Flantastic Seven", true }, { "Minigames", true }
                         });
                         
                         randomizedOptions.Add(DataTableEnum.VBonus, defaultOptions[DataTableEnum.VBonus]);
@@ -1176,21 +1180,21 @@ namespace KH3Randomizer.Data
             bool swapLogic;
 
             if (category != DataTableEnum.TreasureFZ && category != DataTableEnum.EquipItem && category != DataTableEnum.WeaponEnhance 
-                && category != DataTableEnum.TreasureKG && category != DataTableEnum.TreasureEW && category != DataTableEnum.TreasureBT && category != DataTableEnum.VBonus)
+                && category != DataTableEnum.TreasureKG && category != DataTableEnum.TreasureEW && category != DataTableEnum.TreasureBT)
             {
-                if ((category == DataTableEnum.LevelUp || category == DataTableEnum.LuckyMark) && int.Parse(subCategory) <= 20)
+                if ((category == DataTableEnum.LevelUp || category == DataTableEnum.LuckyMark) && int.Parse(subCategory) >= 20)
                 {
                     swapLogic = true;
                 }
-                else if (category == DataTableEnum.VBonus && (subCategory != "Vbonus_041" || subCategory != "Vbonus_042" || subCategory != "Vbonus_043" ||
-                    subCategory != "Vbonus_044" || subCategory != "Vbonus_045" || subCategory != "Vbonus_046" || subCategory != "Vbonus_047" ||
-                    subCategory != "Vbonus_048" || subCategory != "Vbonus_049" || subCategory != "Vbonus_050" ||
-                    subCategory != "VBonus_Minigame003" || subCategory != "VBonus_Minigame004" || subCategory != "VBonus_Minigame005"))
+                else if (category == DataTableEnum.VBonus && (subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("Arendelle VBonus") ||
+                    subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("Keyblade Graveyard VBonus") || subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("The Final World VBonus") ||
+                    subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("Re:Mind Keyblade Graveyard VBonus") || subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("Scala Ad Caelum VBonus") ||
+                    subCategory == "VBonus_Minigame003" || subCategory == "VBonus_Minigame004" || subCategory == "VBonus_Minigame005"))
                 {
                     swapLogic = true;
                 }
-                else if (category == DataTableEnum.Event && (subCategory != "EVENT_007" || subCategory != "TresUIMobilePortalDataAsset" ||
-                    subCategory != "EVENT_KEYBLADE_007" || subCategory != "EVENT_KEYBLADE_010" || subCategory != "EVENT_REPORT_009a" || subCategory != "EVENT_REPORT_009b"))
+                else if (category == DataTableEnum.Event && (subCategory == "EVENT_007" || subCategory == "TresUIMobilePortalDataAsset" ||
+                    subCategory == "EVENT_KEYBLADE_007" || subCategory == "EVENT_KEYBLADE_010" || subCategory == "EVENT_REPORT_009a" || subCategory == "EVENT_REPORT_009b"))
                 {
                     swapLogic = true;
                 }
@@ -1317,9 +1321,9 @@ namespace KH3Randomizer.Data
 
                     var bonusSubsets = new Dictionary<string, string>();
 
-                    if (currentSelection.Equals("VBonus"))
+                    if (!currentSelection.Equals("Flantastic Seven") && !currentSelection.Equals("Minigames"))
                     {
-                        if (!bonus.Key.Contains("Minigame"))
+                        if (currentSelection.Equals(bonus.Key.CategoryToKey(DataTableEnum.VBonus)))
                             bonusSubsets = bonus.Value.ToDictionary(x => x.Key, y => y.Value);
                     }
                     else if (currentSelection.Equals("Flantastic Seven"))
@@ -1684,6 +1688,11 @@ namespace KH3Randomizer.Data
                             if (swapCategory.Key == "m_PlayerSora" && !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapData.Key.CategoryToKey(swapDataTable.Key)])
                                 continue;
 
+                            if (swapData.Value.Contains("POLE_SPIN"))
+                            {
+                                continue;
+                            }
+
                             randomizedOptions[dataTableEnum][treasureId]["Treasure"] = swapData.Value;
                             randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = treasureName;
 
@@ -1736,6 +1745,11 @@ namespace KH3Randomizer.Data
                                     continue;
                                 }
 
+                                if (swapData.Value.Contains("POLE_SPIN"))
+                                {
+                                    continue;
+                                }
+
                                 randomizedOptions[dataTableEnum][tempEventId][key] = swapData.Value;
                                 randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = tempEventName;
 
@@ -1764,6 +1778,11 @@ namespace KH3Randomizer.Data
 
                                 if (swapCategory.Key == "m_PlayerSora" && !availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapData.Key.CategoryToKey(swapDataTable.Key)])
                                     continue;
+
+                                if (swapData.Value.Contains("POLE_SPIN"))
+                                {
+                                    continue;
+                                }
 
                                 randomizedOptions[dataTableEnum][tempEventId][key] = swapData.Value;
                                 randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = tempEventName;
@@ -1829,6 +1848,14 @@ namespace KH3Randomizer.Data
                             currentBonusOption = bonusOption;
                             break;
                         }
+                    }
+                }
+
+                if (currentOption.Contains("POLE_SPIN"))
+                {
+                    if (IsPoleSpinDisallowed(DataTableEnum.VBonus, currentVBonus.Key))
+                    {
+                        continue;
                     }
                 }
 
@@ -1909,7 +1936,7 @@ namespace KH3Randomizer.Data
 
                 if ((availableOptions["Bonuses"]["Minigames"] && minigameBonusKeys.Contains(bonus.Key)) ||
                     (availableOptions["Bonuses"]["Flantastic Seven"] && flanBonusKeys.Contains(bonus.Key)) ||
-                    (availableOptions["Bonuses"]["VBonus"] && !minigameBonusKeys.Contains(bonus.Key) && !flanBonusKeys.Contains(bonus.Key) && bonus.Value.Count > 0)
+                    (availableOptions["Bonuses"][bonus.Key.CategoryToKey(DataTableEnum.VBonus)] && !minigameBonusKeys.Contains(bonus.Key) && !flanBonusKeys.Contains(bonus.Key) && bonus.Value.Count > 0)
                     )
                 {
                     availableVBonuses.Add(bonus.Key, bonus.Value);
