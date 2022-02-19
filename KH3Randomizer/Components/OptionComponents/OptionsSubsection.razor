@@ -16,16 +16,26 @@
                 <div class="col-md-3 suboption-section">
                     @foreach (var subOption in option.Value)
                     {
+                        string subOptionStr = subOption.Key;
                         <div class="row">
                             <div class="@(currentSelection == subOption.Key ? "suboption-radio-active" : "suboption-radio")" style="@(ActionType == "Options" ? "background-color: #ffffff;" : ActionType == "Modal" ? "background-color: #F2F2F2;" : "")" @onclick="() => UpdateCurrentSelection(subOption.Key)">
                                 <div class="col-md-12">
-                                    <label class="switch" id="switch@(subOption.Key)" name="switch@(subOption.Key)">
-                                        <input type="checkbox" @onchange="@((value) => UpdateSwitch(option.Key, subOption.Key, (bool)value.Value))" checked="@subOption.Value" disabled="@IsDisabled">
-                                        <span class="slider round"></span>
-                                    </label>
+                                    <!-- The second check of this if statement is temporary and will be replaced if how Weapon Upgrades are replaced is restructured -->
+                                    @if ((this.replacements.ContainsKey(option.Key.KeyToDataTableEnum()) && this.replacements[option.Key.KeyToDataTableEnum()].ContainsKey(subOption.Key) && this.replacements[option.Key.KeyToDataTableEnum()][subOption.Key]) 
+                                        || (option.Key.KeyToDataTableEnum() == DataTableEnum.WeaponEnhance && this.replacements.ContainsKey(DataTableEnum.WeaponEnhance) && this.replacements[DataTableEnum.WeaponEnhance].ContainsKey("Weapon Upgrades") && this.replacements[DataTableEnum.WeaponEnhance]["Weapon Upgrades"]))
+                                    {
+                                        <i class="bi bi-lock-fill replaced-icon"></i>
+                                        subOptionStr += " (Replaced)";
+                                    }
+                                    else
+                                    {
+                                        <label class="switch" id="switch@(subOption.Key)" name="switch@(subOption.Key)">
+                                            <input type="checkbox" @onchange="@((value) => UpdateSwitch(option.Key, subOption.Key, (bool)value.Value))" checked="@subOption.Value" disabled="@IsDisabled">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    }
 
-
-                                    <label for="switch@(subOption.Key)" style="padding-left: 20px;"><b>@subOption.Key</b></label>
+                                    <label for="switch@(subOption.Key)" style="padding-left: 20px;"><b>@subOptionStr</b></label>
                                 </div>
                             </div>
                         </div>

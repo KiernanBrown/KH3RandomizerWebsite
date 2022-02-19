@@ -193,3 +193,10 @@ input:checked + .slider:before {
     filter: blur(6px);
     pointer-events: none;
 }
+
+/* Lock Icon for replaced options */
+.replaced-icon {
+    vertical-align: middle;
+    font-size: 1.5em;
+    color: #2196F3;
+}
