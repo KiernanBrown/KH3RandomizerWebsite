@@ -812,7 +812,7 @@ namespace KH3Randomizer.Data
                     return "Complete Battle Portal 12 in San Fransokyo";
                 case "EVENT_REPORT_013a":
                 case "EVENT_REPORT_013b":
-                    return "Complete Battle Portal 12 in The Keyblade Graveyard";
+                    return "Complete Battle Portal 13 in The Keyblade Graveyard";
                 case "EVENT_REPORT_014":
                     return "Defeat Dark Inferno";
 

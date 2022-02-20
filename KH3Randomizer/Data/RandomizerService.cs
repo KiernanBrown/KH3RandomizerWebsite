@@ -1190,7 +1190,7 @@ namespace KH3Randomizer.Data
                 {
                     swapLogic = true;
                 }
-                else if (category == DataTableEnum.VBonus && (subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("Arendelle VBonus") ||
+                else if (category == DataTableEnum.VBonus && (subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("Arendelle VBonus") || subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("The Dark World VBonus") ||
                     subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("Keyblade Graveyard VBonus") || subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("The Final World VBonus") ||
                     subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("Re:Mind Keyblade Graveyard VBonus") || subCategory.CategoryToKey(DataTableEnum.VBonus).Equals("Scala Ad Caelum VBonus") ||
                     subCategory == "VBonus_Minigame003" || subCategory == "VBonus_Minigame004" || subCategory == "VBonus_Minigame005"))
@@ -1198,7 +1198,8 @@ namespace KH3Randomizer.Data
                     swapLogic = true;
                 }
                 else if (category == DataTableEnum.Event && (subCategory == "EVENT_007" || subCategory == "TresUIMobilePortalDataAsset" ||
-                    subCategory == "EVENT_KEYBLADE_007" || subCategory == "EVENT_KEYBLADE_010" || subCategory == "EVENT_REPORT_009a" || subCategory == "EVENT_REPORT_009b"))
+                    subCategory == "EVENT_KEYBLADE_007" || subCategory == "EVENT_KEYBLADE_010" || subCategory == "EVENT_REPORT_009a" || subCategory == "EVENT_REPORT_009b" ||
+                    subCategory == "EVENT_REPORT_013a" || subCategory == "EVENT_REPORT_013b" || subCategory == "EVENT_REPORT_014"))
                 {
                     swapLogic = true;
                 }
