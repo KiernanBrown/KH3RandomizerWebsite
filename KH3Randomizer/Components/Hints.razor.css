@@ -7,9 +7,9 @@
     border-radius: 15px;
     padding: 30px;
     padding-top: 0px;
-    min-height: 75vh;
-    max-height: 75vh;
-    overflow-y: auto;
+    min-height: 700px;
+    max-height: 700px;
+    overflow-y: scroll;
 }
 
 .hints-sub-subsection {
