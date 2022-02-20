@@ -268,77 +268,77 @@ namespace KH3Randomizer.Data
 
                 case DataTableEnum.TreasureBT:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in Scala Ad Caelum in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in Scala Ad Caelum in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureBT)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in Scala Ad Caelum.";
 
                     break;
                 case DataTableEnum.TreasureBX:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in San Fransokyo in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in San Fransokyo in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureBX)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in San Fransokyo.";
 
                     break;
                 case DataTableEnum.TreasureCA:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in The Caribbean in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in The Caribbean in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureCA)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in The Caribbean.";
 
                     break;
                 case DataTableEnum.TreasureEW:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in The Final World in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in The Final World in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureEW)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in The Final World.";
 
                     break;
                 case DataTableEnum.TreasureFZ:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in Arendelle in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in Arendelle in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureFZ)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in Arendelle.";
 
                     break;
                 case DataTableEnum.TreasureHE:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in Olympus in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in Olympus in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureHE)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in Olympus.";
 
                     break;
                 case DataTableEnum.TreasureKG:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in The Keyblade Graveyard in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in The Keyblade Graveyard in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureKG)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in The Keyblade Graveyard.";
 
                     break;
                 case DataTableEnum.TreasureMI:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in Monstropolis in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in Monstropolis in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureMI)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in Monstropolis.";
 
                     break;
                 case DataTableEnum.TreasureRA:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in Kingdom of Corona in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in Kingdom of Corona in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureRA)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in Kingdom of Corona.";
 
                     break;
                 case DataTableEnum.TreasureTS:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in Toy Box in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in Toy Box in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureTS)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in Toy Box.";
 
                     break;
                 case DataTableEnum.TreasureTT:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in Twilight Town in {this.GetTreasure(subCategory)}.";
+                        hintLocation = $"in Twilight Town in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureTT)}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in Twilight Town.";
 

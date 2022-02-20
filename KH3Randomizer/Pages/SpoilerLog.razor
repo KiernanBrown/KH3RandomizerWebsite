@@ -98,7 +98,7 @@
         <div style="margin-top: 25px;"></div>
 
         <OptionsSubsection UpdateAvailableOptions="@this.UpdateAvailableOptions" UpdateRandomizedOptions="@this.UpdateRandomizedOptions" UpdateModifications="@this.UpdateModifications"
-                           CurrentSeed="@this.currentSeed" AvailableExtras="@this.availableExtras" AvailableOptions="@this.tempOptions" RandomizedOptions="@this.randomizedOptions"
+                           CurrentSeed="@this.currentSeed" AvailableExtras="@this.availableExtras" AvailableOptions="@this.tempOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements"
                            ActionType="Modal" SpoilerChecked="false" />
     </div>
 </div>
@@ -126,7 +126,28 @@
     private Dictionary<string, Extra> availableExtras = new();
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
-    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new();
+    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>()
+    {
+        { DataTableEnum.Event, new Dictionary<string, bool>
+            { { "Keyblades", false }, { "Heartbinders", false }, { "Reports", true }, { "Data Battles", false }, { "Yozora", true }, { "Complete All Classic Kingdom Minigames", true }, { "Complete All Bistro Recipes", true } }
+        },
+        { DataTableEnum.LuckyMark, new Dictionary<string, bool>
+            { { "Lucky Emblems", false } }
+        },
+        { DataTableEnum.VBonus, new Dictionary<string, bool>
+            { { "Keyblade Graveyard VBonus", false }, { "The Final World VBonus", false }, { "Re:Mind Keyblade Graveyard VBonus", false },
+                { "Scala Ad Caelum VBonus", false }, { "Flantastic Seven", false }, { "Minigames", false } }
+        },
+        { DataTableEnum.FullcourseAbility, new Dictionary<string, bool>
+            { { "Abilities", false } }
+        },
+        { DataTableEnum.LevelUp, new Dictionary<string, bool>
+            { { "Levels", true } }
+        },
+        { DataTableEnum.WeaponEnhance, new Dictionary<string, bool>
+            { { "Weapon Upgrades", false } }
+        }
+    };
 
     private Dictionary<string, Dictionary<string, bool>> tempOptions = new();
 
