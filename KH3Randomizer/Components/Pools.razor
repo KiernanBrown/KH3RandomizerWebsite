@@ -1,4 +1,6 @@
-﻿@inject KH3Randomizer.Data.RandomizerService RandomizerService
+﻿@using UE4DataTableInterpreter.Enums
+
+@inject KH3Randomizer.Data.RandomizerService RandomizerService
 
 <div class="pools-section">
     <div class="pools-subsection">
@@ -7,7 +9,7 @@
         <br />
         <br />
 
-        <h4>Pools</h4>
+        <h4><b>Pools</b></h4>
         <div class="row">
             @foreach (var pool in pools)
             {
@@ -42,7 +44,7 @@
         </div>
 
         <br />
-        <h4>Extras</h4>
+        <h4><b>Extras</b></h4>
         <div class="row">
             @foreach (var extra in extras)
             {
@@ -71,16 +73,56 @@
         </div>
     </div>
 
-    <button class="btn kh-button" @onclick="ContinueToOptions" style="float: right;">Continue to Sub Pools...</button>
+    <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentSubPool" ToggleCollapsables="this.ToggleCollapsables" Title="@("Sub Pools")" ActionType="@("Options")">
+        <div class="subpools-container">
+            @foreach (var pool in this.pools)
+            {
+                @if (pool.Value)
+                {
+                    var replaceOptions = this.GetReplaceOptionsFromPool(pool.Key);
+                    if (replaceOptions.Count > 0)
+                    {
+                        <div class="subpool">
+                            <h4><b>@pool.Key</b></h4>
+                            @foreach (var option in replaceOptions)
+                            {
+                                <div class="col-md-4" style="display:inline-block; padding: 0.6vh 1.2vw;">
+                                    @if (replaceOptions.Count > 1)
+                                    {
+                                        <div style="margin:auto; text-align: center;">
+                                            <label for="@option.Key-range"><b>@option.Key</b></label>
+                                        </div>
+                                    }
+                                    <div class="form-control-range" style="padding: 0 1.4vw;">
+                                        <input type="range" class="custom-range" id="@option.Key-range" max="2" min="1" value="@GetReplaceOptionValue(pool.Key, option.Key)" step="1" @onchange="@((e) => { UpdateReplaceOption(pool.Key, option.Key, e); })">
+                                    </div>
+                                    <div class="range-label-container">
+                                        <label class="range-label" style="float: left;">Replace</label>
+                                        <label class="range-label" style="float: right;">Randomize</label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </Collapsable>
+
+    <br />
+
+    <button class="btn kh-button" @onclick="ContinueToOptions" style="float: right;">Continue to Options...</button>
 </div>
 
 @code {
     [Parameter] public EventCallback<string> ContinueTo { get; set; }
     [Parameter] public EventCallback<Dictionary<string, bool>> UpdateAvailablePools { get; set; }
     [Parameter] public EventCallback<Dictionary<string, Extra>> UpdateAvailableExtras { get; set; }
+    [Parameter] public EventCallback<Dictionary<DataTableEnum, Dictionary<string, bool>>> UpdateReplacements { get; set; }
 
     [Parameter] public Dictionary<string, bool> AvailablePools { get; set; }
     [Parameter] public Dictionary<string, Extra> AvailableExtras { get; set; }
+    [Parameter] public Dictionary<DataTableEnum, Dictionary<string, bool>> Replacements { get; set; }
 
     private bool isOn { get; set; } = false;
     private string allOptionText { get; set; } = "MIXED";
@@ -104,10 +146,15 @@
 
     private Dictionary<string, Extra> extras = new Dictionary<string, Extra>();
 
+    private Collapsable subPoolsCollapsable;
+    private string currentSubPool = string.Empty;
+    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements { get; set; }
+
     protected override void OnInitialized()
     {
         this.pools = this.AvailablePools;
         this.extras = this.AvailableExtras;
+        this.replacements = this.Replacements;
         this.UpdateOptionsText();
     }
 
@@ -152,8 +199,9 @@
         //this.RandomizerService.SetAvailablePools(this.pools);
         this.UpdateAvailablePools.InvokeAsync(this.pools);
         this.UpdateAvailableExtras.InvokeAsync(this.extras);
+        this.UpdateReplacements.InvokeAsync(this.replacements);
 
-        this.ContinueTo.InvokeAsync("SubPools");
+        this.ContinueTo.InvokeAsync("Options");
     }
 
     private void HandlePoolValueChange(ChangeEventArgs value, KeyValuePair<string, bool> pool)
@@ -180,5 +228,57 @@
             return !pools[extra.RequiredPool];
         }
         return false;
+    }
+
+    private void ToggleCollapsables(string currentSubPool)
+    {
+        this.currentSubPool = currentSubPool;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    private Dictionary<string, bool> GetReplaceOptionsFromPool(string pool)
+    {
+        if (Replacements.ContainsKey(pool.KeyToDataTableEnum()))
+        {
+            var replaceOptions = Replacements[pool.KeyToDataTableEnum()];
+            return replaceOptions.Count > 0 ? Replacements[pool.KeyToDataTableEnum()] : new Dictionary<string, bool>();
+        }
+        return new Dictionary<string, bool>();
+    }
+
+    private int GetReplaceOptionValue(string pool, string option)
+    {
+        // If the option in true in replacements, return 1
+        // Return 2 otherwise to set this to be randomized
+        // In the future, this could be updated to have a vanilla option (0)
+        if (Replacements[pool.KeyToDataTableEnum()][option])
+        {
+            return 1;
+        }
+        return 2;
+    }
+
+    private void UpdateReplaceOption(string pool, string option, ChangeEventArgs e)
+    {
+        // 0 is Vanilla, 1 is Replace, 2 is Randomize
+        switch (e.Value)
+        {
+            case "1":
+                this.replacements[pool.KeyToDataTableEnum()][option] = true;
+                break;
+            case "2":
+                // This option should be randomized
+                this.replacements[pool.KeyToDataTableEnum()][option] = false;
+                break;
+            default:
+                // This option should not be randomized
+                this.replacements[pool.KeyToDataTableEnum()][option] = false;
+                break;
+        }
+        this.UpdateReplacements.InvokeAsync(this.replacements);
     }
 }

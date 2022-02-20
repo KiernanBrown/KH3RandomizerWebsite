@@ -207,3 +207,30 @@ input:focus {
     .kh-button:hover {
         opacity: .75;
     }
+
+.subpools-container {
+    overflow-y: scroll;
+    max-height: 700px;
+}
+
+.subpool {
+    margin: 2vh 0.75vw;
+    padding: 10px;
+    text-align: center;
+    background: white;
+    border: 2px solid #a169e0;
+    border-radius: 20px;
+}
+
+/* Purple Slider Thumb */
+.custom-range::-webkit-slider-thumb {
+    background: #a169e0;
+}
+
+.custom-range::-moz-range-thumb {
+    background: #a169e0;
+}
+
+.custom-range::-ms-thumb {
+    background: #a169e0;
+}

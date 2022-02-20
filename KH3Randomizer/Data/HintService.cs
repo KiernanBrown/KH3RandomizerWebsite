@@ -226,9 +226,18 @@ namespace KH3Randomizer.Data
                     var equipmentLocation = this.GetLocationByLookUp(randomizedOptions, equipmentValue);
 
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"in {equipmentLocation} found on {this.GetEquipment(subCategory)}.";
+                    {
+                        if (equipmentLocation.Item2.Contains("Small Chest") || equipmentLocation.Item2.Contains("Large Chest"))
+                        {
+                            hintLocation = $"in {equipmentLocation.Item1} found on {this.GetEquipment(subCategory)} in {equipmentLocation.Item2.GetChestLocation(equipmentLocation.Item1.KeyToDataTableEnum())}.";
+                        }
+                        else
+                        {
+                            hintLocation = $"in {equipmentLocation} found on {this.GetEquipment(subCategory)}.";
+                        }
+                    }
                     else if (hintType.Equals("Vague"))
-                        hintLocation = $"in {equipmentLocation}.";
+                        hintLocation = $"in {equipmentLocation.Item1} on an Equipment.";
 
                     break;
                 case DataTableEnum.WeaponEnhance:

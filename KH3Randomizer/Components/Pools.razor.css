@@ -7,7 +7,6 @@
     border-radius: 15px;
     padding: 30px;
     margin: 25px 0px;
-    min-height: 75vh;
 }
 
 .kh-button {
@@ -87,3 +86,30 @@ input:checked + .slider:before {
     .slider.round:before {
         border-radius: 50%;
     }
+
+.subpools-container {
+    overflow-y: scroll;
+    max-height: 700px;
+}
+
+.subpool {
+    margin: 2vh 0.75vw;
+    padding: 10px;
+    text-align: center;
+    background: white;
+    border: 2px solid #2196F3;
+    border-radius: 20px;
+}
+
+/* Blue Slider Thumb */
+.custom-range::-webkit-slider-thumb {
+    background: #2196F3;
+}
+
+.custom-range::-moz-range-thumb {
+    background: #2196F3;
+}
+
+.custom-range::-ms-thumb {
+    background: #2196F3;
+}

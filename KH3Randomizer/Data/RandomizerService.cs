@@ -978,6 +978,10 @@ namespace KH3Randomizer.Data
                                     {
                                         ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYITEM_005");
                                     }
+                                    if (subPool.Key == "Complete 100 Acre Wood" && !replacements[DataTableEnum.Event]["Keyblades"])
+                                    {
+                                        ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYBLADE_006");
+                                    }
                                     if (subPool.Key == "Complete All Classic Kingdom Minigames" && !replacements[DataTableEnum.Event]["Keyblades"])
                                     {
                                         ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "TresUIMobilePortalDataAsset");

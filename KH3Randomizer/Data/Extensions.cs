@@ -2160,20 +2160,28 @@ namespace KH3Randomizer.Data
                 case "Synthesis Items":
                     return DataTableEnum.SynthesisItem;
 
-                // TODO support strings for treasures
-                // These will probably be structured as "Treasures TT", "Treasures FZ", etc.
-                /*case DataTableEnum.TreasureHE:
-                case DataTableEnum.TreasureTT:
-                case DataTableEnum.TreasureRA:
-                case DataTableEnum.TreasureTS:
-                case DataTableEnum.TreasureFZ:
-                case DataTableEnum.TreasureMI:
-                case DataTableEnum.TreasureCA:
-                case DataTableEnum.TreasureBX:
-                case DataTableEnum.TreasureKG:
-                case DataTableEnum.TreasureEW:
-                case DataTableEnum.TreasureBT:
-                    return "Treasures";*/
+                case "Olympus":
+                    return DataTableEnum.TreasureHE;
+                case "Twilight Town":
+                    return DataTableEnum.TreasureTT;
+                case "Kingdom of Corona":
+                    return DataTableEnum.TreasureRA;
+                case "Toy Box":
+                    return DataTableEnum.TreasureTS;
+                case "Arendelle":
+                    return DataTableEnum.TreasureFZ;
+                case "Monstropolis":
+                    return DataTableEnum.TreasureMI;
+                case "The Caribbean":
+                    return DataTableEnum.TreasureCA;
+                case "San Fransokyo":
+                    return DataTableEnum.TreasureBX;
+                case "Keyblade Graveyard":
+                    return DataTableEnum.TreasureKG;
+                case "The Final World":
+                    return DataTableEnum.TreasureEW;
+                case "Scala Ad Caelum":
+                    return DataTableEnum.TreasureBT;
 
                 default:
                     return DataTableEnum.None;

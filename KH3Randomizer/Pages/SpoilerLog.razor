@@ -41,7 +41,7 @@
     </div>
 
     <div class="spoiler-log-options">
-        <h4>Pools</h4>
+        <h4><b>Pools</b></h4>
         <div class="spoiler-log-pools">
             <div class="row">
                 @foreach (var pool in this.availablePools)
@@ -56,7 +56,7 @@
             </div>
         </div>
 
-        <h4 style="margin-top: 1em">Extras</h4>
+        <h4 style="margin-top: 1em"><b>Extras</b></h4>
         <div class="spoiler-log-extras">
             <div class="row">
                 @foreach (var extra in this.availableExtras)
@@ -67,6 +67,42 @@
                 }
             </div>
         </div>
+
+        <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentSubPool" ToggleCollapsables="this.ToggleCollapsables" Title="@("Sub Pools")" ActionType="@("Modal")">
+            <div class="subpools-container">
+                @foreach (var pool in this.availablePools)
+                {
+                    @if (pool.Value)
+                    {
+                        var replaceOptions = this.GetReplaceOptionsFromPool(pool.Key);
+                        if (replaceOptions.Count > 0)
+                        {
+                            <div class="subpool">
+                                <h4><b>@pool.Key</b></h4>
+                                @foreach (var option in replaceOptions)
+                                {
+                                    <div class="col-md-4" style="display:inline-block; padding: 0.6vh 1.2vw;">
+                                        @if (replaceOptions.Count > 1)
+                                        {
+                                            <div style="margin:auto; text-align: center;">
+                                                <label for="@option.Key-range"><b>@option.Key</b></label>
+                                            </div>
+                                        }
+                                        <div class="form-control-range" style="padding: 0 1.4vw;">
+                                            <input type="range" class="custom-range" id="@option.Key-range" max="2" min="1" value="@GetReplaceOptionValue(pool.Key, option.Key)" step="1" @onchange="@((e) => { UpdateReplaceOption(pool.Key, option.Key, e); })">
+                                        </div>
+                                        <div class="range-label-container">
+                                            <label class="range-label" style="float: left;">Replace</label>
+                                            <label class="range-label" style="float: right;">Randomize</label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                }
+            </div>
+        </Collapsable>
 
         <hr />
 
@@ -129,7 +165,7 @@
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>()
     {
         { DataTableEnum.Event, new Dictionary<string, bool>
-            { { "Keyblades", false }, { "Heartbinders", false }, { "Reports", true }, { "Data Battles", false }, { "Yozora", true }, { "Complete All Classic Kingdom Minigames", true }, { "Complete All Bistro Recipes", true } }
+            { { "Keyblades", false }, { "Heartbinders", false }, { "Reports", true }, { "Data Battles", false }, { "Yozora", true }, { "Complete 100 Acre Wood", true }, { "Complete All Classic Kingdom Minigames", true }, { "Complete All Bistro Recipes", true } }
         },
         { DataTableEnum.LuckyMark, new Dictionary<string, bool>
             { { "Lucky Emblems", false } }
@@ -152,6 +188,9 @@
     private Dictionary<string, Dictionary<string, bool>> tempOptions = new();
 
     private List<Tuple<Option, Option>> modifications = new();
+
+    private Collapsable subPoolsCollapsable;
+    private string currentSubPool = string.Empty;
 
     protected override void OnInitialized()
     {
@@ -357,5 +396,57 @@
             return !availablePools[extra.RequiredPool];
         }
         return false;
+    }
+
+    private void ToggleCollapsables(string currentSubPool)
+    {
+        this.currentSubPool = currentSubPool;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    private Dictionary<string, bool> GetReplaceOptionsFromPool(string pool)
+    {
+        if (replacements.ContainsKey(pool.KeyToDataTableEnum()))
+        {
+            var replaceOptions = replacements[pool.KeyToDataTableEnum()];
+            return replaceOptions.Count > 0 ? replacements[pool.KeyToDataTableEnum()] : new Dictionary<string, bool>();
+        }
+        return new Dictionary<string, bool>();
+    }
+
+    private int GetReplaceOptionValue(string pool, string option)
+    {
+        // If the option in true in replacements, return 1
+        // Return 2 otherwise to set this to be randomized
+        // In the future, this could be updated to have a vanilla option (0)
+        if (replacements[pool.KeyToDataTableEnum()][option])
+        {
+            return 1;
+        }
+        return 2;
+    }
+
+    private void UpdateReplaceOption(string pool, string option, ChangeEventArgs e)
+    {
+        // 0 is Vanilla, 1 is Replace, 2 is Randomize
+        switch (e.Value)
+        {
+            case "1":
+                this.replacements[pool.KeyToDataTableEnum()][option] = true;
+                break;
+            case "2":
+                // This option should be randomized
+                this.replacements[pool.KeyToDataTableEnum()][option] = false;
+                break;
+            default:
+                // This option should not be randomized
+                this.replacements[pool.KeyToDataTableEnum()][option] = false;
+                break;
+        }
+        this.UpdateReplacements(this.replacements);
     }
 }
