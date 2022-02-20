@@ -5,7 +5,7 @@ This is an Electron.NET project that is used to generate seeds for the KH3 Rando
 * [Changes](#changes)
 * [Setup](#setup)
 * [Seed Generation Instructions](#instructions)
-* [Planned Changes](#changes)
+* [Planned Changes](#plans)
 * [Bug Reports](#bugs)
 
 ## Changes <a name="changes"></a>
@@ -32,25 +32,45 @@ Added the following extras that can be chosen on the Pools page. These will be e
 </ul>
 </details>
 
-### <b>Replacements</b>
-By default, this project will replace all checks that are on Reports, Level Ups, and Yozora. This means that any bonuses that would normally be placed on either battlegates or level up rewards will instead be put elsewhere in the pool.
+### <b>Sub Pools/Replacements</b>
+Added a Sub Pools section to the Pools and Spoiler Log pages where users can choose whether certain options in a pool should be Replaced or kept Randomized.
 <details><summary>More Details</summary>
 
 <ul>
-  <li>Battlegates are inaccessible until you beat the game, so any checks that would be placed there are currently inaccessible. If you want to have hints, having Secret Reports actually be in the pool is necessary, so this change allows for them to be obtainable without potentially locking checks behind inaccessible battlegates.</li>
-  <li>Level Ups also seem to be working inconsistently at this point in time and have a chance to not give you items/magic/abilities for a seed, so with this setup, Level Ups will only give you their normal stat bonuses instead of potentially locking you out of important checks.</li>
-  <li>Defeating Yozora ends up taking away your Proof of Fantasy, so replacing his rewards stops him from being a necessary fight for the time being.</li>
-  <li>Arendelle Small Chest 13 is also being replaced since it seems to have an issue with givint its rewards 100% of the time. This will be disabled once whatever is going on there is fixed.</li>
+  <li>The following options are set to Replace by default:</li>
+  <ul>
+    <li>Battlegates are inaccessible until you beat the game, so any checks that would be placed there are currently inaccessible. If you want to have hints, having Secret Reports actually be in the pool is necessary, so this change allows for them to be obtainable without potentially locking checks behind inaccessible battlegates.</li>
+    <li>Level Ups also seem to be working inconsistently at this point in time and have a chance to not give you items/magic/abilities for a seed, so with this setup, Level Ups will only give you their normal stat bonuses instead of potentially locking you out of important checks.</li>
+    <li>Defeating Yozora ends up taking away your Proof of Fantasy, so replacing his rewards stops him from being a necessary fight for the time being.</li>
+    <li>Completing 100 Acre Wood, All Classic Kingdom Minigames, or All Bistro Recipes. These are somewhat lengthy sections of fluff and minigames.</li>
+  </ul>
+  <li>More options will be added in the future. This first batch is to test and make sure that this way of doing replacing isn't causing any major problems elsewhere.</li>
 </ul>
 </details>
 
 ### <b>Other Changes</b>
-* Hints for checks that are on Moogle Photo Missions are a bit more descriptive now.
-* Reports should no longer hint themselves.
-* Added a button on the Options page that will generate a random seed name for you.
-* Added a warning for users trying to continue from the Options page to the Hints page without entering a seed name.
-* Changed references to magic in verbose hints to be in the form of [base spell] element instead of base spell/ra/ga.
-  * For example: The three fire checks will now all be referred to as Fire Element instead of Fire, Fira, and Firaga.
+<details><summary>More Details</summary>
+  <ul>
+    <li>Hints for checks that are on Moogle Photo Missions are a bit more descriptive now.</li>
+    <li>Reports should no longer hint themselves.</li>
+    <li>Added a button on the Options page that will generate a random seed name for you.</li>
+    <li>Added a warning for users trying to continue from the Options page to the Hints page without entering a seed name.</li>
+    <li>Changed references to magic in verbose hints to be in the form of [base spell] element instead of base spell/ra/ga.</li>
+    <ul>
+      <li>For example: The three fire checks will now all be referred to as Fire Element instead of Fire, Fira, and Firaga.</li>
+    </ul>
+    <li>Tooltips and hints are a bit more descriptive (thanks to Sonicshadowsilver2).</li>
+    <li>Chests now have tooltips and their hints are more descriptive (thanks to Clara_The_Classy).</li>
+    <ul>
+      <li>Verbose hints will now tell you the gummiphone chest number and the area the chest is found in instead of the chest numbers the game uses for reference.</li>
+    </ul>
+    <li>VBonuses from fights are now grouped by their world and can be toggled independently.</li>
+    <li>Photo Missions are now grouped as a sub category in Synthesis Items and can be toggled or replaced.</li>
+    <li>Changed where Pole Spin can be placed.</li>
+    <ul>
+      <li>Pole Spin can only be found in Disney Worlds (no Dark World, Keyblade Graveyard, Re:Mind Keyblade Graveyard, Scala Ad Caelum, Final World).</li>
+    </ul>
+</details>
 
 ### <b>Bug Fixes</b>
 * Fixed an issue where seed randomization could hang when trying to place Pole Spin in a valid spot.
@@ -78,9 +98,9 @@ You will also need to make sure that you have the most recent version of [unreal
 3. Continue to the Hints page and choose which hints settings that you want. These hints will display as the text on your Secret Reports in game.
     * None: No hints will be given on reports.
     * Vague: Reports will give you a vague description of where a check is.
-      * If Proof of Times Past was in Twilight Town Small Chest 1, a report could tell you "There is 1 check in Twilight Town"
+      * If Proof of Times Past was in Toy Box Large Chest 1, a report could tell you "There is 1 check in Toy Box"
     * Verbose: Reports will give you a detailed description of exactly where a check is.
-      * If Proof of Times Past was in Twilight Town Small Chest 1, a report could tell you "Proof of Times Past is in Twilight Town in Small Chest 1"
+      * If Proof of Times Past was in Toy Box Large Chest 1, a report could tell you "Proof of Times Past is in Toy Box in Chest 1 (Large Chest, Andy's House)"
 4. Click the Generate Seed button on the bottom right of the Review Page to download your seed's zip file.
 5. Extract the zip file that you just downloaded. 
     * If you're using WinRAR then you can right click on the zip file and and choose the option that says Extract To pakchunk99-randomizer-SeedName and it will create a new folder and extract the needed files to it.
@@ -89,7 +109,7 @@ You will also need to make sure that you have the most recent version of [unreal
 7. Place your seed's pak file that you just made into your ~mods folder in your Kingdom Hearts 3 installation folder.
 8. You're all set to go!
 
-## Planned Changes <a name="changes"></a>
+## Planned Changes <a name="plans"></a>
 I have a [public trello that you can find here](https://trello.com/b/jGIE27bG) which details any changes/features that are currently planned. If you have any other ideas that you think would be good additions, feel free to let me know by sending me a message on Discord (SwiftShadow#5004)!
 
 ## Bug Reports <a name="bugs"></a>
