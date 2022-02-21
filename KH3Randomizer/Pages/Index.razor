@@ -61,6 +61,15 @@
 
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>()
     {
+        { DataTableEnum.TreasureKG, new Dictionary<string, bool>
+            { { "Keyblade Graveyard", false } }
+        },
+        { DataTableEnum.TreasureEW, new Dictionary<string, bool>
+            { { "The Final World", false } }
+        },
+        { DataTableEnum.TreasureBT, new Dictionary<string, bool>
+            { { "Scala Ad Caelum", false } }
+        },
         { DataTableEnum.Event, new Dictionary<string, bool>
             { { "Keyblades", false }, { "Heartbinders", false }, { "Reports", true }, { "Data Battles", false }, { "Yozora", true }, { "Complete 100 Acre Wood", true }, { "Complete All Classic Kingdom Minigames", true }, { "Complete All Bistro Recipes", true } }
         },

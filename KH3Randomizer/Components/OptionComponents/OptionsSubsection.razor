@@ -20,19 +20,20 @@
                         <div class="row">
                             <div class="@(currentSelection == subOption.Key ? "suboption-radio-active" : "suboption-radio")" style="@(ActionType == "Options" ? "background-color: #ffffff;" : ActionType == "Modal" ? "background-color: #F2F2F2;" : "")" @onclick="() => UpdateCurrentSelection(subOption.Key)">
                                 <div class="col-md-12">
-                                    <!-- The second check of this if statement is temporary and will be replaced if how Weapon Upgrades are replaced is restructured -->
-                                    @if ((this.replacements.ContainsKey(option.Key.KeyToDataTableEnum()) && this.replacements[option.Key.KeyToDataTableEnum()].ContainsKey(subOption.Key) && this.replacements[option.Key.KeyToDataTableEnum()][subOption.Key]) 
-                                        || (option.Key.KeyToDataTableEnum() == DataTableEnum.WeaponEnhance && this.replacements.ContainsKey(DataTableEnum.WeaponEnhance) && this.replacements[DataTableEnum.WeaponEnhance].ContainsKey("Weapon Upgrades") && this.replacements[DataTableEnum.WeaponEnhance]["Weapon Upgrades"]))
+                                    <!-- This check is a bit messy and could be restructured in the future -->
+                                    @if ((this.replacements.ContainsKey(option.Key.KeyToDataTableEnum()) && this.replacements[option.Key.KeyToDataTableEnum()].ContainsKey(subOption.Key) && this.replacements[option.Key.KeyToDataTableEnum()][subOption.Key]) ||
+                                    (option.Key.KeyToDataTableEnum() == DataTableEnum.WeaponEnhance && this.replacements.ContainsKey(DataTableEnum.WeaponEnhance) && this.replacements[DataTableEnum.WeaponEnhance].ContainsKey("Weapon Upgrades") && this.replacements[DataTableEnum.WeaponEnhance]["Weapon Upgrades"]) ||
+                                    (option.Key.Equals("Treasures") && this.replacements.ContainsKey(subOption.Key.KeyToDataTableEnum()) && this.replacements[subOption.Key.KeyToDataTableEnum()].ContainsKey(subOption.Key) && this.replacements[subOption.Key.KeyToDataTableEnum()][subOption.Key]))
                                     {
-                                        <i class="bi bi-lock-fill replaced-icon"></i>
-                                        subOptionStr += " (Replaced)";
+                                    <i class="bi bi-lock-fill replaced-icon"></i>
+                                    subOptionStr += " (Replaced)";
                                     }
                                     else
                                     {
-                                        <label class="switch" id="switch@(subOption.Key)" name="switch@(subOption.Key)">
-                                            <input type="checkbox" @onchange="@((value) => UpdateSwitch(option.Key, subOption.Key, (bool)value.Value))" checked="@subOption.Value" disabled="@IsDisabled">
-                                            <span class="slider round"></span>
-                                        </label>
+                                    <label class="switch" id="switch@(subOption.Key)" name="switch@(subOption.Key)">
+                                        <input type="checkbox" @onchange="@((value) => UpdateSwitch(option.Key, subOption.Key, (bool)value.Value))" checked="@subOption.Value" disabled="@IsDisabled">
+                                        <span class="slider round"></span>
+                                    </label>
                                     }
 
                                     <label for="switch@(subOption.Key)" style="padding-left: 20px;"><b>@subOptionStr</b></label>
