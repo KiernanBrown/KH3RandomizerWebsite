@@ -305,7 +305,7 @@ namespace KH3Randomizer.Data
                 {
                     var swapData = swapCategory.Value.Where(x => x.Value.Contains("NONE")).ElementAt(rng.Next(0, swapCategory.Value.Where(x => x.Value.Contains("NONE")).Count()));
 
-                    if (swapDataTable.Key == DataTableEnum.ChrInit && swapData.Key.CategoryToKey(swapDataTable.Key) == "Critical Abilities")
+                    if (swapDataTable.Key == DataTableEnum.LevelUp || (swapDataTable.Key == DataTableEnum.ChrInit && swapData.Key.CategoryToKey(swapDataTable.Key) == "Critical Abilities"))
                     {
                         continue;
                     }
@@ -342,6 +342,9 @@ namespace KH3Randomizer.Data
             List<string> reports = new List<string>() { "Secret Report 1", "Secret Report 2", "Secret Report 3", "Secret Report 4", "Secret Report 5", "Secret Report 6", "Secret Report 7", "Secret Report 8", "Secret Report 9", "Secret Report 10", "Secret Report 11", "Secret Report 12", "Secret Report 13" };
             List<string> links = new List<string>() { "Dream Heartbinder", "Pixel Heartbinder", "\'Ohana Heartbinder", "Pride Heartbinder", "Ocean Heartbinder" };
             List<string> magics = new List<string>() { "Magic: Fire", "Magic: Fire", "Magic: Fire", "Magic: Blizzard", "Magic: Blizzard", "Magic: Blizzard", "Magic: Thunder", "Magic: Thunder", "Magic: Thunder", "Magic: Cure", "Magic: Cure", "Magic: Cure", "Magic: Aero", "Magic: Aero", "Magic: Aero", "Magic: Water", "Magic: Water", "Magic: Water" };
+            List<string> vbonusAbilities = new List<string>() { "Ability: Doubleflight", "Ability: Air Slide", "Ability: Air Slide", "Ability: Aerial Recovery" };
+            List<string> levelAbilities = new List<string>() { "Ability: Second Chance", "Ability: Withstand Combo" };
+            List<string> startAbilities = new List<string>() { "Ability: Block", "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Pole Spin" };
             List<string> importantChecks = new List<string>();
             if (availableOptions.ContainsKey(DataTableEnum.Event.DataTableEnumToKey()))
             {
@@ -351,11 +354,16 @@ namespace KH3Randomizer.Data
             }
             if (availableOptions.ContainsKey(DataTableEnum.ChrInit.DataTableEnumToKey())) 
             {
-                importantChecks.Add("Ability: Pole Spin");
+                importantChecks.AddRange(startAbilities);
             }
             if (availableOptions.ContainsKey(DataTableEnum.VBonus.DataTableEnumToKey()))
             {
+                importantChecks.AddRange(vbonusAbilities);
                 importantChecks.AddRange(magics);
+            }
+            if (availableOptions.ContainsKey(DataTableEnum.LevelUp.DataTableEnumToKey()))
+            {
+                importantChecks.AddRange(levelAbilities);
             }
 
             List<string> foundChecks = new List<string>();
@@ -1054,9 +1062,13 @@ namespace KH3Randomizer.Data
                             foreach (var check in reward.Value)
                             {
                                 // Add this check to foundChecks if it's important
-                                // Only add the check once if it's on level ups (it'll be there 3 times, one per path)
-                                if (importantChecks.Contains(check.Value.ValueIdToDisplay()) && (check.Key.CategoryToKey(option.Key) != "Levels" || !foundChecks.Contains(check.Value.ValueIdToDisplay())))
+                                if (importantChecks.Contains(check.Value.ValueIdToDisplay()))
                                 {
+                                    // If the check is on level ups, only add if it's TypeA (it'll be there 3 times, one per path)
+                                    if (option.Key == DataTableEnum.LevelUp && !check.Key.Equals("TypeA"))
+                                    {
+                                        continue;
+                                    }
                                     foundChecks.Add(check.Value.ValueIdToDisplay());
                                 }
                             }

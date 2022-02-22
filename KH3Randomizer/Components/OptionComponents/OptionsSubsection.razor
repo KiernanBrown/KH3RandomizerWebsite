@@ -20,7 +20,7 @@
                         <div class="row">
                             <div class="@(currentSelection == subOption.Key ? "suboption-radio-active" : "suboption-radio")" style="@(ActionType == "Options" ? "background-color: #ffffff;" : ActionType == "Modal" ? "background-color: #F2F2F2;" : "")" @onclick="() => UpdateCurrentSelection(subOption.Key)">
                                 <div class="col-md-12">
-                                    <!-- This check is a bit messy and could be restructured in the future -->
+                                    <!-- TODO: Restructure in the future, this check is messy -->
                                     @if ((this.replacements.ContainsKey(option.Key.KeyToDataTableEnum()) && this.replacements[option.Key.KeyToDataTableEnum()].ContainsKey(subOption.Key) && this.replacements[option.Key.KeyToDataTableEnum()][subOption.Key]) ||
                                     (option.Key.KeyToDataTableEnum() == DataTableEnum.WeaponEnhance && this.replacements.ContainsKey(DataTableEnum.WeaponEnhance) && this.replacements[DataTableEnum.WeaponEnhance].ContainsKey("Weapon Upgrades") && this.replacements[DataTableEnum.WeaponEnhance]["Weapon Upgrades"]) ||
                                     (option.Key.Equals("Treasures") && this.replacements.ContainsKey(subOption.Key.KeyToDataTableEnum()) && this.replacements[subOption.Key.KeyToDataTableEnum()].ContainsKey(subOption.Key) && this.replacements[subOption.Key.KeyToDataTableEnum()][subOption.Key]))

@@ -227,7 +227,7 @@ namespace KH3Randomizer.Data
 
                     if (hintType.Equals("Verbose"))
                     {
-                        if (equipmentLocation.Item2.Contains("Small Chest") || equipmentLocation.Item2.Contains("Large Chest"))
+                        if (equipmentLocation != null && (equipmentLocation.Item2.Contains("Small Chest") || equipmentLocation.Item2.Contains("Large Chest")))
                         {
                             hintLocation = $"in {equipmentLocation.Item1} found on {this.GetEquipment(subCategory)} in {equipmentLocation.Item2.GetChestLocation(equipmentLocation.Item1.KeyToDataTableEnum())}.";
                         }
@@ -248,7 +248,7 @@ namespace KH3Randomizer.Data
                     if (weaponLocation == null)
                         weaponLocation = new Tuple<string, string>("on Sora's Initial Setup", "");
 
-                    var weaponDescription = weaponLocation.Item2.Length > 0 ? $" {weaponLocation.Item2}" : "";
+                    var weaponDescription = weaponLocation.Item2.Length > 0 ? $" in {weaponLocation.Item2.GetChestLocation(weaponLocation.Item1.KeyToDataTableEnum())}" : "";
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in {weaponLocation.Item1}{weaponDescription} on {keyblade.Item1} on {keyblade.Item2}.";
                     else if (hintType.Equals("Vague"))

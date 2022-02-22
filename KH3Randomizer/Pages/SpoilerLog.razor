@@ -164,6 +164,15 @@
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>()
     {
+        { DataTableEnum.TreasureKG, new Dictionary<string, bool>
+            { { "Keyblade Graveyard", false } }
+        },
+        { DataTableEnum.TreasureEW, new Dictionary<string, bool>
+            { { "The Final World", false } }
+        },
+        { DataTableEnum.TreasureBT, new Dictionary<string, bool>
+            { { "Scala Ad Caelum", false } }
+        },
         { DataTableEnum.Event, new Dictionary<string, bool>
             { { "Keyblades", false }, { "Heartbinders", false }, { "Reports", true }, { "Data Battles", false }, { "Yozora", true }, { "Complete 100 Acre Wood", true }, { "Complete All Classic Kingdom Minigames", true }, { "Complete All Bistro Recipes", true } }
         },
@@ -410,7 +419,18 @@
 
     private Dictionary<string, bool> GetReplaceOptionsFromPool(string pool)
     {
-        if (replacements.ContainsKey(pool.KeyToDataTableEnum()))
+        if (pool.Equals("Treasures"))
+        {
+            var treasureDictionary = new Dictionary<string, bool>();
+            var treasureList = replacements.Where(x => x.Key.DataTableEnumToKey().Equals("Treasures"));
+            foreach (var treasures in treasureList)
+            {
+                var tElement = treasures.Value.First();
+                treasureDictionary.Add(tElement.Key, tElement.Value);
+            }
+            return treasureDictionary;
+        }
+        else if (replacements.ContainsKey(pool.KeyToDataTableEnum()))
         {
             var replaceOptions = replacements[pool.KeyToDataTableEnum()];
             return replaceOptions.Count > 0 ? replacements[pool.KeyToDataTableEnum()] : new Dictionary<string, bool>();
@@ -423,7 +443,9 @@
         // If the option in true in replacements, return 1
         // Return 2 otherwise to set this to be randomized
         // In the future, this could be updated to have a vanilla option (0)
-        if (replacements[pool.KeyToDataTableEnum()][option])
+        var replaceKey = pool.Equals("Treasures") ? option.KeyToDataTableEnum() : pool.KeyToDataTableEnum();
+
+        if (replacements[replaceKey][option])
         {
             return 1;
         }
@@ -432,19 +454,20 @@
 
     private void UpdateReplaceOption(string pool, string option, ChangeEventArgs e)
     {
+        var replaceKey = pool.Equals("Treasures") ? option.KeyToDataTableEnum() : pool.KeyToDataTableEnum();
         // 0 is Vanilla, 1 is Replace, 2 is Randomize
         switch (e.Value)
         {
             case "1":
-                this.replacements[pool.KeyToDataTableEnum()][option] = true;
+                this.replacements[replaceKey][option] = true;
                 break;
             case "2":
                 // This option should be randomized
-                this.replacements[pool.KeyToDataTableEnum()][option] = false;
+                this.replacements[replaceKey][option] = false;
                 break;
             default:
                 // This option should not be randomized
-                this.replacements[pool.KeyToDataTableEnum()][option] = false;
+                this.replacements[replaceKey][option] = false;
                 break;
         }
         this.UpdateReplacements(this.replacements);
