@@ -732,44 +732,6 @@ namespace KH3Randomizer.Data
                     }
                 }
 
-                // Account for key abilities
-                Dictionary<DataTableEnum, Dictionary<string, bool>> dataTablesToCheck = new Dictionary<DataTableEnum, Dictionary<string, bool>>();
-
-                foreach (var extra in availableExtras)
-                {
-                    if (extra.Key.Contains("Key Abilities") && availableOptions.ContainsKey(extra.Value.RequiredPool) && !extra.Value.Enabled)
-                    {
-                        dataTablesToCheck.Add(extra.Value.RequiredPool.KeyToDataTableEnum(), new Dictionary<string, bool> { });
-                    }
-                }
-
-                if (dataTablesToCheck.Count > 0)
-                {
-                    Dictionary<DataTableEnum, Dictionary<string, bool>> blockedDataTables = new Dictionary<DataTableEnum, Dictionary<string, bool>>(replacements);
-                    blockedDataTables.Add(DataTableEnum.ChrInit, new Dictionary<string, bool> { { "Critical Abilities", true } });
-                    foreach (var dt in dataTablesToCheck)
-                    {
-                        if (!blockedDataTables.ContainsKey(dt.Key))
-                        {
-                            blockedDataTables.Add(dt.Key, dt.Value);
-                        }
-                    }
-
-                    foreach (var category in randomizedOptions)
-                    {
-                        foreach (var subCategory in category.Value)
-                        {
-                            foreach (var option in subCategory.Value)
-                            {
-                                if (keyAbilities.Contains(option.Value.ValueIdToDisplay()) && dataTablesToCheck.ContainsKey(category.Key)) 
-                                {
-                                    UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, category.Key, subCategory.Key, option.Key, option.Value, blockedDataTables);
-                                }
-                            }
-                        }
-                    }
-                }
-
                 // Account for Pole Spin not being locked behind Frozen
 
                 // List of places it can't be
@@ -1019,7 +981,6 @@ namespace KH3Randomizer.Data
                     ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.SynthesisItem, "IS_79");
                 }
 
-
                 // Replace beat the game on crit and the two moogle proof checks
                 // These need to be randomized in for proofs and oblivion/oathkeeper, but they are not accessible
                 // Oblivion/Oathkeeper were being checked in multiple places before, but it might be easier to just pull them out here
@@ -1027,11 +988,52 @@ namespace KH3Randomizer.Data
                 ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYBLADE_012");
                 ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYBLADE_013");
 
-                // Clean VBonuses
-                // This will reassign VBonuses such that each VBonus will have at least one check on it
-                if (availableExtras["Balanced Bonuses"].Enabled)
+                // Account for key abilities
+                Dictionary<DataTableEnum, Dictionary<string, bool>> dataTablesToCheck = new Dictionary<DataTableEnum, Dictionary<string, bool>>();
+
+                foreach (var extra in availableExtras)
                 {
-                    this.CleanVBonuses(DataTableEnum.VBonus, ref randomizedOptions, availableOptions, replacements);
+                    if (extra.Key.Contains("Key Abilities") && availableOptions.ContainsKey(extra.Value.RequiredPool) && !extra.Value.Enabled)
+                    {
+                        dataTablesToCheck.Add(extra.Value.RequiredPool.KeyToDataTableEnum(), new Dictionary<string, bool> { });
+                    }
+                }
+
+                if (dataTablesToCheck.Count > 0)
+                {
+                    Dictionary<DataTableEnum, Dictionary<string, bool>> blockedDataTables = new Dictionary<DataTableEnum, Dictionary<string, bool>>(replacements);
+                    blockedDataTables.Add(DataTableEnum.ChrInit, new Dictionary<string, bool> { { "Critical Abilities", true } });
+                    foreach (var dt in dataTablesToCheck)
+                    {
+                        var blockedValue = new Dictionary<string, bool>();
+                        foreach (var val in dt.Value)
+                        {
+                            blockedValue.Add(val.Key, true);
+                        }
+
+                        if (!blockedDataTables.ContainsKey(dt.Key))
+                        {
+                            blockedDataTables.Add(dt.Key, blockedValue);
+                        } 
+                        else
+                        {
+                            blockedDataTables[dt.Key] = blockedValue;
+                        }
+                    }
+
+                    foreach (var category in randomizedOptions)
+                    {
+                        foreach (var subCategory in category.Value)
+                        {
+                            foreach (var option in subCategory.Value)
+                            {
+                                if (keyAbilities.Contains(option.Value.ValueIdToDisplay()) && dataTablesToCheck.ContainsKey(category.Key))
+                                {
+                                    UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, category.Key, subCategory.Key, option.Key, option.Value, blockedDataTables);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // Add back the default values that were not included
@@ -1047,8 +1049,27 @@ namespace KH3Randomizer.Data
                         }
 
                         if (!randomizedOptions.ContainsKey(dataTableEnum))
+                        {
                             randomizedOptions.Add(dataTableEnum, defaultOptions[dataTableEnum]);
+                        }
                     }
+                }
+
+                // Replace checks on Ultima if Ultima is turned off
+                if ((availableExtras.ContainsKey("Allow Ultima") && !availableExtras["Allow Ultima"].Enabled))
+                {
+                    ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.EquipItem, "I03015");
+                    for (int i = 120; i < 130; i++)
+                    {
+                        ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.WeaponEnhance, @$"IW_{i}");
+                    }
+                }
+
+                // Clean VBonuses
+                // This will reassign VBonuses such that each VBonus will have at least one check on it
+                if (availableExtras["Balanced Bonuses"].Enabled)
+                {
+                    this.CleanVBonuses(DataTableEnum.VBonus, ref randomizedOptions, availableOptions, replacements);
                 }
 
                 // Do one more pass through to make sure that important checks are in the pool
