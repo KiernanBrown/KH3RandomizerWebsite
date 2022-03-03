@@ -25,13 +25,14 @@
     }
     else if (this.currentSection == "Hints")
     {
-        <Hints ContinueTo="@(() => ContinueTo("Review"))" BackTo="@(() => BackTo("Options"))" AvailableHints="@this.availableHints" UpdateAvailableHints="@(hints => UpdateAvailableHints(hints))" UpdateHintSelection="@(selection => UpdateHintSelection(selection))"></Hints>
+        <Hints ContinueTo="@(() => ContinueTo("Review"))" BackTo="@(() => BackTo("Options"))"
+               RandomizedOptions="@this.randomizedOptions" UpdateHintSelection="@this.UpdateHintSelection" HintSelectionType="@this.hintSelectionType" ImportantChecks="@this.importantChecks"></Hints>
     }
     else if (this.currentSection == "Review")
     {
         <Review BackTo="@(() => BackTo("Hints"))" CurrentSeed="@this.CurrentSeed" RandomizedOptions="@this.randomizedOptions"
                 AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" Replacements="@this.replacements" Modifications="@this.modifications"
-                AvailableHints="@this.availableHints" HintSelectionType="@this.hintSelectionType"></Review>
+                AvailableHints="@this.availableHints" HintSelectionType="@this.hintSelectionType" ImportantChecks="@this.importantChecks"></Review>
     }
 </div>
 
@@ -89,6 +90,21 @@
         { DataTableEnum.WeaponEnhance, new Dictionary<string, bool>
             { { "Weapon Upgrades", false } }
         }
+    };
+
+    private List<string> importantChecks = new List<string>()
+    {
+        "Proof of Promises", "Proof of Times Past", "Proof of Fantasy",
+        "Secret Report 1", "Secret Report 2", "Secret Report 3", "Secret Report 4",
+        "Secret Report 5", "Secret Report 6", "Secret Report 7", "Secret Report 8",
+        "Secret Report 9", "Secret Report 10", "Secret Report 11", "Secret Report 12", "Secret Report 13",
+        "Magic: Aero", "Magic: Blizzard", "Magic: Cure",
+        "Magic: Fire", "Magic: Thunder", "Magic: Water",
+        "\'Ohana Heartbinder", "Dream Heartbinder", "Ocean Heartbinder",
+        "Pixel Heartbinder", "Pride Heartbinder",
+        "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin",
+        "Ability: Glide", "Ability: Doubleflight", "Ability: Aerial Recovery",
+        "Ability: Second Chance", "Ability: Withstand Combo"
     };
 
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();

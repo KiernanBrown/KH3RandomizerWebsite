@@ -1,4 +1,8 @@
-﻿<div class="hints-section">
+﻿@using UE4DataTableInterpreter.Enums
+
+@inject RandomizerService RandomizerService
+
+<div class="hints-section">
 
     <div class="hint-selection">
         <div class="row" style="width: 100%;">
@@ -14,56 +18,61 @@
             <div class="col-md-2">
                 <a class="rounded-selector a-tag-selector @(selectedHintType == "Verbose" ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { UpdateCurrentHintSelection("Verbose"); })" @onclick:preventDefault>Verbose</a>
             </div>
+            <div class="col-md-2">
+                <a class="rounded-selector a-tag-selector @(selectedHintType == "World" ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { UpdateCurrentHintSelection("World"); })" @onclick:preventDefault>World</a>
+            </div>
         </div>
     </div>
 
     @if (selectedHintType != "None")
     {
-    <Collapsable @ref="@hintCollapsable" CurrentOption="@this.currentHint" ToggleCollapsables="this.ToggleCollapsables" Title="@("Hints")" ActionType="@("Options")">
-        <div class="hints-subsection">
-            @foreach (var hint in this.hints)
+        <div class="search_options kh-input">
+            <label for="randomizer_search" class="kh-label">Search Filter: </label>
+            <input value="@searchValue" id="randomizer_search" name="randomizer_search" class="kh-inputfield" @oninput="@((e) => this.SearchChecks(e.Value.ToString()))" placeholder="Search for a check to add to your important checks list..." />
+        </div>
+
+        <div class="row" style="width: 100%;">
+            @foreach (var group in this.checkGroups)
             {
-                <div class="row" style="margin-top: 50px;">
-                    <div class="col-md-12">
-                        <h3 style="display: inline; margin-right: 15px;"><b>@hint.Key</b></h3>
-
-                        <label class="switch" style="margin-right: 25px;">
-                            <input type="checkbox" @onchange="@((value) => { UpdateHints(hint.Key, (bool)value.Value); })" checked="@this.CheckHints(hint.Key)">
-                            <span class="slider round"></span>
-                        </label>
-
-                        <Tooltip Text="@hintDescriptions[hint.Key]" Style="margin-top: 8px;">
-                            <i class="bi bi-question-circle" style="font-size: 1.2rem; color: dodgerblue; margin-left: 100px;"></i>
-                        </Tooltip>
-                    </div>
-                </div>
-
-
-
-                <div class="row hints-sub-subsection">
-                    @foreach (var subHint in hint.Value)
-                    {
-                        <div class="col-md-4" style="margin: 15px 0px;">
-                            <div class="row">
-                                <div class="col-md-2">
-                                    <label class="switch">
-                                        <input type="checkbox" @onchange="@((value) => { this.hints[hint.Key][subHint.Key] = (bool)value.Value; CheckHints(hint.Key); })" checked="@subHint.Value">
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label><b>@subHint.Key</b></label>
-                                </div>
-                            </div>
-                        </div>
-                    }
-
-                    <hr />
+                <div class="col-md-2">
+                    <a class="rounded-selector a-tag-selector @(this.CheckGroupEnabled(group.Key) ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { ToggleCheckGroup(group.Key); })" @onclick:preventDefault>@group.Key</a>
                 </div>
             }
         </div>
-    </Collapsable>
+
+        <br />
+
+        <div class="hints-subsection">
+            <div class="important-checks">
+                <h4><b>Important Checks</b></h4>
+                @foreach (var check in this.importantChecks)
+                {
+                    <span class="check" @onclick="() => this.ToggleCheck(check)">@check <i class="bi bi-dash-lg check-icon"></i></span>
+                }
+            </div>
+
+            <br />
+
+            <div class="found-checks">
+                <h4><b>Available Checks</b></h4>
+                @if (this.foundChecks.Count > 0)
+                {
+                    @foreach (var check in this.foundChecks)
+                    {
+                        <span class="check" @onclick="() => this.ToggleCheck(check)">@check <i class="bi bi-plus-lg check-icon"></i></span>
+                    }
+                }
+                else if (string.IsNullOrEmpty(this.searchValue))
+                {
+                    <em>Use the search bar above to add to your important checks list...</em>
+                }
+                else
+                {
+                    <em>No checks found for @this.searchValue</em>
+                }
+            </div>
+        </div>
+
     }
     else
     {
@@ -79,29 +88,54 @@
 @code {
     [Parameter] public EventCallback<string> BackTo { get; set; }
     [Parameter] public EventCallback<string> ContinueTo { get; set; }
-    [Parameter] public EventCallback<Dictionary<string, Dictionary<string, bool>>> UpdateAvailableHints { get; set; }
     [Parameter] public EventCallback<string> UpdateHintSelection { get; set; }
+    [Parameter] public EventCallback<List<string>> UpdateImportantChecks { get; set; }
+    [Parameter] public string HintSelectionType { get; set; }
 
-    [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableHints { get; set; }
+    [Parameter] public List<string> ImportantChecks { get; set; }
+    [Parameter] public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> RandomizedOptions { get; set; }
 
     private Dictionary<string, Dictionary<string, bool>> hints = new Dictionary<string, Dictionary<string, bool>>();
+    private List<string> importantChecks = new List<string>();
+    private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
 
-    private Dictionary<string, string> hintDescriptions = new Dictionary<string, string> {
-        { "Proofs", "All Proofs will be considered checks: Proof of Promises, Proof of Memories Past, Proof of Fantasy." },
-        { "Abilities", "Certain Abilities that may be useful and will be considered checks: Pole Spin, Block, Dodge Roll, Air Slide, Doubleflight, Second Chance, Withstand Combo." },
-        { "Heartbinders", "All Links will be considered checks: Dream Heartbinder, Pixel Heartbinder, Pride Heartbinder, Ocean Heartbinder, \'Ohana Heartbinder." },
-        { "Magic", "All Magic and their upgrades will be considered checks: Fire, Water, Cure, Blizzard, Thunder & Aero." },
-        { "Formchanges", "The following keyblade formchanges will be considered checks: Hero's Origin, Grand Chef, Ultima Weapon, Oblivion & Oathkeeper." },
-        { "Secret Reports", "All Secret Reports will be conidered checks: Secret Reports 1 - 13." },
+    private Dictionary<string, List<string>> checkGroups = new Dictionary<string, List<string>>
+    {
+        { "Proofs", new List<string> {
+            "Proof of Promises", "Proof of Times Past", "Proof of Fantasy"}
+        },
+        { "Secret Reports", new List<string> {
+            "Secret Report 1", "Secret Report 2", "Secret Report 3", "Secret Report 4",
+            "Secret Report 5", "Secret Report 6", "Secret Report 7", "Secret Report 8",
+            "Secret Report 9", "Secret Report 10", "Secret Report 11", "Secret Report 12", "Secret Report 13" }
+        },
+        { "Magic", new List<string> {
+            "Magic: Aero", "Magic: Blizzard", "Magic: Cure",
+            "Magic: Fire", "Magic: Thunder", "Magic: Water" }
+        },
+        { "Heartbinders", new List<string> {
+            "\'Ohana Heartbinder", "Dream Heartbinder", "Ocean Heartbinder",
+            "Pixel Heartbinder", "Pride Heartbinder" }
+        },
+        { "Key Abilities", new List<string> {
+            "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin",
+            "Ability: Glide", "Ability: Doubleflight", "Ability: Aerial Recovery",
+            "Ability: Second Chance", "Ability: Withstand Combo" }
+        },
     };
 
-    private Collapsable hintCollapsable;
     private string currentHint = string.Empty;
     private string selectedHintType = "Verbose";
 
+    private string searchValue = "";
+    private List<string> foundChecks = new List<string>();
+    private int searchLimit = 25;
+
     protected override void OnInitialized()
     {
-        this.hints = this.AvailableHints;
+        this.importantChecks = this.ImportantChecks;
+        this.randomizedOptions = this.RandomizedOptions;
+        this.selectedHintType = this.HintSelectionType;
     }
 
     private bool CheckHints(string key)
@@ -118,16 +152,6 @@
         }
 
         return allOn;
-    }
-
-    private void UpdateHints(string key, bool value)
-    {
-        foreach (var subHint in this.hints[key])
-        {
-            this.hints[key][subHint.Key] = value;
-        }
-
-        this.UpdateAvailableHints.InvokeAsync(this.hints);
     }
 
     private void UpdateCurrentHintSelection(string selection)
@@ -150,5 +174,103 @@
         {
             StateHasChanged();
         });
+    }
+
+    private void SearchChecks(string search)
+    {
+        this.searchValue = search;
+
+        this.foundChecks = new List<string>();
+
+        if (!string.IsNullOrEmpty(this.searchValue))
+        {
+            foreach (var category in this.randomizedOptions)
+            {
+                var categoryConverted = category.Key.DataTableEnumToKey();
+                foreach (var subCategory in category.Value)
+                {
+                    var subCategoryConverted = subCategory.Key.CategoryToKey(category.Key);
+
+                    foreach (var option in subCategory.Value)
+                    {
+                        if (this.foundChecks.Count < this.searchLimit && option.Value.ValueIdToDisplay().ToLower().Contains(this.searchValue.ToLower()) && !option.Value.ValueIdToDisplay().Contains("ETres"))
+                        {
+                            if (!this.foundChecks.Contains(option.Value.ValueIdToDisplay()) && !this.importantChecks.Contains(option.Value.ValueIdToDisplay()))
+                                this.foundChecks.Add(option.Value.ValueIdToDisplay());
+
+                            if (this.foundChecks.Count == this.searchLimit)
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        this.foundChecks.Sort();
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    private void ToggleCheck(string check)
+    {
+        if(this.importantChecks.Contains(check))
+        {
+            this.importantChecks.Remove(check);
+            SearchChecks(this.searchValue);
+        }
+        else if (this.foundChecks.Contains(check))
+        {
+            this.importantChecks.Add(check);
+            SearchChecks(this.searchValue);
+        }
+    }
+
+    private bool CheckGroupEnabled(string group)
+    {
+        if (this.checkGroups.ContainsKey(group))
+        {
+            bool hasAllChecks = true;
+            foreach(var check in this.checkGroups[group])
+            {
+                if (!this.importantChecks.Contains(check))
+                {
+                    hasAllChecks = false;
+                    break;
+                }
+            }
+            return hasAllChecks;
+
+        }
+        return false;
+    }
+
+    private void ToggleCheckGroup(string group)
+    {
+        if (this.checkGroups.ContainsKey(group))
+        {
+            if (CheckGroupEnabled(group))
+            {
+                foreach (var check in this.checkGroups[group])
+                {
+                    if (importantChecks.Contains(check))
+                    {
+                        importantChecks.Remove(check);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var check in this.checkGroups[group])
+                {
+                    if (!importantChecks.Contains(check))
+                    {
+                        importantChecks.Add(check);
+                    }
+                }
+            }
+        }
     }
 }

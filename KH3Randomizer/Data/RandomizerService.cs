@@ -15,7 +15,8 @@ namespace KH3Randomizer.Data
         private List<string> blockedChecks = new List<string>();
         private List<string> keyAbilities = new List<string>()
         {
-            "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin", "Ability: Glide",
+            "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin", 
+            "Ability: Glide", "Ability: Doubleflight", "Ability: Aerial Recovery",
             "Ability: Second Chance", "Ability: Withstand Combo"
         };
 
@@ -367,8 +368,9 @@ namespace KH3Randomizer.Data
             }
 
             List<string> foundChecks = new List<string>();
+            bool validRandomization = false;
 
-            while (foundChecks.Count != importantChecks.Count)
+            while (!validRandomization)
             {
                 foundChecks = new List<string>();
                 blockedChecks = new List<string>();
@@ -1096,16 +1098,31 @@ namespace KH3Randomizer.Data
                         }
                     }
                 }
+
+                // Make sure we have at least the designated number of copies of each check
+                var groupedImportantChecks = importantChecks.GroupBy(x => x);
+                var groupedFoundChecks = foundChecks.GroupBy(x => x);
+                validRandomization = true;
+
+                foreach(var ic in groupedImportantChecks)
+                {
+                    var fc = groupedFoundChecks.FirstOrDefault(c => c.Key == ic.Key);
+                    if (fc == null || fc.Count() < ic.Count())
+                    {
+                        validRandomization = false;
+                        break;
+                    }
+                }
             }
         }
 
         public byte[] GenerateRandomizerSeed(string currentSeed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
-                                             Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<Tuple<Option, Option>> modifications, byte[] hints)
+                                             Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<Tuple<Option, Option>> modifications, HintContainer hintContainer)
         {
             var dataTableManager = new UE4DataTableInterpreter.DataTableManager();
             var dataTables = dataTableManager.RandomizeDataTables(randomizedOptions);
 
-            var zipArchive = this.CreateZipArchive(dataTables, currentSeed, availablePools, availableExtras, availableOptions, replacements, modifications, hints);
+            var zipArchive = this.CreateZipArchive(dataTables, currentSeed, availablePools, availableExtras, availableOptions, replacements, modifications, hintContainer);
 
             return zipArchive;
 
@@ -1128,7 +1145,7 @@ namespace KH3Randomizer.Data
             //return new List<byte[]> { this.GetFile(@$".\Seeds\pakchunk99-randomizer-{currentSeed}.pak"), this.GetFile(@$"{pakPath}\SpoilerLog.json") };
         }
 
-        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<Tuple<Option, Option>> modifications, byte[] hints)
+        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<Tuple<Option, Option>> modifications, HintContainer hintContainer)
         {
             var zipPath = @$".\Seeds\pakchunk99-randomizer-{randomSeed}\pakchunk99-randomizer-{randomSeed}.zip";
 
@@ -1163,7 +1180,9 @@ namespace KH3Randomizer.Data
                     AvailableExtras = availableExtras,
                     AvailableOptions = availableOptions,
                     Replacements = replacements,
-                    Modifications = jsonTupleList
+                    Modifications = jsonTupleList,
+                    ImportantChecks = hintContainer.ImportantChecks,
+                    HintType = hintContainer.Type
                 };
 
                 var jsonSpoiler = JsonSerializer.Serialize(spoilerLogFile);
@@ -1173,7 +1192,7 @@ namespace KH3Randomizer.Data
 
                 // Create Hints
                 var hintEntry = archive.CreateEntry(@"KINGDOM HEARTS III\Content\Localization\Game\en\kh3_mobile.locres");
-                using var hintStream = new MemoryStream(hints);
+                using var hintStream = new MemoryStream(hintContainer.Hints);
                 using var hintEntryStream = hintEntry.Open();
                 
                 hintStream.CopyTo(hintEntryStream);

@@ -44,7 +44,7 @@
                 <h3 for="options" style="font-size: 1.3rem;"><span class="header-color" style="background-color: #72619e;"></span><b>Extras: </b></h3>
                 @if (this.extras.Count == 0)
                 {
-                    <label id="modifications" name="modifications" style="margin-left: 50px; margin-top: 2px; font-weight: 600;">There are no Extras.</label>
+                    <label id="extras" name="extras" style="margin-left: 50px; margin-top: 2px; font-weight: 600;">There are no Extras.</label>
                 }
             </div>
             <div class="review-content" style="max-height: 500px; overflow-y: auto;">
@@ -55,6 +55,27 @@
                     </div>
                 }
             </div>
+        </div>
+
+        <div class="review-sub-subsection">
+            <div class="review-header">
+                <h3 for="options" style="font-size: 1.3rem;"><span class="header-color" style="background-color: #91abeb;"></span><b>Important Checks: </b></h3>
+                @if (this.HintSelectionType.Equals("None") || this.importantChecks.Count == 0)
+                {
+                    <label id="hints" name="hints" style="margin-left: 50px; margin-top: 2px; font-weight: 600;">There are no Important Checks.</label>
+                }
+            </div>
+            @if (!this.HintSelectionType.Equals("None") && this.importantChecks.Count > 0)
+            {
+                <div class="review-content" style="max-height: 500px; overflow-y: auto;">
+                    @foreach (var check in importantChecks)
+                    {
+                        <div style="display: inline">
+                            <span class="sub-option-bubble" style="@hintColor">@check</span>
+                        </div>
+                    }
+                </div>
+            }
         </div>
 
         <div class="review-sub-subsection">
@@ -119,15 +140,18 @@
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
     [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableHints { get; set; }
     [Parameter] public string HintSelectionType { get; set; }
+    [Parameter] public List<string> ImportantChecks { get; set; }
 
     private List<string> pools { get; set; } = new();
     private List<string> extras { get; set; } = new();
     private Dictionary<string, string> options { get; set; } = new();
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements { get; set; }
     private List<string> modifications { get; set; } = new();
+    private List<string> importantChecks = new List<string>();
 
     private Dictionary<string, string> poolColors = new();
     private string extraColor = "background: linear-gradient(to right, #753da3, #ad70df);";
+    private string hintColor = "background: linear-gradient(to right, #397e9b, #00b0f8);";
     private Dictionary<string, string> optionColors = new();
 
     protected override void OnInitialized()
@@ -135,6 +159,7 @@
         this.pools = this.AvailablePools.Where(x => x.Value).Select(x => x.Key).ToList();
         this.extras = this.AvailableExtras.Where(x => x.Value.Enabled).Select(x => x.Key).ToList();
         this.replacements = this.Replacements;
+        this.importantChecks = this.ImportantChecks;
         this.options = new();
 
         foreach (var pool in pools)
@@ -171,7 +196,9 @@
             { "Synthesis Items", "background-color: #70c0df;" }
         };
 
-        extraColor = "background: linear-gradient(to right, #753da3, #ad70df);";
+        this.extraColor = "background: linear-gradient(to right, #753da3, #ad70df);";
+
+        this.hintColor = "background: linear-gradient(to right, #397e9b, #00b0f8);";
 
         this.optionColors = new()
         {
@@ -191,19 +218,17 @@
     public void GenerateSeed()
     {
         byte[] hintResults;
-        var hints = new Dictionary<string, bool>();
 
-        foreach(var hint in this.AvailableHints)
+        hintResults = this.HintService.GenerateHints(this.CurrentSeed, this.RandomizedOptions, this.HintSelectionType, this.ImportantChecks);
+
+        HintContainer hintContainer = new HintContainer
         {
-            foreach (var subHint in hint.Value)
-            {
-                hints.Add(subHint.Key, subHint.Value);
-            }
-        }
+            ImportantChecks = this.ImportantChecks,
+            Type = this.HintSelectionType,
+            Hints = hintResults
+        };
 
-        hintResults = this.HintService.GenerateHints(this.CurrentSeed, this.RandomizedOptions, this.HintSelectionType, hints);
-
-        var file = this.RandomizerService.GenerateRandomizerSeed(this.CurrentSeed, this.RandomizedOptions, this.AvailablePools, this.AvailableExtras, this.AvailableOptions, this.Replacements, this.Modifications, hintResults);
+        var file = this.RandomizerService.GenerateRandomizerSeed(this.CurrentSeed, this.RandomizedOptions, this.AvailablePools, this.AvailableExtras, this.AvailableOptions, this.Replacements, this.Modifications, hintContainer);
 
         js.InvokeAsync<object>("saveAsFile", "pakchunk99-randomizer-" + this.CurrentSeed + ".zip", Convert.ToBase64String(file));
         // js.InvokeAsync<object>("saveAsFile", "pakchunk99-randomizer-" + this.CurrentSeed + ".pak", Convert.ToBase64String(files[0]));

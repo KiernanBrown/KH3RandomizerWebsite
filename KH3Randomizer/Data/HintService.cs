@@ -8,167 +8,264 @@ namespace KH3Randomizer.Data
 {
     public class HintService
     {
-        public byte[] GenerateHints(string seed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, string hintType, Dictionary<string, bool> availableHints)
+        public List<string> ShuffleHints(string seed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, string hintType, List<string> importantChecks)
         {
-            var hints = new byte[0];
             List<string> hintList = new List<string>();
 
             if (hintType.Equals("Off"))
-                return hints;
+                return hintList;
 
             var levelUpTracker = new List<string>();
-            foreach (var (hintName, available) in availableHints)
+
+            List<string> worldCategories = new List<string>()
             {
-                if (!available)
-                    continue;
+                "in Olympus.", "in Twilight Town.", "in Toy Box.", "in Kingdom of Corona.",
+                "in Monstropolis.", "in Arendelle.", "in The Caribbean.", "in San Fransokyo.",
+                "in 100 Acre Wood.", "in The Dark World.", "in The Keyblade Graveyard.", "in The Final World.",
+                "in Re:Mind (The Keyblade Graveyard).", "in Scala Ad Caelum.", "in Radiant Garden."
+            };
 
-                var hintDisplayName = hintName;
-                var skipAmount = 0;
-                if (hintName.EndsWith("ra"))
-                    skipAmount = 1;
-                else if (hintName.EndsWith("ga"))
-                    skipAmount = 2;
-                else
-                    levelUpTracker = new List<string>();
-
-                // Change base, ra, ga spells to base spell element
-                if (hintName == "Fire" || (skipAmount > 0 && hintName.Contains("Fi")))
+            foreach (var searchCategory in randomizedOptions)
+            {
+                foreach (var searchSubCategory in searchCategory.Value)
                 {
-                    hintDisplayName = "Fire Element";
-                }
-                else if (hintName == "Blizzard" || (skipAmount > 0 && hintName.Contains("Blizz")))
-                {
-                    hintDisplayName = "Blizzard Element";
-                }
-                else if (hintName == "Thunder" || (skipAmount > 0 && hintName.Contains("Thund")))
-                {
-                    hintDisplayName = "Thunder Element";
-                }
-                else if (hintName == "Cure" || (skipAmount > 0 && hintName.Contains("Cur")))
-                {
-                    hintDisplayName = "Cure Element";
-                }
-                else if (hintName == "Aero" || (skipAmount > 0 && hintName.Contains("Aero")))
-                {
-                    hintDisplayName = "Aero Element";
-                }
-                else if (hintName == "Water" || (skipAmount > 0 && hintName.Contains("Water")))
-                {
-                    hintDisplayName = "Water Element";
-                }
-
-                var hintLocation = string.Empty;
-                var tempSkipAmount = levelUpTracker.Count;
-
-                foreach (var searchCategory in randomizedOptions)
-                {
-                    foreach (var searchSubCategory in searchCategory.Value)
+                    foreach (var (searchName, searchValue) in searchSubCategory.Value)
                     {
-                        foreach (var (searchName, searchValue) in searchSubCategory.Value)
+                        if (importantChecks.Contains(searchValue.ValueIdToDisplay()))
                         {
-                            if (searchValue == this.GetDisplayToId(hintName) || (searchCategory.Key == DataTableEnum.ChrInit && searchValue == this.GetDisplayToDefKeyblade(hintName)))
+                            if (searchCategory.Key == DataTableEnum.LevelUp)
                             {
-                                if (searchCategory.Key == DataTableEnum.LevelUp)
+                                var contained = false;
+                                foreach (var levelUpItem in levelUpTracker)
                                 {
-                                    var contained = false;
-                                    foreach (var levelUpItem in levelUpTracker)
+                                    if (levelUpItem.Contains($"{searchSubCategory.Key} ({searchName.ToLevelUpRoute()})"))
                                     {
-                                        if (levelUpItem.Contains($"{searchSubCategory.Key} ({searchName})"))
-                                        {
-                                            contained = true;
+                                        contained = true;
 
-                                            break;
-                                        }
-                                    }
-
-                                    var tempAltLevelUps = this.GetLevelUpAlternatives(randomizedOptions, searchSubCategory.Key, searchName, searchValue);
-
-                                    if (!levelUpTracker.Contains(tempAltLevelUps))
-                                    {
-                                        levelUpTracker.Add(tempAltLevelUps);
-                                    }
-                                    else if (contained)
-                                    {
-                                        continue;
+                                        break;
                                     }
                                 }
 
-                                if (tempSkipAmount < skipAmount)
-                                {
-                                    ++tempSkipAmount;
+                                var tempAltLevelUps = this.GetLevelUpAlternatives(randomizedOptions, searchSubCategory.Key, searchName, searchValue);
 
+                                if (!levelUpTracker.Contains(tempAltLevelUps))
+                                {
+                                    levelUpTracker.Add(tempAltLevelUps);
+                                }
+                                else if (contained)
+                                {
                                     continue;
                                 }
-
-                                hintLocation = this.GetHintItemLocation(randomizedOptions, searchCategory.Key, searchSubCategory.Key, searchName, searchValue, hintType);
-                                
-                                break;
                             }
+
+                            var hintLocation = this.GetHintItemLocation(randomizedOptions, searchCategory.Key, searchSubCategory.Key, searchName, searchValue, hintType);
+                            var hintText = string.Empty;
+                            var hintName = CleanHintName(searchValue.ValueIdToDisplay());
+
+                            if (hintType.Equals("Verbose"))
+                                hintText = $"{hintName} is {hintLocation}";
+                            else if (hintType.Equals("Vague"))
+                                hintText = $"There is 1 check {hintLocation}";
+                            else if (hintType.Equals("World"))
+                                hintText = hintLocation;
+
+                            hintList.Add(hintText);
                         }
-
-                        if (!string.IsNullOrEmpty(hintLocation))
-                            break;
                     }
-
-                    if (!string.IsNullOrEmpty(hintLocation))
-                        break;
                 }
-
-                var hintText = string.Empty;
-
-                if (hintType.Equals("Verbose"))
-                    hintText = $"{hintDisplayName.ValueIdToDisplay()} is {hintLocation}";
-                else if (hintType.Equals("Vague"))
-                    hintText = $"There is 1 check {hintLocation}";
-
-                hintList.Add(hintText);
             }
 
             var hash = seed.StringToSeed();
             var rng = new Random((int)hash);
 
+            if (hintType.Equals("World"))
+            {
+                var worldHints = hintList.GroupBy(x => x);
+                List<string> newHintList = new List<string>();
+                //hintList.Clear();
+                foreach(var wh in worldHints)
+                {
+                    if (wh.Key.Contains("Sora's Initial Setup"))
+                    {
+                        //continue;
+                    }
+                    if (wh.Count() == 1)
+                    {
+                        newHintList.Add($"There is {wh.Count()} check {wh.Key}");
+                    }
+                    else
+                    {
+                        newHintList.Add($"There are {wh.Count()} checks {wh.Key}");
+                    }
+                }
+
+                // Add empty hints if there are not enough to fill reports
+                List<int> usedWorldIndices = new List<int>();
+                while (newHintList.Count < 13)
+                {
+                    bool worldUnused = false;
+                    int worldIndex = 0;
+                    while (!worldUnused)
+                    {
+                        worldUnused = true;
+                        worldIndex = rng.Next(0, worldCategories.Count);
+                        if (usedWorldIndices.Contains(worldIndex))
+                        {
+                            worldUnused = false;
+                            continue;
+                        }
+                        foreach (var wh in worldHints)
+                        {
+                            if (wh.Key.Equals(worldCategories[worldIndex]))
+                            {
+                                worldUnused = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    newHintList.Add($"There are 0 checks {worldCategories[worldIndex]}");
+                    usedWorldIndices.Add(worldIndex);
+                }
+
+                hintList = newHintList;
+            }
+
+
+
             // Instead of just shuffling, place reports in spots that won't hint themselves, then fill the rest
-            // Grab the secret report hints from the end of the hint list
-            int reportCount = availableHints.Where((hint) => hint.Key.Contains("Report") && hint.Value).Count();
-            var reportHints = hintList.Skip(hintList.Count() - reportCount);
-            var otherHints = hintList.Take(hintList.Count() - reportCount).ToList();
-            var shuffledHints = new string[hintList.Count()];
+            var reportHints = hintList.Where(x => x.Contains("Secret Report"));
+            var otherHints = hintList.Where(x => !x.Contains("Secret Report"));
+
+            // Lists used to track which reports have received hints
+            // This is used to evenly distribute hints across reports (1 hint per report per pass)
+            List<int> usedReports = new List<int>();
+            List<int> reportSpots = new List<int>();
+
+            int totalHintCount = 13 * ((hintList.Count() - 1) / 13 + 1);
+            int hintsPerReport = totalHintCount / 13;
+            var shuffledHints = new string[totalHintCount];
 
             // Place report hints in spots where they won't hint themselves
-            for (int i = 0; i < reportCount; i++)
+            foreach(var report in reportHints)
             {
-                // Bounds for what this report hints, we want this report to be outside this
-                int lowerBound = i * 4;
-                int upperBound = lowerBound + 3;
+                // Parse the report for its number (14 characters with spaces until the number)
+                // Make sure that the hint for this report is outside the bounds this report hints
+                int reportNum = int.Parse(report.Substring(14).Split(" ")[0]) - 1;
 
                 bool validPlacement = false;
                 while (!validPlacement)
                 {
-                    int hintIndex = rng.Next(0, hintList.Count() - 1);
-                    if ((hintIndex < lowerBound || hintIndex > upperBound) && shuffledHints[hintIndex] == null)
+                    int reportIndex = rng.Next(0, 13);
+
+                    // Only use this index if it's outside of the report's bounds and the index is empty
+                    if (reportIndex != reportNum)
                     {
-                        shuffledHints[hintIndex] = reportHints.ElementAt(i);
-                        validPlacement = true;
+                        // Loop through the indices of this report and replace the first empty hint
+                        for (int j = 0; j < hintsPerReport; j++)
+                        {
+                            int hintIndex = reportIndex * hintsPerReport + j;
+                            if (string.IsNullOrEmpty(shuffledHints[hintIndex]))
+                            {
+                                shuffledHints[hintIndex] = report;
+                                validPlacement = true;
+                                reportSpots.Add(reportIndex);
+                                break;
+                            }
+                        }
                     }
                 }
             }
 
-            // Fill the rest of the array with the other hints
-            for (int i = 0; i < hintList.Count(); i++)
+            // Add the spots that were used for report hints to usedReports
+            for(int i = reportSpots.Count - 1; i >= 0; i--)
             {
-                if (shuffledHints[i] != null)
+                int spot = reportSpots[i];
+                if (!usedReports.Contains(spot))
                 {
-                    continue;
+                    reportSpots.Remove(spot);
+                    usedReports.Add(spot);
                 }
-                int hintIndex = rng.Next(0, otherHints.Count() - 1);
-                shuffledHints[i] = otherHints[hintIndex];
-                otherHints.RemoveAt(hintIndex);
             }
 
+            // Fill the rest of the array with the other hints
+            foreach (var hint in otherHints)
+            {
+                // If every report has been given a hint this pass, reset the usedReports
+                if (usedReports.Count == 13)
+                {
+                    usedReports.Clear();
+
+                    // Add the spots that were used for report hints to usedReports
+                    for (int i = reportSpots.Count - 1; i >= 0; i--)
+                    {
+                        int spot = reportSpots[i];
+                        if (!usedReports.Contains(spot))
+                        {
+                            reportSpots.Remove(spot);
+                            usedReports.Add(spot);
+                        }
+                    }
+                }
+
+                bool validPlacement = false;
+                while (!validPlacement)
+                {
+                    // Roll for a report index until we find one that hasn't been used
+                    int reportIndex = rng.Next(0, 13);
+
+                    if (!usedReports.Contains(reportIndex))
+                    {
+                        // Loop through the indices of this report and replace the first empty hint
+                        for (int j = 0; j < hintsPerReport; j++)
+                        {
+                            int hintIndex = reportIndex * hintsPerReport + j;
+                            if (string.IsNullOrEmpty(shuffledHints[hintIndex]))
+                            {
+                                shuffledHints[hintIndex] = hint;
+                                validPlacement = true;
+                                usedReports.Add(reportIndex);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return shuffledHints.ToList();
+        }
+
+        public byte[] GenerateHints(string seed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, string hintType, List<string> importantChecks)
+        {
+            var hints = new byte[0];
             var mobile = new Mobile();
-            hints = mobile.Process(shuffledHints.ToList()).ToArray();
+            List<string> shuffledHints = ShuffleHints(seed, randomizedOptions, hintType, importantChecks);
+            int hintsPerReport = shuffledHints.Count / 13;
+            hints = mobile.Process(shuffledHints, hintsPerReport).ToArray();
 
             return hints;
+        }
+
+        public Dictionary<string, List<string>> GenerateHintSpoilers(string seed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, string hintType, List<string> importantChecks)
+        {
+            List<string> shuffledHints = ShuffleHints(seed, randomizedOptions, hintType, importantChecks);
+            int hintsPerReport = shuffledHints.Count / 13;
+            Dictionary<string, List<string>> hintSpoilers = new Dictionary<string, List<string>>();
+            for(int i = 0; i <= shuffledHints.Count / hintsPerReport; i++)
+            {
+                int report = i * hintsPerReport;
+                List<string> reportHints = new List<string>();
+                for (int j = 0; j < hintsPerReport; j++)
+                {
+                    if (shuffledHints.Count > report + j)
+                        reportHints.Add(shuffledHints[report + j]);
+                }
+
+                if (reportHints.Count > 0)
+                    hintSpoilers.Add(@$"Secret Report {i + 1}", reportHints);
+            }
+
+            return hintSpoilers;
         }
 
         public string GetHintItemLocation(Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, DataTableEnum category, string subCategory, string name, string value, string hintType)
@@ -184,21 +281,21 @@ namespace KH3Randomizer.Data
                 case DataTableEnum.FullcourseAbility:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"on a Fullcourse Meal {this.GetFullcourseDescription(subCategory)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"on a Fullcourse Meal.";
 
                     break;
                 case DataTableEnum.LevelUp:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"on Sora's Level Up {this.GetLevelUpAlternatives(randomizedOptions, subCategory, name, value)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"on Sora's Level Ups.";
 
                     break;
                 case DataTableEnum.LuckyMark:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"on Lucky Emblem Milestone {subCategory}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"on Lucky Emblem Milestones.";
                     
                     break;
@@ -207,7 +304,7 @@ namespace KH3Randomizer.Data
 
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in {vbonusLocation.Item1} {vbonusLocation.Item2}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in {vbonusLocation.Item1}.";
 
                     break;
@@ -217,7 +314,7 @@ namespace KH3Randomizer.Data
 
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"{preposition} {eventLocation.Item1} {eventLocation.Item2}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"{preposition} {eventLocation.Item1}.";
 
                     break;
@@ -238,6 +335,8 @@ namespace KH3Randomizer.Data
                     }
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in {equipmentLocation.Item1} on an Equipment.";
+                    else if (hintType.Equals("World"))
+                        hintLocation = $"in {equipmentLocation.Item1}.";
 
                     break;
                 case DataTableEnum.WeaponEnhance:
@@ -246,13 +345,15 @@ namespace KH3Randomizer.Data
                     var weaponLocation = this.GetLocationByLookUp(randomizedOptions, keybladeId);
 
                     if (weaponLocation == null)
-                        weaponLocation = new Tuple<string, string>("on Sora's Initial Setup", "");
+                        weaponLocation = new Tuple<string, string>("Sora's Initial Setup", "");
 
                     var weaponDescription = weaponLocation.Item2.Length > 0 ? $" in {weaponLocation.Item2.GetChestLocation(weaponLocation.Item1.KeyToDataTableEnum())}" : "";
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in {weaponLocation.Item1}{weaponDescription} on {keyblade.Item1} on {keyblade.Item2}.";
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in {weaponLocation.Item1} on {keyblade.Item1}.";
+                    else if (hintType.Equals("World"))
+                        hintLocation = $"in {weaponLocation.Item1}.";
 
                     break;
                 case DataTableEnum.SynthesisItem:
@@ -271,6 +372,8 @@ namespace KH3Randomizer.Data
 
                             else if (hintType.Equals("Vague"))
                                 hintLocation = $"in the Moogle Synthesis Shop (Photo Mission).";
+                            else if (hintType.Equals("World"))
+                                hintLocation = $"in the Moogle Synthesis Shop.";
                         }
                     } 
                     break;
@@ -278,77 +381,77 @@ namespace KH3Randomizer.Data
                 case DataTableEnum.TreasureBT:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in Scala Ad Caelum in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureBT)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in Scala Ad Caelum.";
 
                     break;
                 case DataTableEnum.TreasureBX:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in San Fransokyo in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureBX)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in San Fransokyo.";
 
                     break;
                 case DataTableEnum.TreasureCA:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in The Caribbean in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureCA)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in The Caribbean.";
 
                     break;
                 case DataTableEnum.TreasureEW:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in The Final World in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureEW)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in The Final World.";
 
                     break;
                 case DataTableEnum.TreasureFZ:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in Arendelle in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureFZ)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in Arendelle.";
 
                     break;
                 case DataTableEnum.TreasureHE:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in Olympus in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureHE)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in Olympus.";
 
                     break;
                 case DataTableEnum.TreasureKG:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in The Keyblade Graveyard in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureKG)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in The Keyblade Graveyard.";
 
                     break;
                 case DataTableEnum.TreasureMI:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in Monstropolis in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureMI)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in Monstropolis.";
 
                     break;
                 case DataTableEnum.TreasureRA:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in Kingdom of Corona in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureRA)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in Kingdom of Corona.";
 
                     break;
                 case DataTableEnum.TreasureTS:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in Toy Box in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureTS)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in Toy Box.";
 
                     break;
                 case DataTableEnum.TreasureTT:
                     if (hintType.Equals("Verbose"))
                         hintLocation = $"in Twilight Town in {subCategory.KeyIdToDisplay().GetChestLocation(DataTableEnum.TreasureTT)}.";
-                    else if (hintType.Equals("Vague"))
+                    else if (hintType.Equals("Vague") || hintType.Equals("World"))
                         hintLocation = $"in Twilight Town.";
 
                     break;
@@ -485,6 +588,25 @@ namespace KH3Randomizer.Data
                 default:
                     return "UNKNOWN";
             }
+        }
+
+        public string CleanHintName(string hintName)
+        {
+            string newHintName = hintName;
+            if (hintName.Contains("Magic: "))
+            {
+                newHintName = hintName.Split("Magic: ")[1] + " Element";
+            }
+            else if (hintName.Contains("Ability: "))
+            {
+                newHintName = hintName.Split("Ability: ")[1];
+            }
+            else if (hintName.Contains("Bonus: "))
+            {
+                newHintName = hintName.Split("Bonus: ")[1];
+            }
+
+            return newHintName;
         }
 
         public Tuple<string, string> GetLocation(DataTableEnum category, string subCategory)
@@ -770,12 +892,11 @@ namespace KH3Randomizer.Data
                             description = "(Anti-Aqua Boss)";
                             break;
 
+                        #region The Keyblade Graveyard
                         case "Vbonus_068":
-                            world = "San Fransokyo (Fallen to Darkness)";
+                            world = "The Keyblade Graveyard";
                             description = "(Lich Boss)";
                             break;
-
-                        #region The Keyblade Graveyard
                         case "Vbonus_069":
                             world = "The Keyblade Graveyard";
                             description = "(10,000 Enemy Fight)";
@@ -812,8 +933,8 @@ namespace KH3Randomizer.Data
 
                         #region The Final World
                         case "Vbonus_082":
-                            world = "The Final World (Tutorial Before Olympus)";
-                            description = "(Darkside Boss)";
+                            world = "The Final World";
+                            description = "(Darkside Tutorial Boss)";
                             break;
                         case "Vbonus_083":
                             world = "The Final World";
@@ -918,12 +1039,12 @@ namespace KH3Randomizer.Data
                             break;
 
                         case "VBonus_DLC_010":
-                            world = "Re:Mind (Scala Ad Caelum)";
+                            world = "Scala Ad Caelum";
                             description = "(Darkside Boss)";
                             break;
 
                         case "VBonus_DLC_015":
-                            world = "Re:Mind (End)";
+                            world = "Scala Ad Caelum";
                             description = "(Armored Xehanort Boss)";
                             break;
                         #endregion Re:Mind
@@ -1208,7 +1329,7 @@ namespace KH3Randomizer.Data
                     description = this.GetTreasure(subCategory);
                     break;
                 case DataTableEnum.TreasureKG:
-                    world = "The  Keyblade Graveyard";
+                    world = "The Keyblade Graveyard";
                     description = this.GetTreasure(subCategory);
                     break;
                 case DataTableEnum.TreasureMI:
@@ -1229,6 +1350,9 @@ namespace KH3Randomizer.Data
                     break;
                 case DataTableEnum.SynthesisItem:
                     world = "the Moogle Synthesis Shop";
+                    break;
+                case DataTableEnum.LuckyMark:
+                    world = "Lucky Emblem Milestones";
                     break;
             }
 
@@ -1725,13 +1849,13 @@ namespace KH3Randomizer.Data
             foreach (var levelUp in levelUps)
             {
                 if (levelUp.Value["TypeA"].Equals(value))
-                    levelUpTexts.Add($"{levelUp.Key} (TypeA)");
+                    levelUpTexts.Add($"{levelUp.Key} (Warrior)");
 
                 if (levelUp.Value["TypeB"].Equals(value))
-                    levelUpTexts.Add($"{levelUp.Key} (TypeB)");
+                    levelUpTexts.Add($"{levelUp.Key} (Mystic)");
                 
                 if (levelUp.Value["TypeC"].Equals(value))
-                    levelUpTexts.Add($"{levelUp.Key} (TypeC)");
+                    levelUpTexts.Add($"{levelUp.Key} (Guardian)");
 
                 if (levelUpTexts.Count == 3)
                     break;

@@ -191,7 +191,7 @@
     private async void ContinueToHints()
     {
         //this.RandomizerService.SetAvailablePools(this.pools);
-        if (CurrentSeed == null || CurrentSeed == "")
+        if (string.IsNullOrEmpty(this.CurrentSeed))
         {
             var parameters = new ModalParameters();
             var options = new ModalOptions { Class = "modal-custom" };
@@ -199,7 +199,7 @@
             var unnamedSeedModal = Modal.Show<UnnamedSeedModal>("Unnamed Seed", parameters, options);
             var result = await unnamedSeedModal.Result;
 
-            if (!result.Cancelled && result.Data != null && result.Data == "User closed modal")
+            if (!result.Cancelled && result.Data != null && (string)result.Data == "User closed modal")
             {
                 await this.ContinueTo.InvokeAsync("Hints");
             }

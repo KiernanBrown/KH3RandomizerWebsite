@@ -5,6 +5,7 @@
 @using System.IO;
 
 @inject RandomizerService RandomizerService
+@inject HintService HintService
 
 <div class="spoiler-log-content">
     <div class="spoiler-log-header">
@@ -68,7 +69,7 @@
             </div>
         </div>
 
-        <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentSubPool" ToggleCollapsables="this.ToggleCollapsables" Title="@("Sub Pools")" ActionType="@("Modal")">
+        <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="@("Sub Pools")" ActionType="@("Modal")">
             <div class="subpools-container">
                 @foreach (var pool in this.availablePools)
                 {
@@ -136,6 +137,30 @@
         <OptionsSubsection UpdateAvailableOptions="@this.UpdateAvailableOptions" UpdateRandomizedOptions="@this.UpdateRandomizedOptions" UpdateModifications="@this.UpdateModifications"
                            CurrentSeed="@this.currentSeed" AvailableExtras="@this.availableExtras" AvailableOptions="@this.tempOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements"
                            ActionType="Modal" SpoilerChecked="false" />
+
+        <!-- Collapsable for Hints -->
+        @if (this.hintSpoilers.Count > 0)
+        {
+            <Collapsable @ref="@hintsCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="@("Hints")" ActionType="@("Modal")">
+                <div class="subpools-container">
+                    @foreach (var report in this.hintSpoilers)
+                    {
+                        <div>
+                            <h4>@report.Key</h4>
+                            <ul>
+                                @foreach (var hint in report.Value)
+                                {
+                                    @if (!string.IsNullOrEmpty(hint))
+                                    {
+                                        <li>@hint</li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
+                    </div>
+            </Collapsable>
+        }
     </div>
 </div>
 
@@ -194,12 +219,15 @@
         }
     };
 
+    private Dictionary<string, List<string>> hintSpoilers = new();
+
     private Dictionary<string, Dictionary<string, bool>> tempOptions = new();
 
     private List<Tuple<Option, Option>> modifications = new();
 
     private Collapsable subPoolsCollapsable;
-    private string currentSubPool = string.Empty;
+    private Collapsable hintsCollapsable;
+    private string currentOption = string.Empty;
 
     protected override void OnInitialized()
     {
@@ -361,6 +389,10 @@
                 this.UpdateModifications(initialOption, swapOption);
             }
 
+            if (!string.IsNullOrEmpty(spoilerLogFile.HintType) && spoilerLogFile.HintType != "None")
+            {
+                this.hintSpoilers = this.HintService.GenerateHintSpoilers(currentSeed, randomizedOptions, spoilerLogFile.HintType, spoilerLogFile.ImportantChecks);
+            }
 
             await InvokeAsync(() =>
             {
@@ -407,9 +439,9 @@
         return false;
     }
 
-    private void ToggleCollapsables(string currentSubPool)
+    private void ToggleCollapsables(string currentOption)
     {
-        this.currentSubPool = currentSubPool;
+        this.currentOption = currentOption;
 
         InvokeAsync(() =>
         {

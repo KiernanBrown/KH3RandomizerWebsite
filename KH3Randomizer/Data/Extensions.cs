@@ -2365,6 +2365,21 @@ namespace KH3Randomizer.Data
             return "";
         }
 
+        public static string ToLevelUpRoute(this string type)
+        {
+            switch (type)
+            {
+                case "TypeA":
+                    return "Warrior";
+                case "TypeB":
+                    return "Mystic";
+                case "TypeC":
+                    return "Guardian";
+                default:
+                    return "";
+            }
+        }
+
         public static string GetPhotoMission(this int synthItemNum)
         {
             string photoMission = "";
