@@ -48,17 +48,28 @@ Added a Sub Pools section to the Pools and Spoiler Log pages where users can cho
 </ul>
 </details>
 
+### <b>Hints</b>
+Overhauled the Hints page to provide more options.
+<details><summary>More Details</summary>
+
+<ul>
+  <li>Added a search bar that can be used to build a list of Important Checks which will then be hinted.</li>
+  <li>Added a "World" Hint Type where a report will give the number of important checks for a world/category. This is similar in structure to JSmartee's hints for the 2FM rando.</li>
+  <li>Hints for checks that are on Moogle Photo Missions are a bit more descriptive now when using the Vague or Verbose hint types.</li>
+  <li>Reports should no longer hint themselves.</li>
+  <li>Changed references to magic in verbose hints to be in the form of [base spell] element instead of base spell/ra/ga.</li>
+  <ul>
+    <li>For example: The three fire checks will now all be referred to as Fire Element instead of Fire, Fira, and Firaga.</li>
+  </ul>
+  <li>If you load a spoiler log on the Spoiler Log page, you will now get a collapsable that shows what hints are present on that seed. This was mostly for testing purposes and might be removed in the future.</li>
+</ul>
+</details>
+
 ### <b>Other Changes</b>
 <details><summary>More Details</summary>
   <ul>
-    <li>Hints for checks that are on Moogle Photo Missions are a bit more descriptive now.</li>
-    <li>Reports should no longer hint themselves.</li>
     <li>Added a button on the Options page that will generate a random seed name for you.</li>
     <li>Added a warning for users trying to continue from the Options page to the Hints page without entering a seed name.</li>
-    <li>Changed references to magic in verbose hints to be in the form of [base spell] element instead of base spell/ra/ga.</li>
-    <ul>
-      <li>For example: The three fire checks will now all be referred to as Fire Element instead of Fire, Fira, and Firaga.</li>
-    </ul>
     <li>Tooltips and hints are a bit more descriptive (thanks to Sonicshadowsilver2).</li>
     <li>Chests now have tooltips and their hints are more descriptive (thanks to Clara_The_Classy).</li>
     <ul>
@@ -95,12 +106,14 @@ You will also need to make sure that you have the most recent version of [unreal
 ## Seed Generation Instructions <a name="instructions"></a>
 1. Choose whatever pools and extras that you want to have active on your seed and continue to the Options page.
 2. Enter a seed name on the bar at the top. This is required to actually randomize your seed so make sure that you do this!
-3. Continue to the Hints page and choose which hints settings that you want. These hints will display as the text on your Secret Reports in game.
+3. Continue to the Hints page and choose which hints settings that you want. These hints will display as the text on your Secret Reports in game. You can select your own list of important checks using the search bar on the hints page. The Hint Selection Types are detailed below:
     * None: No hints will be given on reports.
     * Vague: Reports will give you a vague description of where a check is.
       * If Proof of Times Past was in Toy Box Large Chest 1, a report could tell you "There is 1 check in Toy Box"
     * Verbose: Reports will give you a detailed description of exactly where a check is.
       * If Proof of Times Past was in Toy Box Large Chest 1, a report could tell you "Proof of Times Past is in Toy Box in Chest 1 (Large Chest, Andy's House)"
+    * World: Reports will hint the number of checks in a given world/category.
+          * If Proof of Times Past was in Toy Box Large Chest 1 and there were 2 other checks in Toy Box, a report could tell you "There are 3 checks in Toy Box."
 4. Click the Generate Seed button on the bottom right of the Review Page to download your seed's zip file.
 5. Extract the zip file that you just downloaded. 
     * If you're using WinRAR then you can right click on the zip file and and choose the option that says Extract To pakchunk99-randomizer-SeedName and it will create a new folder and extract the needed files to it.
