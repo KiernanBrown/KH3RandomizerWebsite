@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UE4DataTableInterpreter.Enums;
 using System.Linq;
 using UE4DataTableInterpreter.DataTables;
+using KH3Randomizer.Models;
 
 namespace KH3Randomizer.Data
 {
@@ -10,14 +11,16 @@ namespace KH3Randomizer.Data
     {
         public List<string> ShuffleHints(string seed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, string hintType, List<string> importantChecks)
         {
-            List<string> hintList = new List<string>();
+            Dictionary<string, List<string>> hintDictionary = new Dictionary<string, List<string>>();
+            Dictionary<string, List<string>> reportHints = new Dictionary<string, List<string>>();
+            List<SecretReport> reports = new List<SecretReport>();
 
             if (hintType.Equals("Off"))
-                return hintList;
+                return new List<string>();
 
             var levelUpTracker = new List<string>();
 
-            List<string> worldCategories = new List<string>()
+            List<string> hintCategories = new List<string>()
             {
                 "in Olympus.", "in Twilight Town.", "in Toy Box.", "in Kingdom of Corona.",
                 "in Monstropolis.", "in Arendelle.", "in The Caribbean.", "in San Fransokyo.",
@@ -69,7 +72,11 @@ namespace KH3Randomizer.Data
                             else if (hintType.Equals("World"))
                                 hintText = hintLocation;
 
-                            hintList.Add(hintText);
+                            if (hintDictionary.ContainsKey(hintText))
+                                hintDictionary[hintText].Add(hintName);
+                            else
+                                hintDictionary.Add(hintText, new List<string> { hintName });
+
                         }
                     }
                 }
@@ -80,159 +87,112 @@ namespace KH3Randomizer.Data
 
             if (hintType.Equals("World"))
             {
-                var worldHints = hintList.GroupBy(x => x);
-                List<string> newHintList = new List<string>();
-                //hintList.Clear();
-                foreach(var wh in worldHints)
-                {
-                    if (wh.Key.Contains("Sora's Initial Setup"))
-                    {
-                        //continue;
-                    }
-                    if (wh.Count() == 1)
-                    {
-                        newHintList.Add($"There is {wh.Count()} check {wh.Key}");
-                    }
-                    else
-                    {
-                        newHintList.Add($"There are {wh.Count()} checks {wh.Key}");
-                    }
-                }
-
                 // Add empty hints if there are not enough to fill reports
-                List<int> usedWorldIndices = new List<int>();
-                while (newHintList.Count < 13)
+                while (hintDictionary.Count < 13)
                 {
-                    bool worldUnused = false;
-                    int worldIndex = 0;
-                    while (!worldUnused)
-                    {
-                        worldUnused = true;
-                        worldIndex = rng.Next(0, worldCategories.Count);
-                        if (usedWorldIndices.Contains(worldIndex))
-                        {
-                            worldUnused = false;
-                            continue;
-                        }
-                        foreach (var wh in worldHints)
-                        {
-                            if (wh.Key.Equals(worldCategories[worldIndex]))
-                            {
-                                worldUnused = false;
-                                break;
-                            }
-                        }
-                    }
-
-                    newHintList.Add($"There are 0 checks {worldCategories[worldIndex]}");
-                    usedWorldIndices.Add(worldIndex);
+                    hintDictionary.Add(GetUnusedHintCategory(hintCategories, hintDictionary, rng), new List<string>());
                 }
-
-                hintList = newHintList;
             }
 
-
-
-            // Instead of just shuffling, place reports in spots that won't hint themselves, then fill the rest
-            var reportHints = hintList.Where(x => x.Contains("Secret Report"));
-            var otherHints = hintList.Where(x => !x.Contains("Secret Report"));
-
-            // Lists used to track which reports have received hints
-            // This is used to evenly distribute hints across reports (1 hint per report per pass)
-            List<int> usedReports = new List<int>();
-            List<int> reportSpots = new List<int>();
-
-            int totalHintCount = 13 * ((hintList.Count() - 1) / 13 + 1);
+            // Instead of just shuffling, make sure reports don't hint themselves
+            int totalHintCount = 13 * ((hintDictionary.Count() - 1) / 13 + 1);
             int hintsPerReport = totalHintCount / 13;
-            var shuffledHints = new string[totalHintCount];
+            int hintPass = 1;
+            List<string> shuffledHints = new List<string>();
 
-            // Place report hints in spots where they won't hint themselves
-            foreach(var report in reportHints)
+            bool allHintsPlaced = false;
+            while (!allHintsPlaced)
             {
-                // Parse the report for its number (14 characters with spaces until the number)
-                // Make sure that the hint for this report is outside the bounds this report hints
-                int reportNum = int.Parse(report.Substring(14).Split(" ")[0]) - 1;
-
-                bool validPlacement = false;
-                while (!validPlacement)
+                allHintsPlaced = true;
+                // Initialize the list of SecretReports
+                reports.Clear();
+                for (int i = 1; i < 14; i++)
                 {
-                    int reportIndex = rng.Next(0, 13);
+                    reports.Add(new SecretReport { Name = $"Secret Report {i}", Hints = new List<string>() });
+                }
 
-                    // Only use this index if it's outside of the report's bounds and the index is empty
-                    if (reportIndex != reportNum)
+                foreach (var hint in hintDictionary)
+                {
+                    // Parse the hint for a report number
+                    // If it has one, make sure that the hint for this report is outside the bounds this report hints
+                    List<string> hintedReports = new List<string>();
+
+                    foreach (var hintName in hint.Value)
                     {
-                        // Loop through the indices of this report and replace the first empty hint
-                        for (int j = 0; j < hintsPerReport; j++)
+                        if (hintName.Contains("Secret Report"))
+                            hintedReports.Add(hintName);
+                    }
+
+                    bool isReportHint = hintedReports.Count > 0;
+                    bool validPlacement = false;
+
+                    // For safety, allow a hint to be placed 20 times before attempting to place all hints again
+                    // This should ensure we don't end up in an infinite loop trying to place a hint
+                    // I didn't run into this issue at all while testing, so this might be unnecessary 
+                    int attempts = 0;
+                    while (!validPlacement && attempts < 20)
+                    {
+                        var usableReports = reports.Where(x => x.Hints.Count < hintPass);
+                        if (usableReports.Count() == 0)
                         {
-                            int hintIndex = reportIndex * hintsPerReport + j;
-                            if (string.IsNullOrEmpty(shuffledHints[hintIndex]))
-                            {
-                                shuffledHints[hintIndex] = report;
-                                validPlacement = true;
-                                reportSpots.Add(reportIndex);
-                                break;
-                            }
+                            hintPass++;
+                            usableReports = reports.Where(x => x.Hints.Count < hintPass);
                         }
+                        int reportIndex = rng.Next(0, usableReports.Count());
+
+                        // Only use this report if it's not being hinted
+                        if (!hintedReports.Contains(usableReports.ElementAt(reportIndex).Name))
+                        {
+                            if (hintType.Equals("World"))
+                                usableReports.ElementAt(reportIndex).Hints.Add(GetWorldHint(hint.Key, hint.Value));
+                            else
+                                usableReports.ElementAt(reportIndex).Hints.Add(hint.Key);
+                            validPlacement = true;
+                        }
+                        attempts++;
+                    }
+
+                    if (!validPlacement)
+                    {
+                        allHintsPlaced = false;
+                        break;
                     }
                 }
             }
+            
 
-            // Add the spots that were used for report hints to usedReports
-            for(int i = reportSpots.Count - 1; i >= 0; i--)
+            // Reports that only hold a "Sora's Initial Setup" hint on World hints are pretty useless
+            // Add another hint to these reports
+            if (hintType.Equals("World"))
             {
-                int spot = reportSpots[i];
-                if (!usedReports.Contains(spot))
+                SecretReport initialSetupReport = null;
+                foreach(var report in reports)
                 {
-                    reportSpots.Remove(spot);
-                    usedReports.Add(spot);
-                }
-            }
-
-            // Fill the rest of the array with the other hints
-            foreach (var hint in otherHints)
-            {
-                // If every report has been given a hint this pass, reset the usedReports
-                if (usedReports.Count == 13)
-                {
-                    usedReports.Clear();
-
-                    // Add the spots that were used for report hints to usedReports
-                    for (int i = reportSpots.Count - 1; i >= 0; i--)
+                    foreach(var hint in report.Hints)
                     {
-                        int spot = reportSpots[i];
-                        if (!usedReports.Contains(spot))
+                        if (hint.Contains("Sora's Initial Setup"))
                         {
-                            reportSpots.Remove(spot);
-                            usedReports.Add(spot);
+                            initialSetupReport = report;
                         }
                     }
                 }
 
-                bool validPlacement = false;
-                while (!validPlacement)
+                if (initialSetupReport != null && initialSetupReport.Hints.Count == 1)
                 {
-                    // Roll for a report index until we find one that hasn't been used
-                    int reportIndex = rng.Next(0, 13);
+                    // Add a 0 check hint to the inital setup hint if it's on its own
+                    initialSetupReport.Hints.Add(GetWorldHint(GetUnusedHintCategory(hintCategories, hintDictionary, rng), new List<string>()));
 
-                    if (!usedReports.Contains(reportIndex))
-                    {
-                        // Loop through the indices of this report and replace the first empty hint
-                        for (int j = 0; j < hintsPerReport; j++)
-                        {
-                            int hintIndex = reportIndex * hintsPerReport + j;
-                            if (string.IsNullOrEmpty(shuffledHints[hintIndex]))
-                            {
-                                shuffledHints[hintIndex] = hint;
-                                validPlacement = true;
-                                usedReports.Add(reportIndex);
-                                break;
-                            }
-                        }
-                    }
+                    if (initialSetupReport.Hints.Count > hintsPerReport)
+                        hintsPerReport = initialSetupReport.Hints.Count;
                 }
             }
 
-            return shuffledHints.ToList();
+            foreach (var sr in reports)
+            {
+                shuffledHints.AddRange(sr.GetHintList(hintsPerReport, rng));
+            }
+
+            return shuffledHints;
         }
 
         public byte[] GenerateHints(string seed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, string hintType, List<string> importantChecks)
@@ -266,6 +226,38 @@ namespace KH3Randomizer.Data
             }
 
             return hintSpoilers;
+        }
+
+        /// <summary>
+        /// Method for getting a hint string when usingthe World hintType
+        /// </summary>
+        /// <returns>String used for hints</returns>
+        public string GetWorldHint(string hintKey, List<string> hintValue)
+        {
+            return hintValue.Count == 1 ? $"There is {hintValue.Count} check {hintKey}" : $"There are {hintValue.Count} checks {hintKey}";
+        }
+
+        /// <summary>
+        /// Method for getting a hint category that has no checks on it
+        /// This is used for getting 0 check hints with the World hintType
+        /// </summary>
+        /// <returns>String of a category that has no checks on it</returns>
+        public string GetUnusedHintCategory(List<string> hintCategories, Dictionary<string, List<string>> hintDictionary, Random rng)
+        {
+            bool categoryUnused = false;
+            int categoryIndex = 0;
+            while (!categoryUnused)
+            {
+                categoryUnused = true;
+                categoryIndex = rng.Next(0, hintCategories.Count);
+                if (hintDictionary.ContainsKey(hintCategories[categoryIndex]))
+                {
+                    categoryUnused = false;
+                    continue;
+                }
+            }
+
+            return hintCategories[categoryIndex];
         }
 
         public string GetHintItemLocation(Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, DataTableEnum category, string subCategory, string name, string value, string hintType)
@@ -334,9 +326,15 @@ namespace KH3Randomizer.Data
                         }
                     }
                     else if (hintType.Equals("Vague"))
-                        hintLocation = $"in {equipmentLocation.Item1} on an Equipment.";
+                        if (equipmentLocation != null)
+                            hintLocation = $"in {equipmentLocation.Item1} on an Equipment.";
+                        else
+                            hintLocation = $"on {this.GetEquipment(subCategory)}.";
                     else if (hintType.Equals("World"))
-                        hintLocation = $"in {equipmentLocation.Item1}.";
+                        if (equipmentLocation != null)
+                            hintLocation = equipmentLocation.Item1.Equals("Sora's Initial Setup") || equipmentLocation.Item1.Equals("Lucky Emblem Milestones") ? $"on {equipmentLocation.Item1}." : $"in {equipmentLocation.Item1}.";
+                        else
+                            hintLocation = $"on {this.GetEquipment(subCategory)}.";
 
                     break;
                 case DataTableEnum.WeaponEnhance:
@@ -353,7 +351,7 @@ namespace KH3Randomizer.Data
                     else if (hintType.Equals("Vague"))
                         hintLocation = $"in {weaponLocation.Item1} on {keyblade.Item1}.";
                     else if (hintType.Equals("World"))
-                        hintLocation = $"in {weaponLocation.Item1}.";
+                        hintLocation = weaponLocation.Item1.Equals("Sora's Initial Setup") || weaponLocation.Item1.Equals("Lucky Emblem Milestones") ? $"on {weaponLocation.Item1}." : $"in {weaponLocation.Item1}.";
 
                     break;
                 case DataTableEnum.SynthesisItem:
