@@ -95,7 +95,7 @@ namespace KH3Randomizer.Data
             }
 
             // Instead of just shuffling, make sure reports don't hint themselves
-            int totalHintCount = 13 * ((hintDictionary.Count() - 1) / 13 + 1);
+            int totalHintCount = hintType.Equals("World") ? 13 * ((hintDictionary.Count() - 1) / 13 + 1) : 13 * ((hintDictionary.Sum(x => x.Value.Count) - 1) / 13 + 1);
             int hintsPerReport = totalHintCount / 13;
             int hintPass = 1;
             List<string> shuffledHints = new List<string>();
@@ -124,42 +124,51 @@ namespace KH3Randomizer.Data
                     }
 
                     bool isReportHint = hintedReports.Count > 0;
-                    bool validPlacement = false;
+                    int hintTotal = hintType.Equals("World") ? 1 : hint.Value.Count;
 
-                    // For safety, allow a hint to be placed 20 times before attempting to place all hints again
-                    // This should ensure we don't end up in an infinite loop trying to place a hint
-                    // I didn't run into this issue at all while testing, so this might be unnecessary 
-                    int attempts = 0;
-                    while (!validPlacement && attempts < 20)
+                    for (int i = 0; i < hintTotal; i++)
                     {
-                        var usableReports = reports.Where(x => x.Hints.Count < hintPass);
-                        if (usableReports.Count() == 0)
-                        {
-                            hintPass++;
-                            usableReports = reports.Where(x => x.Hints.Count < hintPass);
-                        }
-                        int reportIndex = rng.Next(0, usableReports.Count());
+                        bool validPlacement = false;
 
-                        // Only use this report if it's not being hinted
-                        if (!hintedReports.Contains(usableReports.ElementAt(reportIndex).Name))
+                        // For safety, allow a hint to be placed 20 times before attempting to place all hints again
+                        // This should ensure we don't end up in an infinite loop trying to place a hint
+                        // I didn't run into this issue at all while testing, so this might be unnecessary 
+                        int attempts = 0;
+                        while (!validPlacement && attempts < 20)
                         {
-                            if (hintType.Equals("World"))
-                                usableReports.ElementAt(reportIndex).Hints.Add(GetWorldHint(hint.Key, hint.Value));
-                            else
-                                usableReports.ElementAt(reportIndex).Hints.Add(hint.Key);
-                            validPlacement = true;
+                            var usableReports = reports.Where(x => x.Hints.Count < hintPass);
+                            if (usableReports.Count() == 0)
+                            {
+                                hintPass++;
+                                usableReports = reports.Where(x => x.Hints.Count < hintPass);
+                            }
+                            int reportIndex = rng.Next(0, usableReports.Count());
+
+                            // Only use this report if it's not being hinted
+                            if (!hintedReports.Contains(usableReports.ElementAt(reportIndex).Name))
+                            {
+                                if (hintType.Equals("World"))
+                                    usableReports.ElementAt(reportIndex).Hints.Add(GetWorldHint(hint.Key, hint.Value));
+                                else
+                                    usableReports.ElementAt(reportIndex).Hints.Add(hint.Key);
+                                validPlacement = true;
+                            }
+                            attempts++;
                         }
-                        attempts++;
+
+                        if (!validPlacement)
+                        {
+                            allHintsPlaced = false;
+                            break;
+                        }
                     }
 
-                    if (!validPlacement)
+                    if (!allHintsPlaced)
                     {
-                        allHintsPlaced = false;
                         break;
                     }
                 }
             }
-            
 
             // Reports that only hold a "Sora's Initial Setup" hint on World hints are pretty useless
             // Add another hint to these reports
