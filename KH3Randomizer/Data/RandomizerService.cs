@@ -263,127 +263,67 @@ namespace KH3Randomizer.Data
 
 
         /// <summary>
-        /// Copy of the above method that takes an additional paramater replacements
-        /// This is a Dictionary of DataTableEnums or subcategories that should not have anything placed on them
+        /// Method to swap a given check with another random check
         /// </summary>
         /// <returns>Option of the items that have been swapped</returns>
-        public Option UpdateRandomizedItemWithNone(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
-                                                   ref Dictionary<string, Dictionary<string, bool>> availableOptions,
-                                                   DataTableEnum dataTableEnum, string category, string subCategory, string itemToChange, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
-        {
-            var option = new Option();
-
-            while (true) // Is there a way we can use a var instead of true?
-            {
-                var swapDataTable = randomizedOptions.ElementAt(rng.Next(0, randomizedOptions.Count()));
-                var swapCategory = swapDataTable.Value.ElementAt(rng.Next(0, randomizedOptions[swapDataTable.Key].Count));
-
-                if (!availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
-                {
-                    continue;
-                }
-
-                if (replacements.ContainsKey(swapDataTable.Key) && replacements[swapDataTable.Key].Count == 0)
-                {
-                    continue;
-                }
-
-                if ((replacements.ContainsKey(swapDataTable.Key) && replacements[swapDataTable.Key].Count > 0 && replacements[swapDataTable.Key].GetValueOrDefault(swapCategory.Key.CategoryToKey(swapDataTable.Key))))
-                {
-                    continue;
-                }
-
-                // Make sure this swap is valid before swapping
-                if (!IsSwapValid(itemToChange, swapDataTable.Key, swapCategory))
-                {
-                    continue;
-                }
-
-                if (swapCategory.Value.Where(x => x.Value.Contains("NONE")).Count() > 0)
-                {
-                    var swapData = swapCategory.Value.Where(x => x.Value.Contains("NONE")).ElementAt(rng.Next(0, swapCategory.Value.Where(x => x.Value.Contains("NONE")).Count()));
-
-                    if (swapDataTable.Key == DataTableEnum.LevelUp || (swapDataTable.Key == DataTableEnum.ChrInit && swapData.Key.CategoryToKey(swapDataTable.Key) == "Critical Abilities"))
-                    {
-                        continue;
-                    }
-
-                    if (blockedChecks.Contains(swapCategory.Key))
-                    {
-                        continue;
-                    }
-
-                    randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = itemToChange;
-                    randomizedOptions[dataTableEnum][category][subCategory] = swapData.Value;
-                    
-                    option = new Option { Category = swapDataTable.Key, SubCategory = swapCategory.Key, Name = swapData.Key, Value = swapData.Value };
-
-                    break;
-                }
-            }
-
-            return option;
-        }
-
-        public void SwapKeyAbility(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
+        public void SwapCheck(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
                                            ref Dictionary<string, Dictionary<string, bool>> availableOptions,
-                                           DataTableEnum dataTableEnum, string category, string subCategory, string itemToChange, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities)
+                                           DataTableEnum dataTableEnum, string category, string subCategory, string itemToChange, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> blockedValues, bool swapWithNone)
         {
-            var option = new Option();
-
             while (true) // Is there a way we can use a var instead of true?
             {
                 var swapDataTable = randomizedOptions.ElementAt(rng.Next(0, randomizedOptions.Count()));
                 var swapCategory = swapDataTable.Value.ElementAt(rng.Next(0, randomizedOptions[swapDataTable.Key].Count));
 
+                // Make sure this is option is available
                 if (!availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
                 {
                     continue;
                 }
 
-                if (replacements.ContainsKey(swapDataTable.Key) && replacements[swapDataTable.Key].Count == 0)
+                // Make sure this option isn't being replaced
+                if (replacements.ContainsKey(swapDataTable.Key) && (replacements[swapDataTable.Key].Count == 0 || (replacements[swapDataTable.Key].Count > 0 && replacements[swapDataTable.Key].GetValueOrDefault(swapCategory.Key.CategoryToKey(swapDataTable.Key)))))
                 {
                     continue;
                 }
 
-                if ((replacements.ContainsKey(swapDataTable.Key) && replacements[swapDataTable.Key].Count > 0 && replacements[swapDataTable.Key].GetValueOrDefault(swapCategory.Key.CategoryToKey(swapDataTable.Key))))
-                {
-                    continue;
-                }
-
-                if (swapCategory.Value.Count == 0)
-                {
-                    continue;
-                }
-                
-                var swapData = swapCategory.Value.ElementAt(rng.Next(0, swapCategory.Value.Count()));
-
-                // TODO: Add support for level ups
-                if (swapDataTable.Key == DataTableEnum.LevelUp || (swapDataTable.Key == DataTableEnum.ChrInit && (swapData.Key.CategoryToKey(swapDataTable.Key) == "Critical Abilities" || swapData.Key.CategoryToKey(swapDataTable.Key) == "Weapons")))
-                {
-                    continue;
-                }
-
-                // Don't swap with Pole Spin (this has already been placed in an allowed spot) or another Key Ability
-                if (keyAbilities.Contains(swapData.Value.ValueIdToDisplay()) || swapData.Value.Contains("POLE_SPIN"))
-                {
-                    continue;
-                }
-
+                // Make sure that we aren't blocking this swapCategory
+                // This is a list of checks that have been replaced individually
                 if (blockedChecks.Contains(swapCategory.Key))
                 {
                     continue;
                 }
 
-                // Make sure this swap is valid before swapping
-                if (!IsSwapValid(itemToChange, swapDataTable.Key, swapCategory) || !IsSwapValid(swapData.Value, dataTableEnum, swapCategory))
-                {
-                    continue;
-                }
+                // Only take values that contain NONE if we're swapping with none
+                var availableSwaps = swapWithNone ? swapCategory.Value.Where(x => x.Value.Contains("NONE")).ToDictionary(x => x.Key, x => x.Value) : swapCategory.Value;
 
-                randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = itemToChange;
-                randomizedOptions[dataTableEnum][category][subCategory] = swapData.Value;
-                break;
+                if (availableSwaps.Count > 0)
+                {
+                    var swapData = availableSwaps.ElementAt(rng.Next(0, availableSwaps.Count()));
+
+                    // TODO: Add support for level ups
+                    if (swapDataTable.Key == DataTableEnum.LevelUp || (swapDataTable.Key == DataTableEnum.ChrInit && swapData.Key.CategoryToKey(swapDataTable.Key) != "Abilities"))
+                    {
+                        continue;
+                    }
+
+                    // Don't swap with Pole Spin (this has already been placed in an allowed spot) or other check values that are being blocked
+                    if (swapData.Value.Contains("POLE_SPIN") || (blockedValues != null && blockedValues.Contains(swapData.Value.ValueIdToDisplay())))
+                    {
+                        continue;
+                    }
+
+                    // Make sure this swap is valid before swapping
+                    if (!IsSwapValid(itemToChange, swapDataTable.Key, swapCategory) || !IsSwapValid(swapData.Value, dataTableEnum, swapCategory))
+                    {
+                        continue;
+                    }
+
+                    // Perform the swap
+                    randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = itemToChange;
+                    randomizedOptions[dataTableEnum][category][subCategory] = swapData.Value;
+                    break;
+                }
             }
         }
 
@@ -818,26 +758,8 @@ namespace KH3Randomizer.Data
                             {
                                 if (availableExtras["Pole Spin Start"].Enabled)
                                 {
-                                    // Pole Spin is already a starting ability
-                                    if (category.Key == DataTableEnum.ChrInit && subCategory.Key.CategoryToKey(category.Key) == "Abilities")
-                                    {
-                                        break;
-                                    }
-
-                                    var chrInitValues = randomizedOptions[DataTableEnum.ChrInit].Values.ElementAt(0);
-                                    var startingAbilities = chrInitValues.Where((x) => x.Key.CategoryToKey(DataTableEnum.ChrInit) == "Abilities");
-                                    var emptyAbilities = startingAbilities.Where((x) => x.Value.Contains("NONE"));
-
-                                    // Find a starting ability that is none and replace it
-                                    // If all starting abilities are filled, replace one randomly
-                                    var swapData = startingAbilities.ElementAt(rng.Next(0, startingAbilities.Count()));
-                                    if (emptyAbilities.Count() > 0)
-                                    {
-                                        swapData = emptyAbilities.First();
-                                    }
-
-                                    randomizedOptions[DataTableEnum.ChrInit]["m_PlayerSora"][swapData.Key] = option.Value;
-                                    randomizedOptions[category.Key][subCategory.Key][option.Key] = swapData.Value;
+                                    ReplaceStartingAbility(ref randomizedOptions, category.Key, subCategory.Key, option);
+                                    break;
                                 }
                                 else
                                 {
@@ -895,6 +817,13 @@ namespace KH3Randomizer.Data
                                         }
                                     }
                                 }
+                            }
+
+                            // Account for EXP Incentive Start
+                            else if (option.Value.Contains("EXP_BARGAIN") && availableExtras["EXP Incentive Start"].Enabled)
+                            {
+                                ReplaceStartingAbility(ref randomizedOptions, category.Key, subCategory.Key, option);
+                                break;
                             }
                         }
                     }
@@ -1089,7 +1018,7 @@ namespace KH3Randomizer.Data
                             {
                                 if (keyAbilities.Contains(option.Value.ValueIdToDisplay()) && dataTablesToCheck.ContainsKey(category.Key))
                                 {
-                                    SwapKeyAbility(ref randomizedOptions, ref availableOptions, category.Key, subCategory.Key, option.Key, option.Value, blockedDataTables, keyAbilities);
+                                    SwapCheck(ref randomizedOptions, ref availableOptions, category.Key, subCategory.Key, option.Key, option.Value, blockedDataTables, keyAbilities, false);
                                 }
                             }
                         }
@@ -2106,7 +2035,7 @@ namespace KH3Randomizer.Data
             {
                 if (!bonus.Value.Contains("NONE"))
                 {
-                    UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, dataTableEnum, check.Key, bonus.Key, bonus.Value, replacements);
+                    SwapCheck(ref randomizedOptions, ref availableOptions, dataTableEnum, check.Key, bonus.Key, bonus.Value, replacements, null, true);
                 }
             }
         }
@@ -2150,6 +2079,38 @@ namespace KH3Randomizer.Data
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Method that replaces a starting ability with the provided option
+        /// This prioritizes empty abilities but will select a random ability if there are no empty ones available
+        /// </summary>
+        public void ReplaceStartingAbility(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, DataTableEnum category, string subCategory, KeyValuePair<string, string> option)
+        {
+            // This is already a starting ability. Block it from being replaced later
+            if (category == DataTableEnum.ChrInit && subCategory.CategoryToKey(category) == "Abilities")
+            {
+                blockedChecks.Add(option.Key);
+            }
+
+            else
+            {
+                var chrInitValues = randomizedOptions[DataTableEnum.ChrInit].Values.ElementAt(0);
+                var startingAbilities = chrInitValues.Where((x) => x.Key.CategoryToKey(DataTableEnum.ChrInit) == "Abilities" && !blockedChecks.Contains(x.Key));
+                var emptyAbilities = startingAbilities.Where((x) => x.Value.Contains("NONE"));
+
+                // Find a starting ability that is none and replace it
+                // If all starting abilities are filled, replace one randomly
+                var swapData = startingAbilities.ElementAt(rng.Next(0, startingAbilities.Count()));
+                if (emptyAbilities.Count() > 0)
+                {
+                    swapData = emptyAbilities.First();
+                }
+
+                randomizedOptions[DataTableEnum.ChrInit]["m_PlayerSora"][swapData.Key] = option.Value;
+                randomizedOptions[category][subCategory][option.Key] = swapData.Value;
+                blockedChecks.Add(swapData.Key);
+            }
         }
 
     }

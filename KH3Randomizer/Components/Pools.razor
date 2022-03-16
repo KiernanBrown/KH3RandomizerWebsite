@@ -64,7 +64,7 @@
                             </div>
 
                             <div class="col-md-1">
-                                <Tooltip Text="@extra.Value.Description">
+                                <Tooltip Text=@(IsExtraDisabled(extra.Value) ? extra.Value.Description + " Requires: " + extra.Value.RequiredPool : extra.Value.Description)>
                                     <i class="bi bi-question-circle" style="font-size: 1.2rem; color: dodgerblue;"></i>
                                 </Tooltip>
                             </div>
@@ -218,12 +218,12 @@
         pools[pool.Key] = newValue;
 
         // Update extras that have this as a required pool
-        var matchingExtras = extras.Where((e) => e.Value.RequiredPool == pool.Key);
+        var matchingExtras = extras.Where((e) => e.Value.RequiredPool.Contains(pool.Key));
 
         foreach (var extra in matchingExtras)
         {
             // If the pool is enabled, set to default. Otherwise, set to false.
-            extra.Value.Enabled = newValue ? extra.Value.DefaultEnabled : false;
+            extra.Value.Enabled = (newValue && !extra.Value.RequiredPool.Contains(" Off")) || (!newValue && extra.Value.RequiredPool.Contains(" Off")) ? extra.Value.DefaultEnabled : false;
         }
 
         this.UpdateOptionsText();
@@ -233,7 +233,8 @@
     {
         if (extra.RequiredPool != "")
         {
-            return !pools[extra.RequiredPool];
+            var parsedRequiredPool = extra.RequiredPool.Split(" Off");
+            return parsedRequiredPool.Count() > 1 ? pools[parsedRequiredPool[0]] : !pools[extra.RequiredPool];
         }
         return false;
     }
