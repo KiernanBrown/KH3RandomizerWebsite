@@ -239,7 +239,7 @@ namespace KH3Randomizer.Data
                     continue;
 
                 // Make sure this swap is valid before swapping
-                if (!IsSwapValid(itemToChange, swapDataTable, swapCategory))
+                if (!IsSwapValid(itemToChange, swapDataTable.Key, swapCategory))
                 {
                     continue;
                 }
@@ -294,7 +294,7 @@ namespace KH3Randomizer.Data
                 }
 
                 // Make sure this swap is valid before swapping
-                if (!IsSwapValid(itemToChange, swapDataTable, swapCategory))
+                if (!IsSwapValid(itemToChange, swapDataTable.Key, swapCategory))
                 {
                     continue;
                 }
@@ -351,12 +351,11 @@ namespace KH3Randomizer.Data
                     continue;
                 }
 
-                // Make sure this swap is valid before swapping
-                if (!IsSwapValid(itemToChange, swapDataTable, swapCategory))
+                if (swapCategory.Value.Count == 0)
                 {
                     continue;
                 }
-
+                
                 var swapData = swapCategory.Value.ElementAt(rng.Next(0, swapCategory.Value.Count()));
 
                 // TODO: Add support for level ups
@@ -376,11 +375,14 @@ namespace KH3Randomizer.Data
                     continue;
                 }
 
+                // Make sure this swap is valid before swapping
+                if (!IsSwapValid(itemToChange, swapDataTable.Key, swapCategory) || !IsSwapValid(swapData.Value, dataTableEnum, swapCategory))
+                {
+                    continue;
+                }
+
                 randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = itemToChange;
                 randomizedOptions[dataTableEnum][category][subCategory] = swapData.Value;
-
-                option = new Option { Category = swapDataTable.Key, SubCategory = swapCategory.Key, Name = swapData.Key, Value = swapData.Value };
-
                 break;
             }
         }
@@ -1790,7 +1792,7 @@ namespace KH3Randomizer.Data
                             continue;
 
                         // Make sure this swap is valid before swapping
-                        if (!IsSwapValid(treasureName, swapDataTable, swapCategory))
+                        if (!IsSwapValid(treasureName, swapDataTable.Key, swapCategory))
                         {
                             continue;
                         }
@@ -1854,7 +1856,7 @@ namespace KH3Randomizer.Data
                                     continue;
 
                                 // Make sure this swap is valid before swapping
-                                if (!IsSwapValid(tempEventName, swapDataTable, swapCategory))
+                                if (!IsSwapValid(tempEventName, swapDataTable.Key, swapCategory))
                                 {
                                     continue;
                                 }
@@ -2133,16 +2135,16 @@ namespace KH3Randomizer.Data
         /// This check is potentially not as robust as it needs to be and it could be addressed later if that's the case
         /// </summary>
         /// <returns>bool of if this swap is valid</returns>
-        public bool IsSwapValid(string itemToChange, KeyValuePair<DataTableEnum, Dictionary<string, Dictionary<string, string>>> swapDataTable, KeyValuePair<string, Dictionary<string, string>> swapCategory)
+        public bool IsSwapValid(string itemToChange, DataTableEnum swapDataTable, KeyValuePair<string, Dictionary<string, string>> swapCategory)
         {
             // Only allow abilities on Starting Stats (Abilities & Critical Abilities), Equippables, Fullcourse Abilities, or Weapon Upgrades
-            if (!itemToChange.Contains("ETresAbilityKind::") && ((swapDataTable.Key == DataTableEnum.ChrInit && swapCategory.Key.CategoryToKey(swapDataTable.Key) != "Weapon") || swapDataTable.Key == DataTableEnum.EquipItem || swapDataTable.Key == DataTableEnum.FullcourseAbility || swapDataTable.Key == DataTableEnum.WeaponEnhance))
+            if (!itemToChange.Contains("ETresAbilityKind::") && ((swapDataTable == DataTableEnum.ChrInit && swapCategory.Key.CategoryToKey(swapDataTable) != "Weapon") || swapDataTable == DataTableEnum.EquipItem || swapDataTable == DataTableEnum.FullcourseAbility || swapDataTable == DataTableEnum.WeaponEnhance))
             {
                 return false;
             }
 
             // Only allow items on Synthesis Items or Lucky Emblems
-            else if (itemToChange.Contains("ETresAbilityKind::") && (swapDataTable.Key == DataTableEnum.SynthesisItem || swapDataTable.Key == DataTableEnum.LuckyMark))
+            else if (itemToChange.Contains("ETresAbilityKind::") && (swapDataTable == DataTableEnum.SynthesisItem || swapDataTable == DataTableEnum.LuckyMark))
             {
                 return false;
             }
