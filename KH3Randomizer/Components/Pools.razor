@@ -45,31 +45,37 @@
 
         <br />
         <h4><b>Extras</b></h4>
-        <div class="row">
-            @foreach (var extra in extras)
-            {
-                <div class="col-md-4" style="margin: 15px 0px;">
-                    <div class="row">
-                        <!-- Slider -->
-                        <div class="col-md-2">
-                            <label class="switch">
-                                <input type="checkbox" @onchange="@((value) => { extra.Value.Enabled = (bool)value.Value; })" checked="@extra.Value.Enabled" disabled="@IsExtraDisabled(extra.Value)">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
+        <div>
+            <div class="row">
+                @foreach (var extra in extras)
+                {
+                    <div class="col-md-4" style="margin: 15px 0px;">
+                        <div class="row">
+                            <!-- Slider -->
+                            <div class="col-md-2">
+                                <label class="switch">
+                                    <input type="checkbox" @onchange="@((value) => { extra.Value.Enabled = (bool)value.Value; })" checked="@extra.Value.Enabled" disabled="@IsExtraDisabled(extra.Value)">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
 
-                        <div class="col-md-6">
-                            <label><b>@extra.Value.Name</b></label>
-                        </div>
+                            <div class="col-md-6">
+                                <label><b>@extra.Value.Name</b></label>
+                            </div>
 
-                        <div class="col-md-1">
-                            <Tooltip Text="@extra.Value.Description">
-                                <i class="bi bi-question-circle" style="font-size: 1.2rem; color: dodgerblue;"></i>
-                            </Tooltip>
+                            <div class="col-md-1">
+                                <Tooltip Text="@extra.Value.Description">
+                                    <i class="bi bi-question-circle" style="font-size: 1.2rem; color: dodgerblue;"></i>
+                                </Tooltip>
+                            </div>
                         </div>
                     </div>
-                </div>
-            }
+                }
+            </div>
+
+            <!-- Key Abilities search bar and list -->
+            <br />
+            <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: "></SearchComponent>
         </div>
     </div>
 
@@ -123,9 +129,11 @@
     [Parameter] public Dictionary<string, bool> AvailablePools { get; set; }
     [Parameter] public Dictionary<string, Extra> AvailableExtras { get; set; }
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, bool>> Replacements { get; set; }
+    [Parameter] public List<string> KeyAbilities { get; set; }
 
     private bool isOn { get; set; } = false;
     private string allOptionText { get; set; } = "MIXED";
+    private string searchValue = "";
 
     private Dictionary<string, bool> pools = new Dictionary<string, bool>();
 
@@ -148,17 +156,17 @@
 
     private Collapsable subPoolsCollapsable;
     private string currentSubPool = string.Empty;
-    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements { get; set; }
+    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>();
+    private List<string> keyAbilities = new List<string>();
 
     protected override void OnInitialized()
     {
         this.pools = this.AvailablePools;
         this.extras = this.AvailableExtras;
         this.replacements = this.Replacements;
+        this.keyAbilities = this.KeyAbilities;
         this.UpdateOptionsText();
     }
-
-
 
     private void ToggleOptions()
     {
@@ -294,5 +302,43 @@
                 break;
         }
         this.UpdateReplacements.InvokeAsync(this.replacements);
+    }
+
+    private void SearchAbilities(string search)
+    {
+        this.searchValue = search;
+
+        //this.foundAbilities = new List<string>();
+
+        if (!string.IsNullOrEmpty(this.searchValue))
+        {
+            foreach (var category in RandomizerService.GetDefaultOptions())
+            {
+                var categoryConverted = category.Key.DataTableEnumToKey();
+                foreach (var subCategory in category.Value)
+                {
+                    var subCategoryConverted = subCategory.Key.CategoryToKey(category.Key);
+
+                    foreach (var option in subCategory.Value)
+                    {
+                        /*if (this.foundChecks.Count < this.searchLimit && option.Value.ValueIdToDisplay().ToLower().Contains(this.searchValue.ToLower()) && !option.Value.ValueIdToDisplay().Contains("ETres"))
+                        {
+                            if (!this.foundChecks.Contains(option.Value.ValueIdToDisplay()) && !this.importantChecks.Contains(option.Value.ValueIdToDisplay()))
+                                this.foundChecks.Add(option.Value.ValueIdToDisplay());
+
+                            if (this.foundChecks.Count == this.searchLimit)
+                                break;
+                        }*/
+                    }
+                }
+            }
+        }
+
+        //this.foundChecks.Sort();
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
     }
 }

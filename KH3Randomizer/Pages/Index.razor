@@ -11,6 +11,7 @@
         <Pools ContinueTo="@(ContinueTo)" AvailablePools="@this.availablePools"
                AvailableExtras="@this.availableExtras"
                Replacements="@this.replacements"
+               KeyAbilities="@this.keyAbilities"
                UpdateAvailablePools="@(pools => UpdateAvailablePools(pools))"
                UpdateAvailableExtras="@(extras => UpdateAvailableExtras(extras))"
                UpdateReplacements="@(replacements => UpdateReplacements(replacements))">
@@ -20,19 +21,19 @@
     {
         <Options ContinueTo="@(() => ContinueTo("Hints"))" BackTo="@(() => BackTo("Pools"))"
                  UpdateAvailableOptions="@(options => UpdateAvailableOptions(options))" UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateModifications="@((option1, option2) => UpdateModifications(option1, option2))"
-                 CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements" Modifications="@this.modifications" IsGoingBack="this.isGoingBack">
+                 CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements" KeyAbilities="@this.keyAbilities" Modifications="@this.modifications" IsGoingBack="this.isGoingBack">
         </Options>
     }
     else if (this.currentSection == "Hints")
     {
         <Hints ContinueTo="@(() => ContinueTo("Review"))" BackTo="@(() => BackTo("Options"))"
-               RandomizedOptions="@this.randomizedOptions" UpdateHintSelection="@this.UpdateHintSelection" HintSelectionType="@this.hintSelectionType" ImportantChecks="@this.importantChecks"></Hints>
+               RandomizedOptions="@this.randomizedOptions" UpdateHintSelection="@this.UpdateHintSelection" HintSelectionType="@this.hintSelectionType" KeyAbilities="@this.keyAbilities" ImportantChecks="@this.importantChecks"></Hints>
     }
     else if (this.currentSection == "Review")
     {
         <Review BackTo="@(() => BackTo("Hints"))" CurrentSeed="@this.CurrentSeed" RandomizedOptions="@this.randomizedOptions"
-                AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" Replacements="@this.replacements" Modifications="@this.modifications"
-                AvailableHints="@this.availableHints" HintSelectionType="@this.hintSelectionType" ImportantChecks="@this.importantChecks"></Review>
+                AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" Replacements="@this.replacements" KeyAbilities="this.keyAbilities" Modifications="@this.modifications"
+                HintSelectionType="@this.hintSelectionType" ImportantChecks="@this.importantChecks"></Review>
     }
 </div>
 
@@ -92,6 +93,13 @@
         }
     };
 
+    private List<string> keyAbilities = new List<string>()
+    {
+        "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin",
+        "Ability: Glide", "Ability: Doubleflight", "Ability: Aerial Recovery",
+        "Ability: Second Chance", "Ability: Withstand Combo"
+    };
+
     private List<string> importantChecks = new List<string>()
     {
         "Proof of Promises", "Proof of Times Past", "Proof of Fantasy",
@@ -102,9 +110,7 @@
         "Magic: Fire", "Magic: Thunder", "Magic: Water",
         "\'Ohana Heartbinder", "Dream Heartbinder", "Ocean Heartbinder",
         "Pixel Heartbinder", "Pride Heartbinder",
-        "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin",
-        "Ability: Glide", "Ability: Doubleflight", "Ability: Aerial Recovery",
-        "Ability: Second Chance", "Ability: Withstand Combo"
+        "Ability: Pole Spin"
     };
 
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
@@ -114,39 +120,6 @@
     private List<Tuple<Option, Option>> modifications = new();
 
     private string hintSelectionType = "Verbose";
-    private Dictionary<string, Dictionary<string, bool>> availableHints = new Dictionary<string, Dictionary<string, bool>>
-    {
-        { "Proofs", new Dictionary<string, bool>
-            { { "Proof of Promises", true }, { "Proof of Times Past", true }, { "Proof of Fantasy", true } }
-        },
-        { "Abilities", new Dictionary<string, bool>
-            { { "Pole Spin", true }, { "Block", true }, { "Dodge Roll", true }, { "Air Slide", true },
-              { "Doubleflight", true }, { "Second Chance", true }, { "Withstand Combo", true }, }
-        },
-        { "Heartbinders", new Dictionary<string, bool>
-            { { "Dream Heartbinder", true }, { "Pixel Heartbinder", true }, { "Pride Heartbinder", true },
-              { "Ocean Heartbinder", true }, { "\'Ohana Heartbinder", true } }
-        },
-        { "Magic", new Dictionary<string, bool>
-            { { "Fire", true }, { "Fira", true }, { "Firaga", true },
-              { "Water", true }, { "Watera", true }, { "Waterga", true },
-              { "Cure", true }, { "Cura", true }, { "Curaga", true },
-              { "Blizzard", true }, { "Blizzara", true }, { "Blizzaga", true },
-              { "Thunder", true }, { "Thundara", true }, { "Thundaga", true },
-              { "Aero", true }, { "Aerora", true }, { "Aeroga", true } }
-        },
-        { "Formchanges", new Dictionary<string, bool>
-            { { "Hero\'s Origin", true }, { "Grand Chef", true }, { "Ultima Weapon", true },
-              { "Oblivion", true }, { "Oathkeeper", true } }
-        },
-        { "Secret Reports", new Dictionary<string, bool>
-            { { "Secret Report 1", true }, { "Secret Report 2", true }, { "Secret Report 3", true }, { "Secret Report 4", true },
-              { "Secret Report 5", true }, { "Secret Report 6", true }, { "Secret Report 7", true }, { "Secret Report 8", true },
-              { "Secret Report 9", true }, { "Secret Report 10", true }, { "Secret Report 11", true }, { "Secret Report 12", true },
-              { "Secret Report 13", true }
-            }
-        },
-    };
 
     private string currentSection = "Pools";
     private bool isGoingBack = false;
@@ -235,6 +208,16 @@
         });
     }
 
+    public void UpdateKeyAbilities(List<string> keyAbilities)
+    {
+        this.keyAbilities = keyAbilities;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
     public void UpdateModifications(Option initalOption, Option swapOption)
     {
         if (initalOption == null && swapOption == null)
@@ -252,16 +235,6 @@
     public void UpdateHintSelection(string selection)
     {
         this.hintSelectionType = selection;
-
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
-    }
-
-    public void UpdateAvailableHints(Dictionary<string, Dictionary<string, bool>> availableHints)
-    {
-        this.availableHints = availableHints;
 
         InvokeAsync(() =>
         {

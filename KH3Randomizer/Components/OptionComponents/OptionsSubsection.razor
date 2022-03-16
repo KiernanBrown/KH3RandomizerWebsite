@@ -195,6 +195,7 @@
     [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableOptions { get; set; }
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> RandomizedOptions { get; set; }
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, bool>> Replacements { get; set; }
+    [Parameter] public List<string> KeyAbilities { get; set; }
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
 
     [Parameter] public bool IsDisabled { get; set; } = false;
@@ -206,7 +207,8 @@
     private Dictionary<string, Extra> availableExtras = new();
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
-    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements { get; set; }
+    private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new();
+    private List<string> keyAbilities = new List<string>();
     private List<Tuple<Option, Option>> modifications = new();
 
     private string currentSelection = "";
@@ -230,6 +232,7 @@
         this.availableOptions = this.AvailableOptions;
         this.randomizedOptions = this.RandomizedOptions;
         this.replacements = this.Replacements;
+        this.keyAbilities = this.KeyAbilities;
         this.modifications = this.Modifications;
 
         if (this.searchAvailableOptions.Count > 0 && this.searchRandomizedOptions.Count > 0)
@@ -258,7 +261,7 @@
         this.availableOptions[option][subOption] = value;
 
         if (!string.IsNullOrEmpty(this.CurrentSeed))
-            this.RandomizerService.RandomizeItems(this.CurrentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements);
+            this.RandomizerService.RandomizeItems(this.CurrentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements, this.keyAbilities);
 
         this.UpdateAvailableOptions.InvokeAsync(this.availableOptions);
         this.UpdateRandomizedOptions.InvokeAsync(this.randomizedOptions);

@@ -13,21 +13,14 @@ namespace KH3Randomizer.Data
     {
         private Random rng;
         private List<string> blockedChecks = new List<string>();
-        private List<string> keyAbilities = new List<string>()
-        {
-            "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin", 
-            "Ability: Glide", "Ability: Doubleflight", "Ability: Aerial Recovery",
-            "Ability: Second Chance", "Ability: Withstand Combo"
-        };
 
         public Dictionary<string, Dictionary<string, bool>> GetAvailableOptions(Dictionary<string, bool> availablePools, ref Dictionary<string, Dictionary<string, bool>> availableOptions, 
                                                                                 ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, bool backTo = false)
         {
             if (backTo)
                 return availableOptions;
-            
-            using var streamReader = new StreamReader(Path.Combine(Environment.CurrentDirectory, @"wwwroot\DefaultKH3.json"));
-            var defaultOptions = JsonSerializer.Deserialize<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>>(streamReader.ReadToEnd());
+           
+            var defaultOptions = GetDefaultOptions();
 
             availableOptions = new();
             randomizedOptions = new();
@@ -186,12 +179,16 @@ namespace KH3Randomizer.Data
             }
         }
 
+        public static Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> GetDefaultOptions()
+        {
+            using var streamReader = new StreamReader(Path.Combine(Environment.CurrentDirectory, @"wwwroot\DefaultKH3.json"));
+            return JsonSerializer.Deserialize<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>>(streamReader.ReadToEnd());
+        }
+
         public Option UpdateRandomizedItemWithDefault(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
                                                       DataTableEnum dataTableEnum, string category, string subCategory, string itemToChange)
         {
-            using var streamReader = new StreamReader(Path.Combine(Environment.CurrentDirectory, @"wwwroot\DefaultKH3.json"));
-            
-            var defaultOptions = JsonSerializer.Deserialize<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>>(streamReader.ReadToEnd());
+            var defaultOptions = GetDefaultOptions();
             var swapItemToFind = (string)defaultOptions[dataTableEnum][category][subCategory].Clone();
 
             var option = new Option();
@@ -328,16 +325,75 @@ namespace KH3Randomizer.Data
             return option;
         }
 
+        public void SwapKeyAbility(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
+                                           ref Dictionary<string, Dictionary<string, bool>> availableOptions,
+                                           DataTableEnum dataTableEnum, string category, string subCategory, string itemToChange, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities)
+        {
+            var option = new Option();
+
+            while (true) // Is there a way we can use a var instead of true?
+            {
+                var swapDataTable = randomizedOptions.ElementAt(rng.Next(0, randomizedOptions.Count()));
+                var swapCategory = swapDataTable.Value.ElementAt(rng.Next(0, randomizedOptions[swapDataTable.Key].Count));
+
+                if (!availableOptions[swapDataTable.Key.DataTableEnumToKey()][swapCategory.Key.CategoryToKey(swapDataTable.Key)])
+                {
+                    continue;
+                }
+
+                if (replacements.ContainsKey(swapDataTable.Key) && replacements[swapDataTable.Key].Count == 0)
+                {
+                    continue;
+                }
+
+                if ((replacements.ContainsKey(swapDataTable.Key) && replacements[swapDataTable.Key].Count > 0 && replacements[swapDataTable.Key].GetValueOrDefault(swapCategory.Key.CategoryToKey(swapDataTable.Key))))
+                {
+                    continue;
+                }
+
+                // Make sure this swap is valid before swapping
+                if (!IsSwapValid(itemToChange, swapDataTable, swapCategory))
+                {
+                    continue;
+                }
+
+                var swapData = swapCategory.Value.ElementAt(rng.Next(0, swapCategory.Value.Count()));
+
+                // TODO: Add support for level ups
+                if (swapDataTable.Key == DataTableEnum.LevelUp || (swapDataTable.Key == DataTableEnum.ChrInit && (swapData.Key.CategoryToKey(swapDataTable.Key) == "Critical Abilities" || swapData.Key.CategoryToKey(swapDataTable.Key) == "Weapons")))
+                {
+                    continue;
+                }
+
+                // Don't swap with Pole Spin (this has already been placed in an allowed spot) or another Key Ability
+                if (keyAbilities.Contains(swapData.Value.ValueIdToDisplay()) || swapData.Value.Contains("POLE_SPIN"))
+                {
+                    continue;
+                }
+
+                if (blockedChecks.Contains(swapCategory.Key))
+                {
+                    continue;
+                }
+
+                randomizedOptions[swapDataTable.Key][swapCategory.Key][swapData.Key] = itemToChange;
+                randomizedOptions[dataTableEnum][category][subCategory] = swapData.Value;
+
+                option = new Option { Category = swapDataTable.Key, SubCategory = swapCategory.Key, Name = swapData.Key, Value = swapData.Value };
+
+                break;
+            }
+        }
+
         public void RandomizeItems(string seed, Dictionary<string, Extra> availableExtras, ref Dictionary<string, Dictionary<string, bool>> availableOptions,
-                                   ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements)
+                                   ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities)
         {
             var hash = seed.StringToSeed();
             rng = new Random((int)hash);
 
             // Use randomizedItems
-            using var streamReader = new StreamReader(Path.Combine(Environment.CurrentDirectory, @"wwwroot\DefaultKH3.json"));
             // Category > Id > Item > Value
-            var defaultOptions = JsonSerializer.Deserialize<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>>(streamReader.ReadToEnd());
+            var defaultOptions = GetDefaultOptions();
 
             List<string> proofs = new List<string>() { "Proof of Promises", "Proof of Times Past", "Proof of Fantasy" };
             List<string> reports = new List<string>() { "Secret Report 1", "Secret Report 2", "Secret Report 3", "Secret Report 4", "Secret Report 5", "Secret Report 6", "Secret Report 7", "Secret Report 8", "Secret Report 9", "Secret Report 10", "Secret Report 11", "Secret Report 12", "Secret Report 13" };
@@ -1031,7 +1087,7 @@ namespace KH3Randomizer.Data
                             {
                                 if (keyAbilities.Contains(option.Value.ValueIdToDisplay()) && dataTablesToCheck.ContainsKey(category.Key))
                                 {
-                                    UpdateRandomizedItemWithNone(ref randomizedOptions, ref availableOptions, category.Key, subCategory.Key, option.Key, option.Value, blockedDataTables);
+                                    SwapKeyAbility(ref randomizedOptions, ref availableOptions, category.Key, subCategory.Key, option.Key, option.Value, blockedDataTables, keyAbilities);
                                 }
                             }
                         }
@@ -1117,12 +1173,12 @@ namespace KH3Randomizer.Data
         }
 
         public byte[] GenerateRandomizerSeed(string currentSeed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
-                                             Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<Tuple<Option, Option>> modifications, HintContainer hintContainer)
+                                             Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities, List<Tuple<Option, Option>> modifications, HintContainer hintContainer)
         {
             var dataTableManager = new UE4DataTableInterpreter.DataTableManager();
             var dataTables = dataTableManager.RandomizeDataTables(randomizedOptions);
 
-            var zipArchive = this.CreateZipArchive(dataTables, currentSeed, availablePools, availableExtras, availableOptions, replacements, modifications, hintContainer);
+            var zipArchive = this.CreateZipArchive(dataTables, currentSeed, availablePools, availableExtras, availableOptions, replacements, keyAbilities, modifications, hintContainer);
 
             return zipArchive;
 
@@ -1145,7 +1201,7 @@ namespace KH3Randomizer.Data
             //return new List<byte[]> { this.GetFile(@$".\Seeds\pakchunk99-randomizer-{currentSeed}.pak"), this.GetFile(@$"{pakPath}\SpoilerLog.json") };
         }
 
-        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<Tuple<Option, Option>> modifications, HintContainer hintContainer)
+        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities, List<Tuple<Option, Option>> modifications, HintContainer hintContainer)
         {
             var zipPath = @$".\Seeds\pakchunk99-randomizer-{randomSeed}\pakchunk99-randomizer-{randomSeed}.zip";
 
@@ -1180,6 +1236,7 @@ namespace KH3Randomizer.Data
                     AvailableExtras = availableExtras,
                     AvailableOptions = availableOptions,
                     Replacements = replacements,
+                    KeyAbilities = keyAbilities,
                     Modifications = jsonTupleList,
                     ImportantChecks = hintContainer.ImportantChecks,
                     HintType = hintContainer.Type

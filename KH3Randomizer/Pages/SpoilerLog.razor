@@ -219,6 +219,13 @@
         }
     };
 
+    private List<string> keyAbilities = new List<string>()
+    {
+        "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin",
+        "Ability: Glide", "Ability: Doubleflight", "Ability: Aerial Recovery",
+        "Ability: Second Chance", "Ability: Withstand Combo"
+    };
+
     private Dictionary<string, List<string>> hintSpoilers = new();
 
     private Dictionary<string, Dictionary<string, bool>> tempOptions = new();
@@ -246,7 +253,7 @@
 
         this.UpdateCurrentSeed(this.currentSeed);
 
-        this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements);
+        this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements, this.keyAbilities);
 
         this.UpdateAvailableOptions(this.availableOptions);
         this.UpdateRandomizedOptions(this.randomizedOptions);
@@ -343,6 +350,16 @@
         });
     }
 
+    public void UpdateKeyAbilities(List<string> keyAbilities)
+    {
+        this.keyAbilities = keyAbilities;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
     public void UpdateModifications(Option initalOption, Option swapOption)
     {
         if (initalOption == null && swapOption == null)
@@ -372,8 +389,9 @@
             this.UpdateAvailableOptions(spoilerLogFile.AvailableOptions);
             this.UpdateCurrentSeed(spoilerLogFile.SeedName);
             this.UpdateReplacements(spoilerLogFile.Replacements);
+            this.UpdateKeyAbilities(spoilerLogFile.KeyAbilities);
 
-            this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements);
+            this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements, this.keyAbilities);
 
             foreach (var item in spoilerLogFile.Modifications)
             {
