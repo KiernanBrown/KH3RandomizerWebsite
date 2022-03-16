@@ -69,6 +69,11 @@
             </div>
         </div>
 
+        <!-- Key Abilities search bar and list -->
+        <Collapsable @ref="@keyAbilitiesCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="Key Abilities" ActionType="Modal">
+            <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: " ActionType="Modal"></SearchComponent>
+        </Collapsable>
+
         <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="@("Sub Pools")" ActionType="@("Modal")">
             <div class="subpools-container">
                 @foreach (var pool in this.availablePools)
@@ -158,7 +163,7 @@
                             </ul>
                         </div>
                     }
-                    </div>
+                </div>
             </Collapsable>
         }
     </div>
@@ -176,10 +181,10 @@
     private Dictionary<string, Extra> allExtras = new Dictionary<string, Extra> {
         { "Balanced Bonuses", new Extra("Balanced Bonuses", true, "Bonuses", "Evenly distribute checks that appear on Bonuses.") },
         { "Synthesizable Proofs", new Extra("Allow Synthesizable Proofs", true, "Synthesis Items", "Allows Proofs to be placed in Moogle Synthesis.") },
+        { "Allow Ultima", new Extra("Allow Ultima", true, "", "Allows Ultima to be randomized into the pool.") },
         { "Key Abilities Fullcourse", new Extra("Allow Key Abilities on Fullcourse", true, "Fullcourse Abilities", "Allows Key Abilities to be randomzied onto Fullcourse Abilities.") },
         { "Key Abilities Upgrades", new Extra("Allow Key Abilities on Weapon Upgrades", true, "Weapon Upgrades", "Allows Key Abilities to be randomized onto Weapon Upgrades.") },
         { "Key Abilities Equippables", new Extra("Allow Key Abilities on Equippables", true, "Equippables", "Allows Key Abilities to be randomized onto Equippables.") },
-        { "Allow Ultima", new Extra("Allow Ultima", true, "", "Allows Ultima to be randomized into the pool.") },
         { "Pole Spin Start", new Extra("Pole Spin Start", false, "Starting Stats", "Ensures Pole Spin is a starting ability.") },
         { "EXP Incentive Start", new Extra("EXP Incentive Start", false, "Fullcourse Abilities", "Ensures EXP Incentive is a starting ability.") }
     };
@@ -233,6 +238,7 @@
 
     private List<Tuple<Option, Option>> modifications = new();
 
+    private Collapsable keyAbilitiesCollapsable;
     private Collapsable subPoolsCollapsable;
     private Collapsable hintsCollapsable;
     private string currentOption = string.Empty;

@@ -1,14 +1,14 @@
 ﻿<div class="search-section">
     <div class="selected-checks">
         <h4 class="search-title"><b>@this.SelectedTitle</b></h4>
-        <div class="kh-input">
+        <div class=@(ActionType.Equals("Options") ? "kh-input options-input" : ActionType.Equals("Modal") ? "kh-input modal-input" : "kh-input")>
             <input value="@searchValue" id="randomizer_search" name="randomizer_search" class="kh-inputfield" @oninput="@((e) => this.SearchChecks(e.Value.ToString()))" placeholder="Search for a check to add to your @this.SelectedTitle..." />
         </div>
 
         <div class="selected-check-list">
             @foreach (var check in this.SelectedChecks)
             {
-                <span class="check" @onclick="() => this.ToggleCheck(check)">@this.GetFilteredCheck(check) <i class="bi bi-dash-lg check-icon"></i></span>
+                <span class=@(ActionType.Equals("Options") ? "check options-check" : ActionType.Equals("Modal") ? "check modal-check" : "check") @onclick="() => this.ToggleCheck(check)">@this.GetFilteredCheck(check) <i class="bi bi-dash-lg check-icon"></i></span>
             }
         </div>
 
@@ -22,7 +22,7 @@
         {
             @foreach (var check in this.foundChecks)
             {
-                <span class="check" @onclick="() => this.ToggleCheck(check)">@this.GetFilteredCheck(check) <i class="bi bi-plus-lg check-icon"></i></span>
+                <span class=@(ActionType.Equals("Options") ? "check options-check" : ActionType.Equals("Modal") ? "check modal-check" : "check") @onclick="() => this.ToggleCheck(check)">@this.GetFilteredCheck(check) <i class="bi bi-plus-lg check-icon"></i></span>
             }
         }
         else if (string.IsNullOrEmpty(this.searchValue))
@@ -43,6 +43,8 @@
     [Parameter] public string SelectedTitle { get; set; }
     [Parameter] public string SearchTitle { get; set; }
     [Parameter] public string Filter { get; set; }
+    [Parameter] public string ActionType { get; set; }
+    [Parameter] public EventCallback<string> StateUpdate { get; set; }
 
     private string searchValue = "";
     private List<string> foundChecks = new List<string>();
@@ -105,6 +107,13 @@
             this.SelectedChecks.Add(check);
             SearchChecks(this.searchValue);
         }
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+
+        StateUpdate.InvokeAsync(null);
     }
 
     private string GetFilteredCheck(string check)

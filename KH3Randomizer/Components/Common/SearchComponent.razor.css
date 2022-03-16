@@ -10,10 +10,18 @@
     display: inline-block;
 }
 
+.options-input {
+    background: linear-gradient(to right, #015eea, #00c0fa);
+}
+
+.modal-input {
+    background: linear-gradient(to right, #a169e0, #cbabee);
+}
+
 .kh-inputfield {
     padding: 5px 15px;
     border-radius: 5px;
-    border: #489cdf 1px solid;
+    border: unset;
     text-align: left;
     width: 100%;
     height: auto;
@@ -28,6 +36,14 @@
     display: inline-block;
     font-weight: 600;
     cursor: pointer;
+}
+
+.options-check {
+    background: linear-gradient(to right, #397e9b, #00b0f8);
+}
+
+.modal-check {
+    background: linear-gradient(to right, #b312cb, #df10fd);
 }
 
 .check-icon {

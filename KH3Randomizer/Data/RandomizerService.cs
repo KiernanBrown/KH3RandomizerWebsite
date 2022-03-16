@@ -287,13 +287,6 @@ namespace KH3Randomizer.Data
                     continue;
                 }
 
-                // Make sure that we aren't blocking this swapCategory
-                // This is a list of checks that have been replaced individually
-                if (blockedChecks.Contains(swapCategory.Key))
-                {
-                    continue;
-                }
-
                 // Only take values that contain NONE if we're swapping with none
                 var availableSwaps = swapWithNone ? swapCategory.Value.Where(x => x.Value.Contains("NONE")).ToDictionary(x => x.Key, x => x.Value) : swapCategory.Value;
 
@@ -303,6 +296,13 @@ namespace KH3Randomizer.Data
 
                     // TODO: Add support for level ups
                     if (swapDataTable.Key == DataTableEnum.LevelUp || (swapDataTable.Key == DataTableEnum.ChrInit && swapData.Key.CategoryToKey(swapDataTable.Key) != "Abilities"))
+                    {
+                        continue;
+                    }
+
+                    // Make sure that we aren't blocking this swapCategory
+                    // This is a list of checks that have been replaced individually
+                    if (blockedChecks.Contains(swapCategory.Key) || blockedChecks.Contains(swapData.Key))
                     {
                         continue;
                     }
@@ -2090,7 +2090,8 @@ namespace KH3Randomizer.Data
             // This is already a starting ability. Block it from being replaced later
             if (category == DataTableEnum.ChrInit && subCategory.CategoryToKey(category) == "Abilities")
             {
-                blockedChecks.Add(option.Key);
+                if (!blockedChecks.Contains(option.Key))
+                    blockedChecks.Add(option.Key);
             }
 
             else

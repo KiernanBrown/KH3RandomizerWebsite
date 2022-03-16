@@ -72,14 +72,15 @@
                     </div>
                 }
             </div>
-
-            <!-- Key Abilities search bar and list -->
-            <br />
-            <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: "></SearchComponent>
         </div>
     </div>
 
-    <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentSubPool" ToggleCollapsables="this.ToggleCollapsables" Title="@("Sub Pools")" ActionType="@("Options")">
+    <!-- Key Abilities search bar and list -->
+    <Collapsable @ref="@keyAbilitiesCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="@("Key Abilities")" ActionType="@("Options")">
+        <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: " ActionType="Options"></SearchComponent>
+    </Collapsable>
+
+    <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="@("Sub Pools")" ActionType="@("Options")">
         <div class="subpools-container">
             @foreach (var pool in this.pools)
             {
@@ -154,8 +155,9 @@
 
     private Dictionary<string, Extra> extras = new Dictionary<string, Extra>();
 
+    private Collapsable keyAbilitiesCollapsable;
     private Collapsable subPoolsCollapsable;
-    private string currentSubPool = string.Empty;
+    private string currentOption = string.Empty;
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>();
     private List<string> keyAbilities = new List<string>();
 
@@ -239,9 +241,9 @@
         return false;
     }
 
-    private void ToggleCollapsables(string currentSubPool)
+    private void ToggleCollapsables(string currentOption)
     {
-        this.currentSubPool = currentSubPool;
+        this.currentOption = currentOption;
 
         InvokeAsync(() =>
         {

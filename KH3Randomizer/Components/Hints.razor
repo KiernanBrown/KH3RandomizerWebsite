@@ -28,7 +28,9 @@
     {
         <br />
         <div class="hints-subsection">
-            <SearchComponent SelectedChecks="@this.importantChecks" SearchLimit="25" SelectedTitle="Important Checks" SearchTitle="Available Checks"></SearchComponent>
+            <CascadingValue Value="this">
+                <SearchComponent SelectedChecks="@this.importantChecks" SearchLimit="25" SelectedTitle="Important Checks" SearchTitle="Available Checks" ActionType="Options" StateUpdate="@this.RefreshState"></SearchComponent>
+            </CascadingValue>
 
             <br />
             <h4><b>Quick Toggle</b></h4>
@@ -90,10 +92,6 @@
 
     private string currentHint = string.Empty;
     private string selectedHintType = "Verbose";
-
-    private string searchValue = "";
-    private List<string> foundChecks = new List<string>();
-    private int searchLimit = 25;
 
     protected override void OnInitialized()
     {
@@ -189,5 +187,10 @@
                 }
             }
         }
+    }
+
+    public void RefreshState()
+    {
+        this.StateHasChanged();
     }
 }
