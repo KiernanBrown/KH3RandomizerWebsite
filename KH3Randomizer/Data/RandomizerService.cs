@@ -345,8 +345,7 @@ namespace KH3Randomizer.Data
 
             List<Tuple<string, string>> brokenFullcourse = new List<Tuple<string, string>>() { 
                 new Tuple<string, string>("item00", "ETresAbilityKind::LUNCH_TIME\u0000"),
-                new Tuple<string, string>("item01", "ETresAbilityKind::POWER_LUNCH\u0000"),
-                new Tuple<string, string>("item02", "ETresAbilityKind::OVER_TIME\u0000")
+                new Tuple<string, string>("item01", "ETresAbilityKind::POWER_LUNCH\u0000")
             };
 
             List<string> proofs = new List<string>() { "Proof of Promises", "Proof of Times Past", "Proof of Fantasy" };

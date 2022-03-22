@@ -157,16 +157,15 @@
     protected override void OnInitialized()
     {
         this.pools = this.AvailablePools.Where(x => x.Value).Select(x => x.Key).ToList();
-        this.extras = this.AvailableExtras.Where(x => x.Value.Enabled).Select(x => x.Key).ToList();
+        this.extras = this.AvailableExtras.Where(x => x.Value.Enabled).Select(x => x.Value.Name).ToList();
         this.replacements = this.Replacements;
         this.keyAbilities = this.KeyAbilities;
-        this.duplicateAbilities = this.DuplicateAbilities;
+        this.duplicateAbilities = this.DuplicateAbilities.Select(x => x.ValueIdToDisplay()).ToList();
         this.importantChecks = this.ImportantChecks;
         this.options = new();
 
         List<string> miscOptions = new List<string>();
         List<string> replacedOptions = new List<string>();
-        List<string> duplicateOptions = new List<string>();
 
         foreach (var pool in pools)
         {
@@ -200,13 +199,7 @@
         this.options.Add("Miscellaneous Options", miscOptions);
         this.options.Add("Extras", this.extras);
         this.options.Add("Key Abilities", this.keyAbilities);
-
-        foreach (var ability in duplicateAbilities)
-        {
-            duplicateOptions.Add(ability.ValueIdToDisplay());
-        }
-        this.options.Add("Duplicate Abilities", duplicateOptions);
-
+        this.options.Add("Duplicate Abilities", this.duplicateAbilities);
         this.options.Add("Replaced Options", replacedOptions);
 
         //foreach (var modification in this.Modifications)
