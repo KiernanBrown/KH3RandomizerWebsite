@@ -160,7 +160,7 @@
         this.extras = this.AvailableExtras.Where(x => x.Value.Enabled).Select(x => x.Value.Name).ToList();
         this.replacements = this.Replacements;
         this.keyAbilities = this.KeyAbilities;
-        this.duplicateAbilities = this.DuplicateAbilities.Select(x => x.ValueIdToDisplay()).ToList();
+        this.duplicateAbilities = this.DuplicateAbilities;
         this.importantChecks = this.ImportantChecks;
         this.options = new();
 
@@ -176,7 +176,7 @@
                 {
                     if (pool.Equals("Treasures") && replacements.ContainsKey(option.Key.KeyToDataTableEnum()) && replacements[option.Key.KeyToDataTableEnum()].ContainsKey(option.Key) && replacements[option.Key.KeyToDataTableEnum()][option.Key])
                     {
-                        replacedOptions.Add(pool + ": " + option.Key);
+                        replacedOptions.Add("Treasures: " + option.Key);
                     }
                     else if (!pool.Equals("Treasures") && replacements.ContainsKey(pool.KeyToDataTableEnum()) && replacements[pool.KeyToDataTableEnum()].ContainsKey(option.Key) && replacements[pool.KeyToDataTableEnum()][option.Key])
                     {
@@ -196,10 +196,25 @@
             this.options.Add(pool, listOfOptions);
         }
 
+        // Add any other replaced options
+        foreach (var rCategory in replacements)
+        {
+            foreach (var rOption in rCategory.Value)
+            {
+                if (rOption.Value)
+                {
+                    string rOptionStr = rCategory.Key.DataTableEnumToKey().Equals("Treasures") ? "Treasures: " + rOption.Key : rCategory.Value.Count > 1 ? rOption.Key : rCategory.Key.DataTableEnumToKey();
+                    if (!replacedOptions.Contains(rOptionStr))
+                        replacedOptions.Add(rOptionStr);
+                }
+
+            }
+        }
+
         this.options.Add("Miscellaneous Options", miscOptions);
         this.options.Add("Extras", this.extras);
         this.options.Add("Key Abilities", this.keyAbilities);
-        this.options.Add("Duplicate Abilities", this.duplicateAbilities);
+        this.options.Add("Duplicate Abilities", this.duplicateAbilities.Select(x => x.ValueIdToDisplay()).ToList());
         this.options.Add("Replaced Options", replacedOptions);
 
         //foreach (var modification in this.Modifications)
