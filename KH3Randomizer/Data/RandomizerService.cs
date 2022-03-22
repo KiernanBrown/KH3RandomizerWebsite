@@ -459,9 +459,12 @@ namespace KH3Randomizer.Data
                 }
 
                 // Add duplicate abilities
-                foreach(var dupeAbility in duplicateAbilities)
+                if (duplicateAbilities != null && duplicateAbilities.Count > 0)
                 {
-                    swapList.Add(dupeAbility);
+                    foreach (var dupeAbility in duplicateAbilities)
+                    {
+                        swapList.Add(dupeAbility);
+                    }
                 }
 
                 // Shuffle these around with our rng created from the seed
@@ -1018,45 +1021,48 @@ namespace KH3Randomizer.Data
                 // Account for key abilities
                 Dictionary<DataTableEnum, Dictionary<string, bool>> dataTablesToCheck = new Dictionary<DataTableEnum, Dictionary<string, bool>>();
 
-                foreach (var extra in availableExtras)
+                if (keyAbilities != null && keyAbilities.Count > 0)
                 {
-                    if (extra.Key.Contains("Key Abilities") && availableOptions.ContainsKey(extra.Value.RequiredPool) && !extra.Value.Enabled)
+                    foreach (var extra in availableExtras)
                     {
-                        dataTablesToCheck.Add(extra.Value.RequiredPool.KeyToDataTableEnum(), new Dictionary<string, bool> { });
-                    }
-                }
-
-                if (dataTablesToCheck.Count > 0)
-                {
-                    Dictionary<DataTableEnum, Dictionary<string, bool>> blockedDataTables = new Dictionary<DataTableEnum, Dictionary<string, bool>>(replacements);
-                    blockedDataTables.Add(DataTableEnum.ChrInit, new Dictionary<string, bool> { { "Critical Abilities", true } });
-                    foreach (var dt in dataTablesToCheck)
-                    {
-                        var blockedValue = new Dictionary<string, bool>();
-                        foreach (var val in dt.Value)
+                        if (extra.Key.Contains("Key Abilities") && availableOptions.ContainsKey(extra.Value.RequiredPool) && !extra.Value.Enabled)
                         {
-                            blockedValue.Add(val.Key, true);
-                        }
-
-                        if (!blockedDataTables.ContainsKey(dt.Key))
-                        {
-                            blockedDataTables.Add(dt.Key, blockedValue);
-                        } 
-                        else
-                        {
-                            blockedDataTables[dt.Key] = blockedValue;
+                            dataTablesToCheck.Add(extra.Value.RequiredPool.KeyToDataTableEnum(), new Dictionary<string, bool> { });
                         }
                     }
 
-                    foreach (var category in randomizedOptions)
+                    if (dataTablesToCheck.Count > 0)
                     {
-                        foreach (var subCategory in category.Value)
+                        Dictionary<DataTableEnum, Dictionary<string, bool>> blockedDataTables = new Dictionary<DataTableEnum, Dictionary<string, bool>>(replacements);
+                        blockedDataTables.Add(DataTableEnum.ChrInit, new Dictionary<string, bool> { { "Critical Abilities", true } });
+                        foreach (var dt in dataTablesToCheck)
                         {
-                            foreach (var option in subCategory.Value)
+                            var blockedValue = new Dictionary<string, bool>();
+                            foreach (var val in dt.Value)
                             {
-                                if (keyAbilities.Contains(option.Value.ValueIdToDisplay()) && dataTablesToCheck.ContainsKey(category.Key))
+                                blockedValue.Add(val.Key, true);
+                            }
+
+                            if (!blockedDataTables.ContainsKey(dt.Key))
+                            {
+                                blockedDataTables.Add(dt.Key, blockedValue);
+                            }
+                            else
+                            {
+                                blockedDataTables[dt.Key] = blockedValue;
+                            }
+                        }
+
+                        foreach (var category in randomizedOptions)
+                        {
+                            foreach (var subCategory in category.Value)
+                            {
+                                foreach (var option in subCategory.Value)
                                 {
-                                    SwapCheck(ref randomizedOptions, ref availableOptions, category.Key, subCategory.Key, option.Key, option.Value, blockedDataTables, keyAbilities, false);
+                                    if (keyAbilities.Contains(option.Value.ValueIdToDisplay()) && dataTablesToCheck.ContainsKey(category.Key))
+                                    {
+                                        SwapCheck(ref randomizedOptions, ref availableOptions, category.Key, subCategory.Key, option.Key, option.Value, blockedDataTables, keyAbilities, false);
+                                    }
                                 }
                             }
                         }

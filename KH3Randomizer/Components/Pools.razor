@@ -132,6 +132,8 @@
     [Parameter] public EventCallback<Dictionary<string, bool>> UpdateAvailablePools { get; set; }
     [Parameter] public EventCallback<Dictionary<string, Extra>> UpdateAvailableExtras { get; set; }
     [Parameter] public EventCallback<Dictionary<DataTableEnum, Dictionary<string, bool>>> UpdateReplacements { get; set; }
+    [Parameter] public EventCallback<List<string>> UpdateKeyAbilities { get; set; }
+    [Parameter] public EventCallback<List<string>> UpdateDuplicateAbilities { get; set; }
 
     [Parameter] public Dictionary<string, bool> AvailablePools { get; set; }
     [Parameter] public Dictionary<string, Extra> AvailableExtras { get; set; }
@@ -220,6 +222,8 @@
         this.UpdateAvailablePools.InvokeAsync(this.pools);
         this.UpdateAvailableExtras.InvokeAsync(this.extras);
         this.UpdateReplacements.InvokeAsync(this.replacements);
+        this.UpdateKeyAbilities.InvokeAsync(this.keyAbilities);
+        this.UpdateDuplicateAbilities.InvokeAsync(this.duplicateAbilities);
 
         this.ContinueTo.InvokeAsync("Options");
     }
@@ -315,43 +319,5 @@
                 break;
         }
         this.UpdateReplacements.InvokeAsync(this.replacements);
-    }
-
-    private void SearchAbilities(string search)
-    {
-        this.searchValue = search;
-
-        //this.foundAbilities = new List<string>();
-
-        if (!string.IsNullOrEmpty(this.searchValue))
-        {
-            foreach (var category in RandomizerService.GetDefaultOptions())
-            {
-                var categoryConverted = category.Key.DataTableEnumToKey();
-                foreach (var subCategory in category.Value)
-                {
-                    var subCategoryConverted = subCategory.Key.CategoryToKey(category.Key);
-
-                    foreach (var option in subCategory.Value)
-                    {
-                        /*if (this.foundChecks.Count < this.searchLimit && option.Value.ValueIdToDisplay().ToLower().Contains(this.searchValue.ToLower()) && !option.Value.ValueIdToDisplay().Contains("ETres"))
-                        {
-                            if (!this.foundChecks.Contains(option.Value.ValueIdToDisplay()) && !this.importantChecks.Contains(option.Value.ValueIdToDisplay()))
-                                this.foundChecks.Add(option.Value.ValueIdToDisplay());
-
-                            if (this.foundChecks.Count == this.searchLimit)
-                                break;
-                        }*/
-                    }
-                }
-            }
-        }
-
-        //this.foundChecks.Sort();
-
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
     }
 }

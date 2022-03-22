@@ -15,15 +15,17 @@
                DuplicateAbilities="this.duplicateAbilities"
                UpdateAvailablePools="@(pools => UpdateAvailablePools(pools))"
                UpdateAvailableExtras="@(extras => UpdateAvailableExtras(extras))"
-               UpdateReplacements="@(replacements => UpdateReplacements(replacements))">
+               UpdateReplacements="@(replacements => UpdateReplacements(replacements))"
+               UpdateKeyAbilities="@(keyAbilities => UpdateKeyAbilities(keyAbilities))"
+               UpdateDuplicateAbilities="@(duplicateAbilities => UpdateDuplicateAbilities(duplicateAbilities))">
         </Pools>
     }
     else if (this.currentSection == "Options")
     {
         <Options ContinueTo="@(() => ContinueTo("Hints"))" BackTo="@(() => BackTo("Pools"))"
                  UpdateAvailableOptions="@(options => UpdateAvailableOptions(options))" UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateModifications="@((option1, option2) => UpdateModifications(option1, option2))"
-                 CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements" KeyAbilities="@this.keyAbilities" DuplicateAbilities="this.duplicateAbilities" 
-                 Modifications="@this.modifications" IsGoingBack="this.isGoingBack">
+                 CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements" KeyAbilities="@this.keyAbilities" DuplicateAbilities="@this.duplicateAbilities" 
+                 Modifications="@this.modifications" IsGoingBack="@this.isGoingBack">
         </Options>
     }
     else if (this.currentSection == "Hints")
