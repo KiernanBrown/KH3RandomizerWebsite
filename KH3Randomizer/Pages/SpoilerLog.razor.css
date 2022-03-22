@@ -119,6 +119,10 @@
     display: -webkit-inline-box;
 }
 
+.spoiler-log-extras {
+    display: -webkit-inline-box;
+}
+
 .rounded-selector {
     padding: 5px 10px;
     border: 1px solid #a169e0;
