@@ -63,7 +63,7 @@
                 @foreach (var extra in this.availableExtras)
                 {
                     <div class="col-md-2">
-                        <a class="@(IsExtraDisabled(extra.Value) ? "rounded-disabled" : "rounded-selector a-tag-selector") @(extra.Value.Enabled ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { HandleExtraValueChange(extra.Value); })" @onclick:preventDefault>@extra.Key</a>
+                        <a class="@(IsExtraDisabled(extra.Value) ? "rounded-disabled" : "rounded-selector a-tag-selector") @(extra.Value.Enabled ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { HandleExtraValueChange(extra.Value); })" @onclick:preventDefault>@extra.Value.Name</a>
                     </div>
                 }
             </div>
