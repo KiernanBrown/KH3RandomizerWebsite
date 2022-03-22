@@ -18,80 +18,56 @@
 
         <div class="review-sub-subsection">
             <div class="review-header">
-                <h3 for="options" style="font-size: 1.3rem;"><span class="header-color" style="background-color: #c9aeff;"></span><b>Pools & Options: </b></h3>
+                <h3 for="options" style="font-size: 1.3rem;"><span class="header-color" style="background-color: #c9aeff;"></span><b>Pools, Options, & Extras: </b></h3>
             </div>
             <div class="review-content" style="max-height: 600px; overflow-y: auto;">
                 @foreach (var option in options)
                 {
-                    <div style="display: inline-flex; width: 100%">
-                        <label id="@option.Key" name="@option.Key" style="min-width: fit-content; max-width: fit-content; margin-top: 10px;"><span class="pools-options-color" style="@poolColors[option.Key]"></span><b>@(option.Key):</b></label>
+                    @if (option.Value.Count > 0)
+                    {
+                        <div style="display: inline-flex; width: 100%">
+                            <label id="@option.Key" name="@option.Key" style="min-width: fit-content; max-width: fit-content; margin-top: 10px;"><span class="pools-options-color" style="@labelColors[option.Key]"></span><b>@(option.Key):</b></label>
 
-                        <div id="@(option.Key)_subOptions" style="display: inline;">
-                            @foreach (var subOption in option.Value.Split(", "))
-                            {
-                                <span class="sub-option-bubble" style="@optionColors[option.Key]">@subOption</span>
-                            }
+                            <div id="@(option.Key)_subOptions" style="display: inline;">
+                                @foreach (var subOption in option.Value)
+                                {
+                                    <span class="sub-option-bubble" style="@optionColors[option.Key]">@subOption</span>
+                                }
+                            </div>
                         </div>
-                    </div>
 
-                    <br />
+                        <br />
+                    }
                 }
             </div>
         </div>
 
         <div class="review-sub-subsection">
             <div class="review-header">
-                <h3 for="options" style="font-size: 1.3rem;"><span class="header-color" style="background-color: #72619e;"></span><b>Extras: </b></h3>
-                @if (this.extras.Count == 0)
-                {
-                    <label id="extras" name="extras" style="margin-left: 50px; margin-top: 2px; font-weight: 600;">There are no Extras.</label>
-                }
-            </div>
-            <div class="review-content" style="max-height: 500px; overflow-y: auto;">
-                @foreach (var extra in extras)
-                {
-                    <div style="display: inline">
-                        <span class="sub-option-bubble" style="@extraColor">@extra</span>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="review-sub-subsection">
-            <div class="review-header">
-                <h3 for="options" style="font-size: 1.3rem;"><span class="header-color" style="background-color: #d97777;"></span><b>Key Abilities: </b></h3>
-                @if (this.keyAbilities.Count == 0)
-                {
-                    <label id="key-abilities" name="key-abilities" style="margin-left: 50px; margin-top: 2px; font-weight: 600;">There are no Key Abilities.</label>
-                }
-            </div>
-            <div class="review-content" style="max-height: 500px; overflow-y: auto;">
-                @foreach (var ability in keyAbilities)
-                {
-                    <div style="display: inline">
-                        <span class="sub-option-bubble" style="@keyAbilityColor">@ability</span>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="review-sub-subsection">
-            <div class="review-header">
-                <h3 for="options" style="font-size: 1.3rem;"><span class="header-color" style="background-color: #91abeb;"></span><b>Important Checks: </b></h3>
+                <h3 for="options" style="font-size: 1.3rem;"><span class="header-color" style="background-color: #91abeb;"></span><b>Hints: </b></h3>
                 @if (this.HintSelectionType.Equals("None") || this.importantChecks.Count == 0)
                 {
-                    <label id="hints" name="hints" style="margin-left: 50px; margin-top: 2px; font-weight: 600;">There are no Important Checks.</label>
+                    <label id="hints" name="hints" style="margin-left: 50px; margin-top: 2px; font-weight: 600;">There are no Hints.</label>
                 }
             </div>
             @if (!this.HintSelectionType.Equals("None") && this.importantChecks.Count > 0)
             {
                 <div class="review-content" style="max-height: 500px; overflow-y: auto;">
-                    @foreach (var check in importantChecks)
-                    {
+                    <div style="display: inline-flex; width: 100%">
+                        <label id="hintType" name="hintType" style="min-width: fit-content; max-width: fit-content; margin-top: 10px;"><span class="pools-options-color" style="@labelColors["Level Ups"]"></span><b>Hint Type:</b></label>
                         <div style="display: inline">
-                            <span class="sub-option-bubble" style="@hintColor">@check</span>
+                            <span class="sub-option-bubble" style="@optionColors["Level Ups"]">@this.HintSelectionType</span>
                         </div>
-                    }
+                    </div>
+                    <div style="display: inline-flex; width: 100%">
+                        <label id="importantChecks" name="importantChecks" style="min-width: fit-content; max-width: fit-content; margin-top: 10px;"><span class="pools-options-color" style="@labelColors["Treasures"]"></span><b>Important Checks:</b></label>
+                        <div style="display: inline">
+                            @foreach (var check in importantChecks)
+                            {
+                                <span class="sub-option-bubble" style="@optionColors["Treasures"]">@check</span>
+                            }
+                        </div>
+                    </div>
                 </div>
             }
         </div>
@@ -109,7 +85,7 @@
                 {
                     <div style="display: inline-flex; width: 100%">
                         <label id="@modification.Item1.Category" name="@modification.Item1.Category" style="min-width: fit-content; max-width: fit-content; margin-top: 10px;">
-                            <span class="pools-options-color" style="@poolColors[modification.Item1.Category.DataTableEnumToKey()]"></span><b>@(@modification.Item1.Category.DataTableEnumToKey()):</b>
+                            <span class="pools-options-color" style="@labelColors[modification.Item1.Category.DataTableEnumToKey()]"></span><b>@(@modification.Item1.Category.DataTableEnumToKey()):</b>
                         </label>
 
                         <div id="@(modification.Item1.Category)_subOptions" style="display: inline;">
@@ -122,7 +98,7 @@
 
                     <div style="display: inline-flex; width: 90%; margin-left: 50px;">
                         <label id="@modification.Item2.Category" name="@modification.Item2.Category" style="min-width: fit-content; max-width: fit-content; margin-top: 10px;">
-                            <span class="pools-options-color" style="@poolColors[modification.Item2.Category.DataTableEnumToKey()]"></span><b>@(@modification.Item2.Category.DataTableEnumToKey()):</b>
+                            <span class="pools-options-color" style="@labelColors[modification.Item2.Category.DataTableEnumToKey()]"></span><b>@(@modification.Item2.Category.DataTableEnumToKey()):</b>
                         </label>
 
                         <div id="@(modification.Item2.Category)_subOptions" style="display: inline;">
@@ -156,21 +132,25 @@
     [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableOptions { get; set; }
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, bool>> Replacements { get; set; }
     [Parameter] public List<string> KeyAbilities { get; set; }
+    [Parameter] public List<string> DuplicateAbilities { get; set; }
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
     [Parameter] public string HintSelectionType { get; set; }
     [Parameter] public List<string> ImportantChecks { get; set; }
 
     private List<string> pools { get; set; } = new();
     private List<string> extras { get; set; } = new();
-    private Dictionary<string, string> options { get; set; } = new();
+    private Dictionary<string, List<string>> options { get; set; } = new();
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new();
+    private List<string> miscPools = new List<string>()
+    {
+        "Starting Stats", "Lucky Emblems", "Fullcourse Abilities", "Level Ups", "Equippables", "Synthesis Items"
+    };
     private List<string> keyAbilities = new List<string>();
+    private List<string> duplicateAbilities = new List<string>();
     private List<string> modifications { get; set; } = new();
     private List<string> importantChecks = new List<string>();
 
-    private Dictionary<string, string> poolColors = new();
-    private string extraColor = "background: linear-gradient(to right, #753da3, #ad70df);";
-    private string keyAbilityColor = "background: linear-gradient(to right, #b72e2e, #ff4141);";
+    private Dictionary<string, string> labelColors = new();
     private string hintColor = "background: linear-gradient(to right, #397e9b, #00b0f8);";
     private Dictionary<string, string> optionColors = new();
 
@@ -180,8 +160,13 @@
         this.extras = this.AvailableExtras.Where(x => x.Value.Enabled).Select(x => x.Key).ToList();
         this.replacements = this.Replacements;
         this.keyAbilities = this.KeyAbilities;
+        this.duplicateAbilities = this.DuplicateAbilities;
         this.importantChecks = this.ImportantChecks;
         this.options = new();
+
+        List<string> miscOptions = new List<string>();
+        List<string> replacedOptions = new List<string>();
+        List<string> duplicateOptions = new List<string>();
 
         foreach (var pool in pools)
         {
@@ -189,11 +174,40 @@
             foreach (var option in this.AvailableOptions[pool])
             {
                 if (option.Value)
-                    listOfOptions.Add(option.Key);
+                {
+                    if (pool.Equals("Treasures") && replacements.ContainsKey(option.Key.KeyToDataTableEnum()) && replacements[option.Key.KeyToDataTableEnum()].ContainsKey(option.Key) && replacements[option.Key.KeyToDataTableEnum()][option.Key])
+                    {
+                        replacedOptions.Add(pool + ": " + option.Key);
+                    }
+                    else if (!pool.Equals("Treasures") && replacements.ContainsKey(pool.KeyToDataTableEnum()) && replacements[pool.KeyToDataTableEnum()].ContainsKey(option.Key) && replacements[pool.KeyToDataTableEnum()][option.Key])
+                    {
+                        var rOption = replacements[pool.KeyToDataTableEnum()].Count > 1 ? option.Key : pool;
+                        replacedOptions.Add(rOption);
+                    }
+                    else if (this.miscPools.Contains(pool))
+                    {
+                        var miscOption = this.AvailableOptions[pool].Count <= 1 ? pool : pool.Contains("Synthesis") ? option.Key : pool + ": " + option.Key;
+                        miscOptions.Add(miscOption);
+                    }
+                    else
+                        listOfOptions.Add(option.Key);
+                }
             }
 
-            this.options.Add(pool, string.Join(", ", listOfOptions));
+            this.options.Add(pool, listOfOptions);
         }
+
+        this.options.Add("Miscellaneous Options", miscOptions);
+        this.options.Add("Extras", this.extras);
+        this.options.Add("Key Abilities", this.keyAbilities);
+
+        foreach (var ability in duplicateAbilities)
+        {
+            duplicateOptions.Add(ability.ValueIdToDisplay());
+        }
+        this.options.Add("Duplicate Abilities", duplicateOptions);
+
+        this.options.Add("Replaced Options", replacedOptions);
 
         //foreach (var modification in this.Modifications)
         //{
@@ -203,7 +217,7 @@
         //    this.modifications.Add($"{initial.Category}>{initial.SubCategory}>{initial.Name}>{initial.Value} <-> {swap.Category}>{swap.SubCategory}>{swap.Name}>{swap.Value}");
         //}
 
-        this.poolColors = new()
+        this.labelColors = new()
         {
             { "Treasures", "background-color: #00b0f8;" },
             { "Events", "background-color: #ad70df;" },
@@ -214,12 +228,13 @@
             { "Level Ups", "background-color: #56adff;" },
             { "Weapon Upgrades", "background-color: #59ed84;" },
             { "Equippables", "background-color: #df10fd;" },
-            { "Synthesis Items", "background-color: #70c0df;" }
+            { "Synthesis Items", "background-color: #70c0df;" },
+            { "Miscellaneous Options", "background-color: #f19b39;" },
+            { "Extras", "background-color: #72619e;" },
+            { "Key Abilities", "background-color: #d97777;" },
+            { "Duplicate Abilities", "background-color: #f6c00f;" },
+            { "Replaced Options", "background-color: #70c0df;" }
         };
-
-        this.extraColor = "background: linear-gradient(to right, #753da3, #ad70df);";
-
-        this.keyAbilityColor = "background: linear-gradient(to right, #b72e2e, #ff4141);";
 
         this.hintColor = "background: linear-gradient(to right, #397e9b, #00b0f8);";
 
@@ -234,7 +249,12 @@
             { "Level Ups", "background: linear-gradient(to right, #407fbb, #56adff);" },
             { "Weapon Upgrades", "background: linear-gradient(to right, #4abd6b, #59ed84);" },
             { "Equippables", "background: linear-gradient(to right, #b312cb, #df10fd);" },
-            { "Synthesis Items", "background: linear-gradient(to right, #126dcb, #70c0df);" }
+            { "Synthesis Items", "background: linear-gradient(to right, #126dcb, #70c0df);" },
+            { "Miscellaneous Options", "background: linear-gradient(to right, #bd782a, #f19b39);" },
+            { "Extras", "background: linear-gradient(to right, #753da3, #ad70df);" },
+            { "Key Abilities", "background: linear-gradient(to right, #b72e2e, #ff4141);" },
+            { "Duplicate Abilities", "background: linear-gradient(to right, #b79010, #f6c00f);" },
+            { "Replaced Options", "background: linear-gradient(to right, #126dcb, #70c0df);" }
         };
     }
 
@@ -251,7 +271,7 @@
             Hints = hintResults
         };
 
-        var file = this.RandomizerService.GenerateRandomizerSeed(this.CurrentSeed, this.RandomizedOptions, this.AvailablePools, this.AvailableExtras, this.AvailableOptions, this.Replacements, this.keyAbilities, this.Modifications, hintContainer);
+        var file = this.RandomizerService.GenerateRandomizerSeed(this.CurrentSeed, this.RandomizedOptions, this.AvailablePools, this.AvailableExtras, this.AvailableOptions, this.Replacements, this.keyAbilities, this.duplicateAbilities, this.Modifications, hintContainer);
 
         js.InvokeAsync<object>("saveAsFile", "pakchunk99-randomizer-" + this.CurrentSeed + ".zip", Convert.ToBase64String(file));
         // js.InvokeAsync<object>("saveAsFile", "pakchunk99-randomizer-" + this.CurrentSeed + ".pak", Convert.ToBase64String(files[0]));

@@ -12,6 +12,7 @@
                AvailableExtras="@this.availableExtras"
                Replacements="@this.replacements"
                KeyAbilities="@this.keyAbilities"
+               DuplicateAbilities="this.duplicateAbilities"
                UpdateAvailablePools="@(pools => UpdateAvailablePools(pools))"
                UpdateAvailableExtras="@(extras => UpdateAvailableExtras(extras))"
                UpdateReplacements="@(replacements => UpdateReplacements(replacements))">
@@ -21,7 +22,8 @@
     {
         <Options ContinueTo="@(() => ContinueTo("Hints"))" BackTo="@(() => BackTo("Pools"))"
                  UpdateAvailableOptions="@(options => UpdateAvailableOptions(options))" UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateModifications="@((option1, option2) => UpdateModifications(option1, option2))"
-                 CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements" KeyAbilities="@this.keyAbilities" Modifications="@this.modifications" IsGoingBack="this.isGoingBack">
+                 CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements" KeyAbilities="@this.keyAbilities" DuplicateAbilities="this.duplicateAbilities" 
+                 Modifications="@this.modifications" IsGoingBack="this.isGoingBack">
         </Options>
     }
     else if (this.currentSection == "Hints")
@@ -33,8 +35,8 @@
     else if (this.currentSection == "Review")
     {
         <Review BackTo="@(() => BackTo("Hints"))" CurrentSeed="@this.CurrentSeed" RandomizedOptions="@this.randomizedOptions"
-                AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" Replacements="@this.replacements" KeyAbilities="this.keyAbilities" Modifications="@this.modifications"
-                HintSelectionType="@this.hintSelectionType" ImportantChecks="@this.importantChecks"></Review>
+                AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" Replacements="@this.replacements" KeyAbilities="this.keyAbilities" DuplicateAbilities="this.duplicateAbilities" 
+                Modifications="@this.modifications" HintSelectionType="@this.hintSelectionType" ImportantChecks="@this.importantChecks"></Review>
     }
 </div>
 
@@ -60,7 +62,8 @@
         { "Key Abilities Upgrades", new Extra("Allow Key Abilities on Weapon Upgrades", true, "Weapon Upgrades", "Allows Key Abilities to be randomized onto Weapon Upgrades.") },
         { "Key Abilities Equippables", new Extra("Allow Key Abilities on Equippables", true, "Equippables", "Allows Key Abilities to be randomized onto Equippables.") },
         { "Pole Spin Start", new Extra("Pole Spin Start", false, "Starting Stats", "Ensures Pole Spin is a starting ability.") },
-        { "EXP Incentive Start", new Extra("EXP Incentive Start", false, "Fullcourse Abilities", "Ensures EXP Incentive is a starting ability.") }
+        { "EXP Incentive Start", new Extra("EXP Incentive Start", false, "Fullcourse Abilities", "Ensures EXP Incentive is a starting ability.") },
+        { "Broken Fullcourse Abilities", new Extra("Allow Broken Fullcourse Abilities", false, "Fullcourse Abilities", "Allows Cuisine Extender, Hearty Meal, & Overtime to be randomized into the pool. These abilities don't work if they aren't Fullcourse Abilities.") }
     };
 
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>()
@@ -101,6 +104,8 @@
         "Ability: Glide", "Ability: Doubleflight", "Ability: Aerial Recovery",
         "Ability: Second Chance", "Ability: Withstand Combo"
     };
+
+    private List<string> duplicateAbilities = new List<string>() {};
 
     private List<string> importantChecks = new List<string>()
     {
@@ -213,6 +218,16 @@
     public void UpdateKeyAbilities(List<string> keyAbilities)
     {
         this.keyAbilities = keyAbilities;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    public void UpdateDuplicateAbilities(List<string> duplicateAbilities)
+    {
+        this.duplicateAbilities = duplicateAbilities;
 
         InvokeAsync(() =>
         {

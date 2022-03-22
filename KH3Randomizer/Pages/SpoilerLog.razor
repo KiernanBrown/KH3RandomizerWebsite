@@ -71,10 +71,15 @@
 
         <!-- Key Abilities search bar and list -->
         <Collapsable @ref="@keyAbilitiesCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="Key Abilities" ActionType="Modal">
-            <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: " ActionType="Modal"></SearchComponent>
+            <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: " ActionType="Modal" UseDisplayValues="true"></SearchComponent>
         </Collapsable>
 
-        <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="@("Sub Pools")" ActionType="@("Modal")">
+        <!-- Duplicate Abilities search bar and list -->
+        <Collapsable @ref="@duplicateAbilitiesCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="Duplicate Abilities" ActionType="Modal">
+            <SearchComponent SelectedChecks="@this.duplicateAbilities" SearchLimit="25" ListLimit="20" SelectedTitle="Duplicate Abilities" SearchTitle="Available Abilities" Filter="Ability: " Duplicates="true" ActionType="Modal"></SearchComponent>
+        </Collapsable>
+
+        <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="Sub Pools" ActionType="Modal">
             <div class="subpools-container">
                 @foreach (var pool in this.availablePools)
                 {
@@ -186,7 +191,8 @@
         { "Key Abilities Upgrades", new Extra("Allow Key Abilities on Weapon Upgrades", true, "Weapon Upgrades", "Allows Key Abilities to be randomized onto Weapon Upgrades.") },
         { "Key Abilities Equippables", new Extra("Allow Key Abilities on Equippables", true, "Equippables", "Allows Key Abilities to be randomized onto Equippables.") },
         { "Pole Spin Start", new Extra("Pole Spin Start", false, "Starting Stats", "Ensures Pole Spin is a starting ability.") },
-        { "EXP Incentive Start", new Extra("EXP Incentive Start", false, "Fullcourse Abilities", "Ensures EXP Incentive is a starting ability.") }
+        { "EXP Incentive Start", new Extra("EXP Incentive Start", false, "Fullcourse Abilities", "Ensures EXP Incentive is a starting ability.") },
+        { "Broken Fullcourse Abilities", new Extra("Allow Broken Fullcourse Abilities", false, "Fullcourse Abilities", "Allows Cuisine Extender, Hearty Meal, & Overtime to be randomized into the pool. These abilities don't work if they aren't Fullcourse Abilities.") }
     };
 
     private Dictionary<string, bool> availablePools = new();
@@ -232,6 +238,8 @@
         "Ability: Second Chance", "Ability: Withstand Combo"
     };
 
+    private List<string> duplicateAbilities = new List<string>() {};
+
     private Dictionary<string, List<string>> hintSpoilers = new();
 
     private Dictionary<string, Dictionary<string, bool>> tempOptions = new();
@@ -239,6 +247,7 @@
     private List<Tuple<Option, Option>> modifications = new();
 
     private Collapsable keyAbilitiesCollapsable;
+    private Collapsable duplicateAbilitiesCollapsable;
     private Collapsable subPoolsCollapsable;
     private Collapsable hintsCollapsable;
     private string currentOption = string.Empty;
@@ -260,7 +269,7 @@
 
         this.UpdateCurrentSeed(this.currentSeed);
 
-        this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements, this.keyAbilities);
+        this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements, this.keyAbilities, this.duplicateAbilities);
 
         this.UpdateAvailableOptions(this.availableOptions);
         this.UpdateRandomizedOptions(this.randomizedOptions);
@@ -367,6 +376,16 @@
         });
     }
 
+    public void UpdateDuplicateAbilities(List<string> duplicateAbilities)
+    {
+        this.duplicateAbilities = duplicateAbilities;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
     public void UpdateModifications(Option initalOption, Option swapOption)
     {
         if (initalOption == null && swapOption == null)
@@ -397,8 +416,9 @@
             this.UpdateCurrentSeed(spoilerLogFile.SeedName);
             this.UpdateReplacements(spoilerLogFile.Replacements);
             this.UpdateKeyAbilities(spoilerLogFile.KeyAbilities);
+            this.UpdateDuplicateAbilities(spoilerLogFile.DuplicateAbilities);
 
-            this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements, this.keyAbilities);
+            this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements, this.keyAbilities, this.duplicateAbilities);
 
             foreach (var item in spoilerLogFile.Modifications)
             {

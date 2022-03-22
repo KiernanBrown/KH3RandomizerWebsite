@@ -1,6 +1,11 @@
 ﻿<div class="search-section">
     <div class="selected-checks">
         <h4 class="search-title"><b>@this.SelectedTitle</b></h4>
+        @if (this.ListLimit > 0)
+        {
+            <span class="limit">@(this.SelectedChecks.Count + "/" + this.ListLimit)</span>
+        }
+
         <div class=@(ActionType.Equals("Options") ? "kh-input options-input" : ActionType.Equals("Modal") ? "kh-input modal-input" : "kh-input")>
             <input value="@searchValue" id="randomizer_search" name="randomizer_search" class="kh-inputfield" @oninput="@((e) => this.SearchChecks(e.Value.ToString()))" placeholder="Search for a check to add to your @this.SelectedTitle..." />
         </div>
@@ -8,7 +13,7 @@
         <div class="selected-check-list">
             @foreach (var check in this.SelectedChecks)
             {
-                <span class=@(ActionType.Equals("Options") ? "check options-check" : ActionType.Equals("Modal") ? "check modal-check" : "check") @onclick="() => this.ToggleCheck(check)">@this.GetFilteredCheck(check) <i class="bi bi-dash-lg check-icon"></i></span>
+                <span class=@(ActionType.Equals("Options") ? "check options-check" : ActionType.Equals("Modal") ? "check modal-check" : "check") @onclick="@(() => this.ToggleCheck(check, "Remove"))">@this.GetFilteredCheck(check) <i class="bi bi-dash-lg check-icon"></i></span>
             }
         </div>
 
@@ -22,7 +27,7 @@
         {
             @foreach (var check in this.foundChecks)
             {
-                <span class=@(ActionType.Equals("Options") ? "check options-check" : ActionType.Equals("Modal") ? "check modal-check" : "check") @onclick="() => this.ToggleCheck(check)">@this.GetFilteredCheck(check) <i class="bi bi-plus-lg check-icon"></i></span>
+                <span class=@(ActionType.Equals("Options") ? "check options-check" : ActionType.Equals("Modal") ? "check modal-check" : "check") @onclick="@(() => this.ToggleCheck(check, "Add"))">@this.GetFilteredCheck(check) <i class="bi bi-plus-lg check-icon"></i></span>
             }
         }
         else if (string.IsNullOrEmpty(this.searchValue))
@@ -40,10 +45,14 @@
 
     [Parameter] public List<string> SelectedChecks { get; set; }
     [Parameter] public int SearchLimit { get; set; }
+    [Parameter] public int ListLimit { get; set; }
     [Parameter] public string SelectedTitle { get; set; }
     [Parameter] public string SearchTitle { get; set; }
     [Parameter] public string Filter { get; set; }
     [Parameter] public string ActionType { get; set; }
+    [Parameter] public bool UseDisplayValues { get; set; }
+    [Parameter] public bool Duplicates { get; set; }
+
     [Parameter] public EventCallback<string> StateUpdate { get; set; }
 
     private string searchValue = "";
@@ -68,15 +77,15 @@
                     {
                         if (this.foundChecks.Count < this.SearchLimit && option.Value.ValueIdToDisplay().ToLower().Contains(this.searchValue.ToLower()) && !option.Value.ValueIdToDisplay().Contains("ETres"))
                         {
-                            string checkToAdd = option.Value.ValueIdToDisplay();
+                            string checkToAdd = this.UseDisplayValues ? option.Value.ValueIdToDisplay() : option.Value;
                             if (!string.IsNullOrEmpty(this.Filter))
                             {
-                                var filteredOption = checkToAdd.Split(this.Filter);
+                                var filteredOption = option.Value.ValueIdToDisplay().Split(this.Filter);
                                 if (filteredOption.Count() <= 1)
                                     continue;
                             }
 
-                            if (!this.foundChecks.Contains(checkToAdd) && !this.SelectedChecks.Contains(checkToAdd))
+                            if (!this.foundChecks.Contains(checkToAdd) && (this.Duplicates || !this.SelectedChecks.Contains(checkToAdd)))
                                 this.foundChecks.Add(checkToAdd);
 
                             if (this.foundChecks.Count == this.SearchLimit)
@@ -95,17 +104,27 @@
         });
     }
 
-    private void ToggleCheck(string check)
+    private void ToggleCheck(string check, string action)
     {
-        if (this.SelectedChecks.Contains(check))
+        if (action.Equals("Add"))
         {
-            this.SelectedChecks.Remove(check);
-            SearchChecks(this.searchValue);
+            if (this.Duplicates || !this.SelectedChecks.Contains(check))
+            {
+                if (this.ListLimit == 0 || this.SelectedChecks.Count < this.ListLimit)
+                {
+
+                    this.SelectedChecks.Add(check);
+                    SearchChecks(this.searchValue);
+                }
+            }
         }
-        else if (this.foundChecks.Contains(check))
+        else if (action.Equals("Remove"))
         {
-            this.SelectedChecks.Add(check);
-            SearchChecks(this.searchValue);
+            if (this.SelectedChecks.Contains(check))
+            {
+                this.SelectedChecks.Remove(check);
+                SearchChecks(this.searchValue);
+            }
         }
 
         InvokeAsync(() =>
@@ -118,11 +137,12 @@
 
     private string GetFilteredCheck(string check)
     {
+        string checkValue = this.UseDisplayValues ? check : check.ValueIdToDisplay();
         if (string.IsNullOrEmpty(this.Filter))
-            return check;
-        var filteredOption = check.Split(this.Filter);
+            return checkValue;
+        var filteredOption = checkValue.Split(this.Filter);
         if (filteredOption.Count() <= 1)
-            return check;
+            return checkValue;
         return filteredOption[1];
     }
 }

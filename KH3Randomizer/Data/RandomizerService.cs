@@ -287,6 +287,12 @@ namespace KH3Randomizer.Data
                     continue;
                 }
 
+                // If swapping Pole Spin, make sure it's not going somewhere inaccessible
+                if (itemToChange.Contains("POLE_SPIN") && IsPoleSpinDisallowed(swapDataTable.Key, swapCategory.Key))
+                {
+                    continue;
+                }
+
                 // Only take values that contain NONE if we're swapping with none
                 var availableSwaps = swapWithNone ? swapCategory.Value.Where(x => x.Value.Contains("NONE")).ToDictionary(x => x.Key, x => x.Value) : swapCategory.Value;
 
@@ -328,7 +334,7 @@ namespace KH3Randomizer.Data
         }
 
         public void RandomizeItems(string seed, Dictionary<string, Extra> availableExtras, ref Dictionary<string, Dictionary<string, bool>> availableOptions,
-                                   ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities)
+                                   ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities, List<string> duplicateAbilities)
         {
             var hash = seed.StringToSeed();
             rng = new Random((int)hash);
@@ -336,6 +342,12 @@ namespace KH3Randomizer.Data
             // Use randomizedItems
             // Category > Id > Item > Value
             var defaultOptions = GetDefaultOptions();
+
+            List<Tuple<string, string>> brokenFullcourse = new List<Tuple<string, string>>() { 
+                new Tuple<string, string>("item00", "ETresAbilityKind::LUNCH_TIME\u0000"),
+                new Tuple<string, string>("item01", "ETresAbilityKind::POWER_LUNCH\u0000"),
+                new Tuple<string, string>("item02", "ETresAbilityKind::OVER_TIME\u0000")
+            };
 
             List<string> proofs = new List<string>() { "Proof of Promises", "Proof of Times Past", "Proof of Fantasy" };
             List<string> reports = new List<string>() { "Secret Report 1", "Secret Report 2", "Secret Report 3", "Secret Report 4", "Secret Report 5", "Secret Report 6", "Secret Report 7", "Secret Report 8", "Secret Report 9", "Secret Report 10", "Secret Report 11", "Secret Report 12", "Secret Report 13" };
@@ -425,6 +437,12 @@ namespace KH3Randomizer.Data
                                     continue;
                                 }
 
+                                if (dataTableEnum == DataTableEnum.FullcourseAbility && availableExtras.ContainsKey("Broken Fullcourse Abilities") && !availableExtras["Broken Fullcourse Abilities"].Enabled && brokenFullcourse.Any(x => x.Item1.Equals(id)))
+                                {
+                                    blockedChecks.Add(id);
+                                    continue;
+                                }
+                                
                                 swapList.Add(value.Value);
                             }
                         }
@@ -439,6 +457,12 @@ namespace KH3Randomizer.Data
                 if (availableExtras["Allow Ultima"].Enabled && !availableOptions.ContainsKey("Synthesis Items") || (availableExtras["Allow Ultima"].Enabled && availableOptions.ContainsKey("Synthesis Items") && !availableOptions["Synthesis Items"]["Synthesis Items"]))
                 {
                     swapList.Add("WEP_KEYBLADE_SO_015\u0000");
+                }
+
+                // Add duplicate abilities
+                foreach(var dupeAbility in duplicateAbilities)
+                {
+                    swapList.Add(dupeAbility);
                 }
 
                 // Shuffle these around with our rng created from the seed
@@ -977,6 +1001,21 @@ namespace KH3Randomizer.Data
                 ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYBLADE_012");
                 ReplaceCheck(ref randomizedOptions, availableOptions, replacements, DataTableEnum.Event, "EVENT_KEYBLADE_013");
 
+                // Put the broken fullcourse abilities back if they aren't enabled
+                if (availableOptions.ContainsKey("Fullcourse Abilities") && availableExtras.ContainsKey("Broken Fullcourse Abilities") && !availableExtras["Broken Fullcourse Abilities"].Enabled
+                    && (!replacements.ContainsKey(DataTableEnum.FullcourseAbility) || !replacements[DataTableEnum.FullcourseAbility].ContainsKey("Abilities") || !replacements[DataTableEnum.FullcourseAbility]["Abilities"]))
+                {
+                    foreach (var fcAbility in brokenFullcourse)
+                    {
+                        var foodCheck = randomizedOptions[DataTableEnum.FullcourseAbility][fcAbility.Item1].FirstOrDefault();
+                        if (!foodCheck.Value.Contains("NONE"))
+                        {
+                            SwapCheck(ref randomizedOptions, ref availableOptions, DataTableEnum.FullcourseAbility, fcAbility.Item1, foodCheck.Key, foodCheck.Value, replacements, null, true);
+                        }
+                        randomizedOptions[DataTableEnum.FullcourseAbility][fcAbility.Item1][foodCheck.Key] = fcAbility.Item2;
+                    }
+                }
+
                 // Account for key abilities
                 Dictionary<DataTableEnum, Dictionary<string, bool>> dataTablesToCheck = new Dictionary<DataTableEnum, Dictionary<string, bool>>();
 
@@ -1104,12 +1143,12 @@ namespace KH3Randomizer.Data
         }
 
         public byte[] GenerateRandomizerSeed(string currentSeed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
-                                             Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities, List<Tuple<Option, Option>> modifications, HintContainer hintContainer)
+                                             Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities, List<string> duplicateAbilities, List<Tuple<Option, Option>> modifications, HintContainer hintContainer)
         {
             var dataTableManager = new UE4DataTableInterpreter.DataTableManager();
             var dataTables = dataTableManager.RandomizeDataTables(randomizedOptions);
 
-            var zipArchive = this.CreateZipArchive(dataTables, currentSeed, availablePools, availableExtras, availableOptions, replacements, keyAbilities, modifications, hintContainer);
+            var zipArchive = this.CreateZipArchive(dataTables, currentSeed, availablePools, availableExtras, availableOptions, replacements, keyAbilities, duplicateAbilities, modifications, hintContainer);
 
             return zipArchive;
 
@@ -1132,7 +1171,7 @@ namespace KH3Randomizer.Data
             //return new List<byte[]> { this.GetFile(@$".\Seeds\pakchunk99-randomizer-{currentSeed}.pak"), this.GetFile(@$"{pakPath}\SpoilerLog.json") };
         }
 
-        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities, List<Tuple<Option, Option>> modifications, HintContainer hintContainer)
+        public byte[] CreateZipArchive(Dictionary<string, List<byte>> dataTables, string randomSeed, Dictionary<string, bool> availablePools, Dictionary<string, Extra> availableExtras, Dictionary<string, Dictionary<string, bool>> availableOptions, Dictionary<DataTableEnum, Dictionary<string, bool>> replacements, List<string> keyAbilities, List<string> duplicateAbilities, List<Tuple<Option, Option>> modifications, HintContainer hintContainer)
         {
             var zipPath = @$".\Seeds\pakchunk99-randomizer-{randomSeed}\pakchunk99-randomizer-{randomSeed}.zip";
 
@@ -1168,6 +1207,7 @@ namespace KH3Randomizer.Data
                     AvailableOptions = availableOptions,
                     Replacements = replacements,
                     KeyAbilities = keyAbilities,
+                    DuplicateAbilities = duplicateAbilities,
                     Modifications = jsonTupleList,
                     ImportantChecks = hintContainer.ImportantChecks,
                     HintType = hintContainer.Type

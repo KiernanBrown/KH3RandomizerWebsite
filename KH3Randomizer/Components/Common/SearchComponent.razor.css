@@ -43,7 +43,7 @@
 }
 
 .modal-check {
-    background: linear-gradient(to right, #b312cb, #df10fd);
+    background: linear-gradient(to right, #75559b, #a877df);
 }
 
 .check-icon {
@@ -63,4 +63,10 @@
 .selected-checks-header {
     display: flex;
     justify-content: space-between;
+}
+
+.limit {
+    color: #818181;
+    font-size: 1.1em;
+    float: right;
 }

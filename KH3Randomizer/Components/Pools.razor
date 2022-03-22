@@ -76,11 +76,17 @@
     </div>
 
     <!-- Key Abilities search bar and list -->
-    <Collapsable @ref="@keyAbilitiesCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="@("Key Abilities")" ActionType="@("Options")">
-        <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: " ActionType="Options"></SearchComponent>
+    <Collapsable @ref="@keyAbilitiesCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="Key Abilities" ActionType="Options">
+        <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: " ActionType="Options" UseDisplayValues="true"></SearchComponent>
     </Collapsable>
 
-    <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="@("Sub Pools")" ActionType="@("Options")">
+    <!-- Duplicate Abilities search bar and list -->
+    <Collapsable @ref="@duplicateAbilitiesCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="Duplicate Abilities" ActionType="Options">
+        <SearchComponent SelectedChecks="@this.duplicateAbilities" SearchLimit="25" ListLimit="20" SelectedTitle="Duplicate Abilities" SearchTitle="Available Abilities" Filter="Ability: " Duplicates="true" ActionType="Options"></SearchComponent>
+    </Collapsable>
+
+    <!-- Sub Pools collapsable -->
+    <Collapsable @ref="@subPoolsCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="Sub Pools" ActionType="Options">
         <div class="subpools-container">
             @foreach (var pool in this.pools)
             {
@@ -131,6 +137,7 @@
     [Parameter] public Dictionary<string, Extra> AvailableExtras { get; set; }
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, bool>> Replacements { get; set; }
     [Parameter] public List<string> KeyAbilities { get; set; }
+    [Parameter] public List<string> DuplicateAbilities { get; set; }
 
     private bool isOn { get; set; } = false;
     private string allOptionText { get; set; } = "MIXED";
@@ -156,10 +163,12 @@
     private Dictionary<string, Extra> extras = new Dictionary<string, Extra>();
 
     private Collapsable keyAbilitiesCollapsable;
+    private Collapsable duplicateAbilitiesCollapsable;
     private Collapsable subPoolsCollapsable;
     private string currentOption = string.Empty;
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>();
     private List<string> keyAbilities = new List<string>();
+    private List<string> duplicateAbilities = new List<string>();
 
     protected override void OnInitialized()
     {
@@ -167,6 +176,7 @@
         this.extras = this.AvailableExtras;
         this.replacements = this.Replacements;
         this.keyAbilities = this.KeyAbilities;
+        this.duplicateAbilities = this.DuplicateAbilities;
         this.UpdateOptionsText();
     }
 

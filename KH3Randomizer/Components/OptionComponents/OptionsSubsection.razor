@@ -196,6 +196,7 @@
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> RandomizedOptions { get; set; }
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, bool>> Replacements { get; set; }
     [Parameter] public List<string> KeyAbilities { get; set; }
+    [Parameter] public List<string> DuplicateAbilities { get; set; }
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
 
     [Parameter] public bool IsDisabled { get; set; } = false;
@@ -209,6 +210,7 @@
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new();
     private List<string> keyAbilities = new List<string>();
+    private List<string> duplicateAbilities = new List<string>();
     private List<Tuple<Option, Option>> modifications = new();
 
     private string currentSelection = "";
@@ -233,6 +235,7 @@
         this.randomizedOptions = this.RandomizedOptions;
         this.replacements = this.Replacements;
         this.keyAbilities = this.KeyAbilities;
+        this.duplicateAbilities = this.DuplicateAbilities;
         this.modifications = this.Modifications;
 
         if (this.searchAvailableOptions.Count > 0 && this.searchRandomizedOptions.Count > 0)
@@ -261,7 +264,7 @@
         this.availableOptions[option][subOption] = value;
 
         if (!string.IsNullOrEmpty(this.CurrentSeed))
-            this.RandomizerService.RandomizeItems(this.CurrentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements, this.keyAbilities);
+            this.RandomizerService.RandomizeItems(this.CurrentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements, this.keyAbilities, this.duplicateAbilities);
 
         this.UpdateAvailableOptions.InvokeAsync(this.availableOptions);
         this.UpdateRandomizedOptions.InvokeAsync(this.randomizedOptions);
