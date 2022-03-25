@@ -13,17 +13,22 @@
                Replacements="@this.replacements"
                KeyAbilities="@this.keyAbilities"
                DuplicateAbilities="this.duplicateAbilities"
+               CurrentPreset="this.currentPreset"
                UpdateAvailablePools="@(pools => UpdateAvailablePools(pools))"
+               UpdateAvailableOptions="@(options => UpdateAvailableOptions(options))"
                UpdateAvailableExtras="@(extras => UpdateAvailableExtras(extras))"
                UpdateReplacements="@(replacements => UpdateReplacements(replacements))"
                UpdateKeyAbilities="@(keyAbilities => UpdateKeyAbilities(keyAbilities))"
-               UpdateDuplicateAbilities="@(duplicateAbilities => UpdateDuplicateAbilities(duplicateAbilities))">
+               UpdateDuplicateAbilities="@(duplicateAbilities => UpdateDuplicateAbilities(duplicateAbilities))"
+               UpdateHintSelection="@this.UpdateHintSelection"
+               UpdateImportantChecks="@this.UpdateImportantChecks"
+               UpdateCurrentPreset="@this.UpdateCurrentPreset">
         </Pools>
     }
     else if (this.currentSection == "Options")
     {
         <Options ContinueTo="@(() => ContinueTo("Hints"))" BackTo="@(() => BackTo("Pools"))"
-                 UpdateAvailableOptions="@(options => UpdateAvailableOptions(options))" UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateModifications="@((option1, option2) => UpdateModifications(option1, option2))"
+                 UpdateAvailableOptions="@(options => UpdateAvailableOptions(options))" UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateModifications="@((option1, option2) => UpdateModifications(option1, option2))" UpdateCurrentPreset="@this.UpdateCurrentPreset"
                  CurrentSeed="@this.CurrentSeed" AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements" KeyAbilities="@this.keyAbilities" DuplicateAbilities="@this.duplicateAbilities" 
                  Modifications="@this.modifications" IsGoingBack="@this.isGoingBack">
         </Options>
@@ -32,12 +37,12 @@
     {
         <Hints ContinueTo="@(() => ContinueTo("Review"))" BackTo="@(() => BackTo("Options"))"
                RandomizedOptions="@this.randomizedOptions" UpdateHintSelection="@this.UpdateHintSelection" HintSelectionType="@this.hintSelectionType" KeyAbilities="@this.keyAbilities" 
-               ImportantChecks="@this.importantChecks" UpdateImportantChecks="@this.UpdateImportantChecks"></Hints>
+               ImportantChecks="@this.importantChecks" UpdateImportantChecks="@this.UpdateImportantChecks" UpdateCurrentPreset="@this.UpdateCurrentPreset"></Hints> 
     }
     else if (this.currentSection == "Review")
     {
         <Review BackTo="@(() => BackTo("Hints"))" CurrentSeed="@this.CurrentSeed" RandomizedOptions="@this.randomizedOptions"
-                AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" Replacements="@this.replacements" KeyAbilities="this.keyAbilities" DuplicateAbilities="this.duplicateAbilities" 
+                AvailablePools="@this.availablePools" AvailableExtras="@this.availableExtras" AvailableOptions="@this.availableOptions" Replacements="@this.replacements" KeyAbilities="this.keyAbilities" DuplicateAbilities="this.duplicateAbilities" CurrentPreset="this.currentPreset" 
                 Modifications="@this.modifications" HintSelectionType="@this.hintSelectionType" ImportantChecks="@this.importantChecks"></Review>
     }
 </div>
@@ -129,6 +134,8 @@
     private List<Tuple<Option, Option>> modifications = new();
 
     private string hintSelectionType = "Verbose";
+
+    private KeyValuePair<string, SettingsFile> currentPreset = new();
 
     private string currentSection = "Pools";
     private bool isGoingBack = false;
@@ -269,5 +276,15 @@
         {
             StateHasChanged();
         });
+    }
+
+    public void UpdateCurrentPreset(KeyValuePair<string, SettingsFile> preset)
+    {
+        this.currentPreset = preset;
+
+        InvokeAsync(() =>
+        {
+        StateHasChanged();
+    });
     }
 }

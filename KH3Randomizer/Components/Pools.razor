@@ -6,6 +6,17 @@
     <div class="pools-subsection">
         <button class="btn kh-button" @onclick="ToggleOptions">All Options: @(this.allOptionText)</button>
 
+        @if (!currentPreset.Equals(new KeyValuePair<string, SettingsFile>()))
+        {
+            <span style="float: right;">
+                <span style="margin-right: 10px;"><b>Using Preset: @currentPreset.Value.Name</b></span>
+                <button class="btn kh-button" @onclick="ShowPresetsModal">Presets</button>
+            </span>
+        }
+        else
+        {
+            <button class="btn kh-button" style="float: right;" @onclick="ShowPresetsModal">Presets</button>
+        }
         <br />
         <br />
 
@@ -54,7 +65,7 @@
                             <!-- Slider -->
                             <div class="col-md-2">
                                 <label class="switch">
-                                    <input type="checkbox" @onchange="@((value) => { extra.Value.Enabled = (bool)value.Value; })" checked="@extra.Value.Enabled" disabled="@IsExtraDisabled(extra.Value)">
+                                    <input type="checkbox" @onchange="@((value) => { HandleExtraValueChange(value, extra.Value); })" checked="@extra.Value.Enabled" disabled="@IsExtraDisabled(extra.Value)">
                                     <span class="slider round"></span>
                                 </label>
                             </div>
@@ -77,12 +88,12 @@
 
     <!-- Key Abilities search bar and list -->
     <Collapsable @ref="@keyAbilitiesCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="Key Abilities" ActionType="Options">
-        <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: " ActionType="Options" UseDisplayValues="true"></SearchComponent>
+        <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: " ActionType="Options" UseDisplayValues="true" StateUpdate="@this.ClearPreset"></SearchComponent>
     </Collapsable>
 
     <!-- Duplicate Abilities search bar and list -->
     <Collapsable @ref="@duplicateAbilitiesCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="Duplicate Abilities" ActionType="Options">
-        <SearchComponent SelectedChecks="@this.duplicateAbilities" SearchLimit="25" ListLimit="20" SelectedTitle="Duplicate Abilities" SearchTitle="Available Abilities" Filter="Ability: " Duplicates="true" ActionType="Options"></SearchComponent>
+        <SearchComponent SelectedChecks="@this.duplicateAbilities" SearchLimit="25" ListLimit="20" SelectedTitle="Duplicate Abilities" SearchTitle="Available Abilities" Filter="Ability: " Duplicates="true" ActionType="Options" StateUpdate="@this.ClearPreset"></SearchComponent>
     </Collapsable>
 
     <!-- Sub Pools collapsable -->
@@ -128,18 +139,25 @@
 </div>
 
 @code {
+    [CascadingParameter] public IModalService Modal { get; set; }
+
     [Parameter] public EventCallback<string> ContinueTo { get; set; }
     [Parameter] public EventCallback<Dictionary<string, bool>> UpdateAvailablePools { get; set; }
+    [Parameter] public EventCallback<Dictionary<string, Dictionary<string, bool>>> UpdateAvailableOptions { get; set; }
     [Parameter] public EventCallback<Dictionary<string, Extra>> UpdateAvailableExtras { get; set; }
     [Parameter] public EventCallback<Dictionary<DataTableEnum, Dictionary<string, bool>>> UpdateReplacements { get; set; }
     [Parameter] public EventCallback<List<string>> UpdateKeyAbilities { get; set; }
     [Parameter] public EventCallback<List<string>> UpdateDuplicateAbilities { get; set; }
+    [Parameter] public EventCallback<string> UpdateHintSelection { get; set; }
+    [Parameter] public EventCallback<List<string>> UpdateImportantChecks { get; set; }
+    [Parameter] public EventCallback<KeyValuePair<string, SettingsFile>> UpdateCurrentPreset { get; set; }
 
     [Parameter] public Dictionary<string, bool> AvailablePools { get; set; }
     [Parameter] public Dictionary<string, Extra> AvailableExtras { get; set; }
     [Parameter] public Dictionary<DataTableEnum, Dictionary<string, bool>> Replacements { get; set; }
     [Parameter] public List<string> KeyAbilities { get; set; }
     [Parameter] public List<string> DuplicateAbilities { get; set; }
+    [Parameter] public KeyValuePair<string, SettingsFile> CurrentPreset { get; set; }
 
     private bool isOn { get; set; } = false;
     private string allOptionText { get; set; } = "MIXED";
@@ -171,6 +189,7 @@
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new Dictionary<DataTableEnum, Dictionary<string, bool>>();
     private List<string> keyAbilities = new List<string>();
     private List<string> duplicateAbilities = new List<string>();
+    private KeyValuePair<string, SettingsFile> currentPreset = new();
 
     protected override void OnInitialized()
     {
@@ -179,6 +198,7 @@
         this.replacements = this.Replacements;
         this.keyAbilities = this.KeyAbilities;
         this.duplicateAbilities = this.DuplicateAbilities;
+        this.currentPreset = this.CurrentPreset;
         this.UpdateOptionsText();
     }
 
@@ -224,6 +244,7 @@
         this.UpdateReplacements.InvokeAsync(this.replacements);
         this.UpdateKeyAbilities.InvokeAsync(this.keyAbilities);
         this.UpdateDuplicateAbilities.InvokeAsync(this.duplicateAbilities);
+        this.UpdateCurrentPreset.InvokeAsync(this.currentPreset);
 
         this.ContinueTo.InvokeAsync("Options");
     }
@@ -242,7 +263,15 @@
             extra.Value.Enabled = (newValue && !extra.Value.RequiredPool.Contains(" Off")) || (!newValue && extra.Value.RequiredPool.Contains(" Off")) ? extra.Value.DefaultEnabled : false;
         }
 
+        this.ClearPreset();
         this.UpdateOptionsText();
+    }
+
+    private void HandleExtraValueChange(ChangeEventArgs value, Extra extra)
+    {
+        extra.Enabled = (bool)value.Value;
+
+        this.ClearPreset();
     }
 
     private bool IsExtraDisabled(Extra extra)
@@ -319,5 +348,47 @@
                 break;
         }
         this.UpdateReplacements.InvokeAsync(this.replacements);
+        this.ClearPreset();
+    }
+
+    private void UpdateSettingsFromPreset(KeyValuePair<string, SettingsFile> preset)
+    {
+        this.pools = preset.Value.AvailablePools;
+        this.extras = preset.Value.AvailableExtras;
+        this.replacements = preset.Value.Replacements;
+        this.keyAbilities = preset.Value.KeyAbilities;
+        this.duplicateAbilities = preset.Value.DuplicateAbilities;
+        this.currentPreset = preset;
+        this.UpdateOptionsText();
+
+        this.UpdateAvailablePools.InvokeAsync(this.pools);
+        this.UpdateAvailableOptions.InvokeAsync(preset.Value.AvailableOptions);
+        this.UpdateAvailableExtras.InvokeAsync(this.extras);
+        this.UpdateReplacements.InvokeAsync(this.replacements);
+        this.UpdateKeyAbilities.InvokeAsync(this.keyAbilities);
+        this.UpdateDuplicateAbilities.InvokeAsync(this.duplicateAbilities);
+        this.UpdateHintSelection.InvokeAsync(preset.Value.HintType);
+        this.UpdateImportantChecks.InvokeAsync(preset.Value.ImportantChecks);
+        this.UpdateCurrentPreset.InvokeAsync(this.currentPreset);
+    }
+
+    private async void ShowPresetsModal()
+    {
+        var parameters = new ModalParameters();
+        parameters.Add("UsePreset", EventCallback.Factory.Create<KeyValuePair<string, SettingsFile>>(this, UpdateSettingsFromPreset));
+        parameters.Add("CurrentPreset", this.currentPreset);
+        var options = new ModalOptions { Class = "modal-custom" };
+
+        var unnamedSeedModal = Modal.Show<LoadPresetsModal>("Presets", parameters, options);
+        var result = await unnamedSeedModal.Result;
+    }
+
+    private void ClearPreset()
+    {
+        if (!currentPreset.Equals(new KeyValuePair<string, SettingsFile>()))
+        {
+            this.currentPreset = new();
+            UpdateCurrentPreset.InvokeAsync(this.currentPreset);
+        }
     }
 }

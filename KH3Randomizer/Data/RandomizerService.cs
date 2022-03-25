@@ -19,10 +19,10 @@ namespace KH3Randomizer.Data
         {
             if (backTo)
                 return availableOptions;
-           
-            var defaultOptions = GetDefaultOptions();
 
-            availableOptions = new();
+            var defaultOptions = GetDefaultOptions();
+                
+            availableOptions = availableOptions != null && availableOptions.Count > 0 ? availableOptions.Where(x => availablePools.ContainsKey(x.Key) && availablePools[x.Key]).ToDictionary(x => x.Key, x => x.Value) : new();
             randomizedOptions = new();
 
             foreach (var pool in availablePools)
@@ -33,13 +33,16 @@ namespace KH3Randomizer.Data
                 switch (pool.Key)
                 {
                     case "Treasures":
-                        availableOptions.Add("Treasures", new Dictionary<string, bool>
+                        if (!availableOptions.ContainsKey(pool.Key))
                         {
-                            { "Olympus", true }, { "Twilight Town", true }, { "Kingdom of Corona", true },
-                            { "Toy Box", true }, { "Arendelle", true }, { "Monstropolis", true },
-                            { "The Caribbean", true }, { "San Fransokyo", true }, { "Keyblade Graveyard", true },
-                            { "The Final World", true }, { "Scala Ad Caelum", true }
-                        });
+                            availableOptions.Add("Treasures", new Dictionary<string, bool>
+                            {
+                                { "Olympus", true }, { "Twilight Town", true }, { "Kingdom of Corona", true },
+                                { "Toy Box", true }, { "Arendelle", true }, { "Monstropolis", true },
+                                { "The Caribbean", true }, { "San Fransokyo", true }, { "Keyblade Graveyard", true },
+                                { "The Final World", true }, { "Scala Ad Caelum", true }
+                            });
+                        }
                         
                         randomizedOptions.Add(DataTableEnum.TreasureBT, defaultOptions[DataTableEnum.TreasureBT]);
                         randomizedOptions.Add(DataTableEnum.TreasureBX, defaultOptions[DataTableEnum.TreasureBX]);
@@ -55,91 +58,118 @@ namespace KH3Randomizer.Data
 
                         break;
                     case "Equippables":
-                        availableOptions.Add("Equippables", new Dictionary<string, bool>
+                        if (!availableOptions.ContainsKey(pool.Key))
                         {
-                            { "Weapons", true }, { "Accessories", true }, { "Armor", true }
-                        });
+                            availableOptions.Add("Equippables", new Dictionary<string, bool>
+                            {
+                                { "Weapons", true }, { "Accessories", true }, { "Armor", true }
+                            });
+                        }
 
                         randomizedOptions.Add(DataTableEnum.EquipItem, defaultOptions[DataTableEnum.EquipItem]);
 
                         break;
                     case "Starting Stats":
-                        availableOptions.Add("Starting Stats", new Dictionary<string, bool>
+                        if (!availableOptions.ContainsKey(pool.Key))
                         {
-                            { "Weapons", true }, { "Abilities", true }, { "Critical Abilities", true }
-                        });
+                            availableOptions.Add("Starting Stats", new Dictionary<string, bool>
+                            {
+                                { "Weapons", true }, { "Abilities", true }, { "Critical Abilities", true }
+                            });
+                        }
 
                         randomizedOptions.Add(DataTableEnum.ChrInit, defaultOptions[DataTableEnum.ChrInit]);
 
                         break;
                     case "Lucky Emblems":
-                        availableOptions.Add("Lucky Emblems", new Dictionary<string, bool>
+                        if (!availableOptions.ContainsKey(pool.Key))
                         {
-                            { "Lucky Emblems", true }
-                        });
+                            availableOptions.Add("Lucky Emblems", new Dictionary<string, bool>
+                            {
+                                { "Lucky Emblems", true }
+                            });
+                        }
 
                         randomizedOptions.Add(DataTableEnum.LuckyMark, defaultOptions[DataTableEnum.LuckyMark]);
 
                         break;
                     case "Bonuses":
-                        availableOptions.Add("Bonuses", new Dictionary<string, bool>
+                        if (!availableOptions.ContainsKey(pool.Key))
                         {
-                            { "Olympus VBonus", true }, { "Twilight Town VBonus", true }, { "Toy Box VBonus", true },
-                            { "Kingdom of Corona VBonus", true }, { "Monstropolis VBonus", true }, { "Arendelle VBonus", true }, 
-                            { "San Fransokyo VBonus", true }, { "The Caribbean VBonus", true }, { "The Dark World VBonus", true }, 
-                            { "Keyblade Graveyard VBonus", true }, { "The Final World VBonus", true }, { "Re:Mind Keyblade Graveyard VBonus", true }, 
-                            { "Scala Ad Caelum VBonus", true }, { "Flantastic Seven", true }, { "Minigames", true }
-                        });
+                            availableOptions.Add("Bonuses", new Dictionary<string, bool>
+                            {
+                                { "Olympus VBonus", true }, { "Twilight Town VBonus", true }, { "Toy Box VBonus", true },
+                                { "Kingdom of Corona VBonus", true }, { "Monstropolis VBonus", true }, { "Arendelle VBonus", true },
+                                { "San Fransokyo VBonus", true }, { "The Caribbean VBonus", true }, { "The Dark World VBonus", true },
+                                { "Keyblade Graveyard VBonus", true }, { "The Final World VBonus", true }, { "Re:Mind Keyblade Graveyard VBonus", true },
+                                { "Scala Ad Caelum VBonus", true }, { "Flantastic Seven", true }, { "Minigames", true }
+                            });
+                        }
                         
                         randomizedOptions.Add(DataTableEnum.VBonus, defaultOptions[DataTableEnum.VBonus]);
 
                         break;
                     case "Fullcourse Abilities":
-                        availableOptions.Add("Fullcourse Abilities", new Dictionary<string, bool>
+                        if (!availableOptions.ContainsKey(pool.Key))
                         {
-                            { "Abilities", true }
-                        });
+                            availableOptions.Add("Fullcourse Abilities", new Dictionary<string, bool>
+                            {
+                                { "Abilities", true }
+                            });
+                        }
 
                         randomizedOptions.Add(DataTableEnum.FullcourseAbility, defaultOptions[DataTableEnum.FullcourseAbility]);
 
                         break;
                     case "Level Ups":
-                        availableOptions.Add("Level Ups", new Dictionary<string, bool>
+                        if (!availableOptions.ContainsKey(pool.Key))
                         {
-                            { "Levels", true }
-                        });
+                            availableOptions.Add("Level Ups", new Dictionary<string, bool>
+                            {
+                                { "Levels", true }
+                            });
+                        }
 
                         randomizedOptions.Add(DataTableEnum.LevelUp, defaultOptions[DataTableEnum.LevelUp]);
 
                         break;
                     case "Weapon Upgrades":
-                        availableOptions.Add("Weapon Upgrades", new Dictionary<string, bool>
+                        if (!availableOptions.ContainsKey(pool.Key))
                         {
-                            { "Kingdom Key", true }, { "Hero's Origin", true }, { "Shooting Star", true }, { "Favorite Deputy", true },
-                            { "Ever After", true }, { "Happy Gear", true }, { "Crystal Snow", true }, { "Hunny Spout", true },
-                            { "Wheel of Fate", true }, { "Nano Gear", true }, { "Starlight", true }, { "Grand Chef", true },
-                            { "Classic Tone", true }, { "Ultima Weapon", true }, { "Elemental Encoder", true }, { "Oblivion", true },
-                            { "Oathkeeper", true }
-                        });
+                            availableOptions.Add("Weapon Upgrades", new Dictionary<string, bool>
+                            {
+                                { "Kingdom Key", true }, { "Hero's Origin", true }, { "Shooting Star", true }, { "Favorite Deputy", true },
+                                { "Ever After", true }, { "Happy Gear", true }, { "Crystal Snow", true }, { "Hunny Spout", true },
+                                { "Wheel of Fate", true }, { "Nano Gear", true }, { "Starlight", true }, { "Grand Chef", true },
+                                { "Classic Tone", true }, { "Ultima Weapon", true }, { "Elemental Encoder", true }, { "Oblivion", true },
+                                { "Oathkeeper", true }
+                            });
+                        }
 
                         randomizedOptions.Add(DataTableEnum.WeaponEnhance, defaultOptions[DataTableEnum.WeaponEnhance]);
 
                         break;
                     case "Events":
-                        availableOptions.Add("Events", new Dictionary<string, bool>
+                        if (!availableOptions.ContainsKey(pool.Key))
                         {
-                            { "Events", true }, { "Keyblades", true }, { "Heartbinders", true }, { "Reports", true }, 
-                            { "Classic Kingdom", true }, { "Key Items", true }, { "Data Battles", true }, { "Yozora", true }
-                        });
+                            availableOptions.Add("Events", new Dictionary<string, bool>
+                            {
+                                { "Events", true }, { "Keyblades", true }, { "Heartbinders", true }, { "Reports", true },
+                                { "Classic Kingdom", true }, { "Key Items", true }, { "Data Battles", true }, { "Yozora", true }
+                            });
+                        }
 
                         randomizedOptions.Add(DataTableEnum.Event, defaultOptions[DataTableEnum.Event]);
 
                         break;
                     case "Synthesis Items":
-                        availableOptions.Add("Synthesis Items", new Dictionary<string, bool>
+                        if (!availableOptions.ContainsKey(pool.Key))
                         {
-                            { "Synthesis Items", true }, { "Photo Mission Items", true }
-                        });
+                            availableOptions.Add("Synthesis Items", new Dictionary<string, bool>
+                            {
+                                { "Synthesis Items", true }, { "Photo Mission Items", true }
+                            });
+                        }
 
                         randomizedOptions.Add(DataTableEnum.SynthesisItem, defaultOptions[DataTableEnum.SynthesisItem]);
 

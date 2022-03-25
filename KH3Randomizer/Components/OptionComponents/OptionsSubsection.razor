@@ -188,6 +188,7 @@
 
     [Parameter] public EventCallback<Dictionary<string, Dictionary<string, bool>>> UpdateAvailableOptions { get; set; }
     [Parameter] public EventCallback<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>> UpdateRandomizedOptions { get; set; }
+    [Parameter] public EventCallback<KeyValuePair<string, SettingsFile>> UpdateCurrentPreset { get; set; }
     [Parameter] public Action<Option, Option> UpdateModifications { get; set; }
 
     [Parameter] public string CurrentSeed { get; set; }
@@ -268,6 +269,7 @@
 
         this.UpdateAvailableOptions.InvokeAsync(this.availableOptions);
         this.UpdateRandomizedOptions.InvokeAsync(this.randomizedOptions);
+        this.UpdateCurrentPreset.InvokeAsync(new());
 
         InvokeAsync(() =>
         {

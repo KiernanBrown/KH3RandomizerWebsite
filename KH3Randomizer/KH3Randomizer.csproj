@@ -214,6 +214,7 @@
     <Folder Include="Components\SpoilerLog\" />
     <Folder Include="Components\Review\" />
     <Folder Include="Components\Pools\" />
+    <Folder Include="NewFolder\" />
     <Folder Include="Seeds\" />
     <Folder Include="wwwroot\pak\Seeds\" />
   </ItemGroup>

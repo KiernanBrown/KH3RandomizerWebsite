@@ -60,6 +60,7 @@
     [Parameter] public EventCallback<string> ContinueTo { get; set; }
     [Parameter] public EventCallback<string> UpdateHintSelection { get; set; }
     [Parameter] public EventCallback<List<string>> UpdateImportantChecks { get; set; }
+    [Parameter] public EventCallback<KeyValuePair<string, SettingsFile>> UpdateCurrentPreset { get; set; }
     [Parameter] public string HintSelectionType { get; set; }
 
     [Parameter] public List<string> KeyAbilities { get; set; }
@@ -126,6 +127,7 @@
         this.selectedHintType = selection;
 
         this.UpdateHintSelection.InvokeAsync(this.selectedHintType);
+        this.UpdateCurrentPreset.InvokeAsync(new());
 
         InvokeAsync(() =>
         {
@@ -187,10 +189,13 @@
                 }
             }
         }
+
+        this.UpdateCurrentPreset.InvokeAsync(new());
     }
 
     public void RefreshState()
     {
+        this.UpdateCurrentPreset.InvokeAsync(new());
         this.StateHasChanged();
     }
 }

@@ -43,7 +43,7 @@
 
         <br />
 
-        <OptionsSubsection UpdateAvailableOptions="@this.UpdateAvailableOptions" UpdateRandomizedOptions="@this.UpdateRandomizedOptions" UpdateModifications="@this.UpdateModifications"
+        <OptionsSubsection UpdateAvailableOptions="@this.UpdateAvailableOptions" UpdateRandomizedOptions="@this.UpdateRandomizedOptions" UpdateModifications="@this.UpdateModifications" UpdateCurrentPreset="@this.UpdateCurrentPreset"
                            CurrentSeed="@this.currentSeed" AvailableExtras="@this.availableExtras" AvailableOptions="@this.tempOptions" RandomizedOptions="@this.randomizedOptions" Replacements="@this.replacements"
                            KeyAbilities="@this.keyAbilities" DuplicateAbilities="@this.duplicateAbilities" SpoilerChecked="@this.isSpoilerChecked" />
     </div>
@@ -61,6 +61,7 @@
     [Parameter] public EventCallback<string> UpdateCurrentSeed { get; set; }
     [Parameter] public EventCallback<Dictionary<string, Dictionary<string, bool>>> UpdateAvailableOptions { get; set; }
     [Parameter] public EventCallback<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>> UpdateRandomizedOptions { get; set; }
+    [Parameter] public EventCallback<KeyValuePair<string, SettingsFile>> UpdateCurrentPreset { get; set; }
     [Parameter] public Action<Option, Option> UpdateModifications { get; set; }
 
     [Parameter] public string CurrentSeed { get; set; }
@@ -74,7 +75,6 @@
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
     [Parameter] public bool IsGoingBack { get; set; }
 
-    private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> tempRandomizedItems = new();
     private Dictionary<string, Dictionary<string, bool>> tempOptions = new();
 
     private Dictionary<string, bool> availablePools = new();
@@ -102,9 +102,13 @@
         this.modifications = this.Modifications;
 
         this.tempOptions = this.RandomizerService.GetAvailableOptions(this.AvailablePools, ref this.availableOptions, ref this.randomizedOptions, this.IsGoingBack);
-        //this.tempRandomizedItems = this.RandomizerService.GetRandomizedItems();
         this.UpdateAvailableOptions.InvokeAsync(this.availableOptions);
         this.UpdateRandomizedOptions.InvokeAsync(this.randomizedOptions);
+
+        if (!string.IsNullOrEmpty(this.currentSeed) && !this.IsGoingBack)
+        {
+            this.RandomizeOptions(new ChangeEventArgs { Value = this.currentSeed });
+        }
 
         InvokeAsync(() =>
         {
@@ -147,7 +151,6 @@
 
         this.UpdateCurrentSeed.InvokeAsync(this.currentSeed);
 
-        //this.RandomizerService.SetAvailableOptions(this.tempOptions);
         this.RandomizerService.RandomizeItems(this.currentSeed, this.availableExtras, ref this.availableOptions, ref this.randomizedOptions, this.replacements, this.keyAbilities, this.duplicateAbilities);
 
         this.UpdateAvailableOptions.InvokeAsync(this.availableOptions);
@@ -198,7 +201,6 @@
 
     private async void ContinueToHints()
     {
-        //this.RandomizerService.SetAvailablePools(this.pools);
         if (string.IsNullOrEmpty(this.CurrentSeed))
         {
             var parameters = new ModalParameters();

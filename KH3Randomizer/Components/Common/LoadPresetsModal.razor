@@ -1,0 +1,203 @@
+﻿@using System.IO;
+@using System.Text.Json;
+
+<div class="simple-form redirect-modal" style="min-width: 60vw; background-color: #F2F2F2;">
+    <p>
+        Select a preset from below to use the settings that are stored in them.
+    </p>
+    <p>
+        Settings can also be loaded from an existing Spoiler Log or an Exported Settings .json file! You can upload a file with the "Upload Preset..." option below to add those settings as a preset that you can select.
+    </p>
+
+    <div class="list-group presets">
+        <button type="button" class="list-group-item list-group-item-action">
+            <h5>Upload Preset...</h5>
+        </button>
+
+        @foreach (var preset in this.Presets)
+        {
+            <button type="button" class="list-group-item list-group-item-action @(!currentPreset.Equals(new KeyValuePair<string, SettingsFile>()) && currentPreset.Key.Equals(preset.Key) ? "active" : "")" @onclick="@(() => this.SelectPreset(preset))">
+                <h5>@preset.Value.Name</h5>
+                <p>@preset.Value.Description</p>
+                @if (!currentPreset.Equals(new KeyValuePair<string, SettingsFile>()) && currentPreset.Key.Equals(preset.Key))
+                {
+                    <div class="preset-options" id="@preset.Key" style="max-height: 28vh; overflow-y: auto;">
+                        @foreach (var option in this.GetOptions(preset.Value))
+                        {
+                            @if (option.Value.Count > 0)
+                            {
+                                <div>
+                                    <span id="@option.Key" name="@option.Key" style="min-width: fit-content; max-width: fit-content; margin-top: 10px;"><span class="pools-options-color" style="@labelColors[option.Key]"></span><b>@(option.Key):</b></span>
+
+                                    <div style="display: inline;">
+                                        @foreach (var subOption in option.Value)
+                                        {
+                                            <span class="sub-option-bubble" style="@optionColors[option.Key]">@subOption</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+    [Parameter] public Dictionary<string, SettingsFile> Presets { get; set; }
+    [Parameter] public EventCallback<KeyValuePair<string, SettingsFile>> UsePreset { get; set; }
+    [Parameter] public KeyValuePair<string, SettingsFile> CurrentPreset { get; set; }
+
+    private KeyValuePair<string, SettingsFile> currentPreset;
+
+    private List<string> miscPools = new List<string>()
+    {
+        "Starting Stats", "Lucky Emblems", "Fullcourse Abilities", "Level Ups", "Equippables", "Synthesis Items"
+    };
+
+    private Dictionary<string, string> labelColors = new()
+    {
+        { "Treasures", "background-color: #00b0f8;" },
+        { "Events", "background-color: #ad70df;" },
+        { "Starting Stats", "background-color: #ff4141;" },
+        { "Lucky Emblems", "background-color: #f19b39;" },
+        { "Bonuses", "background-color: #ff6cf7;" },
+        { "Fullcourse Abilities", "background-color: #f6c00f;" },
+        { "Level Ups", "background-color: #56adff;" },
+        { "Weapon Upgrades", "background-color: #59ed84;" },
+        { "Equippables", "background-color: #df10fd;" },
+        { "Synthesis Items", "background-color: #70c0df;" },
+        { "Miscellaneous Options", "background-color: #f19b39;" },
+        { "Extras", "background-color: #72619e;" },
+        { "Key Abilities", "background-color: #d97777;" },
+        { "Duplicate Abilities", "background-color: #f6c00f;" },
+        { "Replaced Options", "background-color: #70c0df;" },
+        { "Hint Type", "background-color: #56adff;" },
+        { "Important Checks", "background-color: #00b0f8;" }
+    };
+
+    private Dictionary<string, string> optionColors = new()
+    {
+        { "Treasures", "background: linear-gradient(to right, #397e9b, #00b0f8);" },
+        { "Events", "background: linear-gradient(to right, #753da3, #ad70df);" },
+        { "Starting Stats", "background: linear-gradient(to right, #b72e2e, #ff4141);" },
+        { "Lucky Emblems", "background: linear-gradient(to right, #bd782a, #f19b39);" },
+        { "Bonuses", "background: linear-gradient(to right, #b541ae, #ff6cf7);" },
+        { "Fullcourse Abilities", "background: linear-gradient(to right, #b79010, #f6c00f);" },
+        { "Level Ups", "background: linear-gradient(to right, #407fbb, #56adff);" },
+        { "Weapon Upgrades", "background: linear-gradient(to right, #4abd6b, #59ed84);" },
+        { "Equippables", "background: linear-gradient(to right, #b312cb, #df10fd);" },
+        { "Synthesis Items", "background: linear-gradient(to right, #126dcb, #70c0df);" },
+        { "Miscellaneous Options", "background: linear-gradient(to right, #bd782a, #f19b39);" },
+        { "Extras", "background: linear-gradient(to right, #753da3, #ad70df);" },
+        { "Key Abilities", "background: linear-gradient(to right, #b72e2e, #ff4141);" },
+        { "Duplicate Abilities", "background: linear-gradient(to right, #b79010, #f6c00f);" },
+        { "Replaced Options", "background: linear-gradient(to right, #126dcb, #70c0df);" },
+        { "Hint Type", "background: linear-gradient(to right, #407fbb, #56adff);" },
+        { "Important Checks", "background: linear-gradient(to right, #397e9b, #00b0f8);" }
+    };
+
+    protected override void OnInitialized()
+    {
+        this.currentPreset = this.CurrentPreset;
+
+        // TODO: Move this to Index and pass the list of presets into Pools/this modal
+        string directoryPath = Directory.GetParent(Environment.CurrentDirectory).FullName;
+        FileInfo[] files = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"settings")).GetFiles();
+
+        this.Presets = new Dictionary<string, SettingsFile>();
+
+        foreach (var file in files)
+        {
+            var reader = file.OpenText().ReadToEnd();
+            var settingsFile = JsonSerializer.Deserialize<SettingsFile>(reader);
+
+            this.Presets.Add(file.Name, settingsFile);
+        }
+
+        // TODO: Add any additional presets that are stored in localstorage (probably won't be used in this version)
+    }
+
+    private void CloseModal()
+    {
+        ModalInstance.CloseAsync(ModalResult.Ok($"User closed modal"));
+    }
+
+    private Dictionary<string, List<string>> GetOptions(SettingsFile preset)
+    {
+        var pools = preset.AvailablePools.Where(x => x.Value).Select(x => x.Key).ToList();
+        Dictionary<string, List<string>> options = new();
+
+        List<string> miscOptions = new List<string>();
+        List<string> replacedOptions = new List<string>();
+
+        foreach (var pool in pools)
+        {
+            var listOfOptions = new List<string>();
+            foreach (var option in preset.AvailableOptions[pool])
+            {
+                if (option.Value)
+                {
+                    if (pool.Equals("Treasures") && preset.Replacements.ContainsKey(option.Key.KeyToDataTableEnum()) && preset.Replacements[option.Key.KeyToDataTableEnum()].ContainsKey(option.Key) && preset.Replacements[option.Key.KeyToDataTableEnum()][option.Key])
+                    {
+                        replacedOptions.Add("Treasures: " + option.Key);
+                    }
+                    else if (!pool.Equals("Treasures") && preset.Replacements.ContainsKey(pool.KeyToDataTableEnum()) && preset.Replacements[pool.KeyToDataTableEnum()].ContainsKey(option.Key) && preset.Replacements[pool.KeyToDataTableEnum()][option.Key])
+                    {
+                        var rOption = preset.Replacements[pool.KeyToDataTableEnum()].Count > 1 ? option.Key : pool;
+                        replacedOptions.Add(rOption);
+                    }
+                    else if (this.miscPools.Contains(pool))
+                    {
+                        var miscOption = preset.AvailableOptions[pool].Count <= 1 ? pool : pool.Contains("Synthesis") ? option.Key : pool + ": " + option.Key;
+                        miscOptions.Add(miscOption);
+                    }
+                    else
+                        listOfOptions.Add(option.Key);
+                }
+            }
+
+            options.Add(pool, listOfOptions);
+        }
+
+        // Add any other replaced options
+        foreach (var rCategory in preset.Replacements)
+        {
+            foreach (var rOption in rCategory.Value)
+            {
+                if (rOption.Value)
+                {
+                    string rOptionStr = rCategory.Key.DataTableEnumToKey().Equals("Treasures") ? "Treasures: " + rOption.Key : rCategory.Value.Count > 1 ? rOption.Key : rCategory.Key.DataTableEnumToKey();
+                    if (!replacedOptions.Contains(rOptionStr))
+                        replacedOptions.Add(rOptionStr);
+                }
+
+            }
+        }
+
+        options.Add("Miscellaneous Options", miscOptions);
+        options.Add("Extras", preset.AvailableExtras.Where(x => x.Value.Enabled).Select(x => x.Value.Name).ToList());
+        options.Add("Key Abilities", preset.KeyAbilities);
+        options.Add("Duplicate Abilities", preset.DuplicateAbilities.Select(x => x.ValueIdToDisplay()).ToList());
+        options.Add("Replaced Options", replacedOptions);
+        options.Add("Hint Type", new List<string>() { preset.HintType });
+        options.Add("Important Checks", preset.ImportantChecks);
+
+        return options;
+    }
+
+    private void SelectPreset(KeyValuePair<string, SettingsFile> preset)
+    {
+        if (currentPreset.Equals(new KeyValuePair<string, SettingsFile>()) || !currentPreset.Key.Equals(preset.Key))
+        {
+            currentPreset = preset;
+
+            UsePreset.InvokeAsync(this.currentPreset);
+        }
+    }
+}

@@ -115,7 +115,13 @@
     </div>
 
     <button class="btn kh-button" onclick="@BackTo" style="float: left;">Back to Hints...</button>
-    <button class="btn kh-button" @onclick="() => this.GenerateSeed()" style="float: right;">Generate Seed</button>
+    <span style="float: right;">
+        @if (currentPreset.Equals(new KeyValuePair<string, SettingsFile>()))
+        {
+            <button class="btn kh-button" @onclick="() => this.SavePreset()" style="margin-right: 10px;">Save Preset</button>
+        }
+        <button class="btn kh-button" @onclick="() => this.GenerateSeed()">Generate Seed</button>
+    </span>
 </div>
 @code {
     [Inject] IBlazorDownloadFileService BlazorDownloadFileService { get; set; }
@@ -136,6 +142,7 @@
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
     [Parameter] public string HintSelectionType { get; set; }
     [Parameter] public List<string> ImportantChecks { get; set; }
+    [Parameter] public KeyValuePair<string, SettingsFile> CurrentPreset { get; set; }
 
     private List<string> pools { get; set; } = new();
     private List<string> extras { get; set; } = new();
@@ -147,6 +154,7 @@
     };
     private List<string> keyAbilities = new List<string>();
     private List<string> duplicateAbilities = new List<string>();
+    private KeyValuePair<string, SettingsFile> currentPreset = new();
     private List<string> modifications { get; set; } = new();
     private List<string> importantChecks = new List<string>();
 
@@ -162,6 +170,7 @@
         this.keyAbilities = this.KeyAbilities;
         this.duplicateAbilities = this.DuplicateAbilities;
         this.importantChecks = this.ImportantChecks;
+        this.currentPreset = this.CurrentPreset;
         this.options = new();
 
         List<string> miscOptions = new List<string>();
@@ -264,6 +273,11 @@
             { "Duplicate Abilities", "background: linear-gradient(to right, #b79010, #f6c00f);" },
             { "Replaced Options", "background: linear-gradient(to right, #126dcb, #70c0df);" }
         };
+    }
+
+    public void SavePreset()
+    {
+        Console.WriteLine("Saving");
     }
 
     public void GenerateSeed()

@@ -1,0 +1,78 @@
+.redirect-modal {
+    max-height: 80vh;
+    max-width: 50vw;
+    min-width: 80vw;
+    overflow-y: auto;
+    background-color: #F2F2F2;
+}
+
+.kh-button {
+    background: linear-gradient(to right, #015eea, #00c0fa);
+    padding: 5px 25px;
+    border-radius: 10px;
+    color: white;
+    border: unset;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+    margin: 5px;
+}
+
+    .kh-button:hover {
+        opacity: .75;
+    }
+
+.kh-button-cancel {
+    background-color: transparent;
+    padding: 5px 25px;
+    border-radius: 10px;
+    color: black;
+    border: grey solid 1px;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+    .kh-button-cancel:hover {
+        opacity: .75;
+    }
+
+.header-color {
+    width: 53px;
+    height: 10px;
+    display: inline-flex;
+    position: absolute;
+    margin-left: 12px;
+    margin-top: -34px;
+    border-radius: 50px;
+}
+
+.pools-options-color {
+    width: 10px;
+    height: 10px;
+    display: inline-flex;
+    position: relative;
+    margin-left: 15px;
+    margin-right: 5px;
+    margin-bottom: 2px;
+    border-radius: 50px;
+}
+
+.sub-option-bubble {
+    color: white;
+    padding: 5px 10px;
+    border-radius: 30px;
+    margin: 5px 7px;
+    display: inline-block;
+    font-weight: 600;
+}
+
+button > div {
+    background: white;
+    color: black;
+    border: 2px solid #bababa;
+    border-radius: 5px;
+}
+
+button:focus {
+    outline: none !important;
+    box-shadow: none;
+}
