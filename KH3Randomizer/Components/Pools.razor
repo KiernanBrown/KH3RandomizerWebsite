@@ -353,6 +353,13 @@
 
     private void UpdateSettingsFromPreset(KeyValuePair<string, SettingsFile> preset)
     {
+        if (preset.Equals(new KeyValuePair<string, SettingsFile>()))
+        {
+            this.currentPreset = preset;
+            this.UpdateCurrentPreset.InvokeAsync(this.currentPreset);
+            return;
+        }
+
         this.pools = preset.Value.AvailablePools;
         this.extras = preset.Value.AvailableExtras;
         this.replacements = preset.Value.Replacements;

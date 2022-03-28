@@ -281,16 +281,20 @@
         // Delete old preset
         if (!result.Cancelled && result.Data != null && (string)result.Data == "User deleted preset")
         {
-            if (currentPreset.Key.Equals(presetToDelete.Key))
-                currentPreset = new();
             string deletePath = @"settings\" + presetToDelete.Key;
             if (File.Exists(Path.Combine(Environment.CurrentDirectory, deletePath)))
             {
                 File.Delete(Path.Combine(Environment.CurrentDirectory, deletePath));
             }
-        }
 
-        this.LoadPresets();
+            this.LoadPresets();
+
+            if (currentPreset.Key.Equals(presetToDelete.Key))
+            {
+                this.currentPreset = new();
+                await UsePreset.InvokeAsync(this.currentPreset);
+            }
+        }
     }
 
     public async void LoadSpoilerSettings(InputFileChangeEventArgs e)
