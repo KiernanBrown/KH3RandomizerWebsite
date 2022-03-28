@@ -310,6 +310,10 @@
         var parameters = new ModalParameters();
         parameters.Add("Presets", presets);
         parameters.Add("PresetToSave", presetToSave);
+
+        string successHeader = "User saved preset: ";
+        parameters.Add("SuccessHeader", successHeader);
+
         var options = new ModalOptions { Class = "modal-custom" };
 
         string previousPresetKey = presetToSave.Key;
@@ -317,12 +321,15 @@
         var saveModal = Modal.Show<SavePresetModal>("Save Preset", parameters, options);
         var result = await saveModal.Result;
 
-        if (!result.Cancelled && result.Data != null && (string)result.Data == "User saved preset")
+        if (!result.Cancelled && result.Data != null && ((string)result.Data).Contains(successHeader))
         {
+            string resultStr = (string)result.Data;
+            string newKey = resultStr.Substring(successHeader.Length);
+
             string alertText = "Saved preset as " + presetToSave.Value.Name;
             await js.InvokeAsync<object>("showAlert", "main-review-content", "primary", alertText, 3000);
 
-            this.currentPreset = presetToSave;
+            this.currentPreset = new KeyValuePair<string, SettingsFile>(newKey, presetToSave.Value);
         }
     }
 
@@ -372,7 +379,7 @@
             SettingsFile previousSeed = new SettingsFile
             {
                 Name = "Previous Seed",
-                Description = "Settings from the previous seed you generated. This will be deleted after you generate another seed. If you want to keep these settings, rename this preset with the pencil icon above.",
+                Description = "Settings from the previous seed you generated. These are generated whenever you generate a seed without using a preset. This will be deleted after you generate another seed. If you want to keep these settings, rename this preset with the pencil icon above.",
                 AvailablePools = this.AvailablePools,
                 AvailableExtras = this.AvailableExtras,
                 AvailableOptions = this.AvailableOptions,

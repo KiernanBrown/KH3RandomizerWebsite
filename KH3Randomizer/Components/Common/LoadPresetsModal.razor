@@ -145,6 +145,8 @@
 
         this.sortedPresets = this.presets.ToList();
         this.sortedPresets.Sort((a, b) => b.Value.LastUsed.CompareTo(a.Value.LastUsed));
+
+
     }
 
     private void CloseModal()
@@ -230,6 +232,10 @@
         var parameters = new ModalParameters();
         parameters.Add("Presets", this.presets);
         parameters.Add("PresetToSave", presetToSave);
+
+        string successHeader = "User saved preset: ";
+        parameters.Add("SuccessHeader", successHeader);
+
         var options = new ModalOptions { Class = "modal-custom" };
 
         string previousPresetKey = presetToSave.Key;
@@ -238,9 +244,11 @@
         var result = await saveModal.Result;
 
         // Save this preset
-        if (!result.Cancelled && result.Data != null && (string)result.Data == "User saved preset")
+        if (!result.Cancelled && result.Data != null && ((string)result.Data).Contains(successHeader))
         {
-            string newKey = presetToSave.Value.Name + ".json";
+            string resultStr = (string)result.Data;
+            string newKey = resultStr.Substring(successHeader.Length);
+
             if (!string.IsNullOrEmpty(presetToSave.Key))
             {
                 // Remove the old preset if the key has changed
@@ -257,6 +265,7 @@
             this.LoadPresets();
 
             this.currentPreset = new KeyValuePair<string, SettingsFile>(newKey, presetToSave.Value);
+            await UsePreset.InvokeAsync(this.currentPreset);
         }
     }
 
@@ -280,7 +289,7 @@
                 File.Delete(Path.Combine(Environment.CurrentDirectory, deletePath));
             }
         }
-        
+
         this.LoadPresets();
     }
 

@@ -21,6 +21,7 @@
 
     [Parameter] public Dictionary<string, SettingsFile> Presets { get; set; }
     [Parameter] public KeyValuePair<string, SettingsFile> PresetToSave { get; set; }
+    [Parameter] public string SuccessHeader { get; set; }
 
     private KeyValuePair<string, SettingsFile> presetToSave;
     private string presetName;
@@ -55,7 +56,7 @@
 
             File.WriteAllText(Path.Combine(Environment.CurrentDirectory, filePath), settingsJson);
 
-            ModalInstance.CloseAsync(ModalResult.Ok($"User saved preset"));
+            ModalInstance.CloseAsync(ModalResult.Ok($"{this.SuccessHeader}{fileName}.json"));
         }
     }
 

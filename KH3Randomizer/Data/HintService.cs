@@ -15,7 +15,7 @@ namespace KH3Randomizer.Data
             Dictionary<string, List<string>> reportHints = new Dictionary<string, List<string>>();
             List<SecretReport> reports = new List<SecretReport>();
 
-            if (hintType.Equals("Off"))
+            if (hintType.Equals("None"))
                 return new List<string>();
 
             var levelUpTracker = new List<string>();
