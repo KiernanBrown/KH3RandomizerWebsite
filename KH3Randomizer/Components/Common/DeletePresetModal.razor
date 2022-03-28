@@ -1,0 +1,28 @@
+﻿@using System.IO;
+@using System.Text.Json;
+
+<div class="simple-form redirect-modal" style="min-width: 60vw; background-color: #F2F2F2;">
+    <p>Are you sure you want to delete @this.presetToDelete.Value.Name? This action is permanent and the preset will be unrecoverable.</p>
+
+    <button @onclick="ModalInstance.CancelAsync" class="btn kh-button-cancel" style="margin-left: 15px;">Cancel</button>
+    <button @onclick="CloseModal" class="btn kh-button" style="margin-left: 15px;">Delete Preset</button>
+</div>
+
+@code {
+
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+    [Parameter] public KeyValuePair<string, SettingsFile> PresetToDelete { get; set; }
+
+    private KeyValuePair<string, SettingsFile> presetToDelete;
+
+    protected override void OnInitialized()
+    {
+        this.presetToDelete = PresetToDelete;
+    }
+
+    private void CloseModal()
+    {
+        ModalInstance.CloseAsync(ModalResult.Ok($"User deleted preset"));
+    }
+}

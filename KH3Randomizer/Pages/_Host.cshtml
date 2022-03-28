@@ -69,5 +69,27 @@
             return t;
         }(document, "script", "twitter-wjs"));
     </script>
+
+    <script>
+        function showAlert(id, type, text, time) {
+            var alert = document.createElement('div');
+            alert.classList.add("alert", `alert-${type}`, "alert-dismissible", "fade", "show");
+            alert.setAttribute("role", "alert");
+            alert.innerText = text;
+
+            document.getElementById(id).appendChild(alert);
+
+            if (time > 0) {
+                setTimeout(() => {
+                    console.dir("3 seconds passed");
+                    alert.classList.remove("show");
+
+                    setTimeout(() => {
+                        document.getElementById(id).removeChild(alert);
+                    }, 200);
+                }, time);
+            }
+        }
+    </script>
 </body>
 </html>

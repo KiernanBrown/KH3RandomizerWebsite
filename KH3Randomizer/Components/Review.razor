@@ -1,11 +1,13 @@
 ﻿@using UE4DataTableInterpreter.Enums
+@using System.IO;
+@using System.Text.Json;
 
 @inject RandomizerService RandomizerService
 @inject HintService HintService
 @inject IJSRuntime js
 
 <div class="review-section">
-    <div class="review-subsection">
+    <div id="main-review-content" class="review-subsection">
         <div class="review-sub-subsection">
             <div class="review-header">
                 <h3 for="seed" style="font-size: 1.3rem;"><span class="header-color" style="background-color: #aeecff;"></span><b>Seed Name: </b></h3>
@@ -116,7 +118,7 @@
 
     <button class="btn kh-button" onclick="@BackTo" style="float: left;">Back to Hints...</button>
     <span style="float: right;">
-        @if (currentPreset.Equals(new KeyValuePair<string, SettingsFile>()))
+        @if (this.currentPreset.Equals(new KeyValuePair<string, SettingsFile>()))
         {
             <button class="btn kh-button" @onclick="() => this.SavePreset()" style="margin-right: 10px;">Save Preset</button>
         }
@@ -149,7 +151,7 @@
     private Dictionary<string, List<string>> options { get; set; } = new();
     private Dictionary<DataTableEnum, Dictionary<string, bool>> replacements = new();
     private List<string> miscPools = new List<string>()
-    {
+{
         "Starting Stats", "Lucky Emblems", "Fullcourse Abilities", "Level Ups", "Equippables", "Synthesis Items"
     };
     private List<string> keyAbilities = new List<string>();
@@ -275,9 +277,53 @@
         };
     }
 
-    public void SavePreset()
+    private async void SavePreset()
     {
-        Console.WriteLine("Saving");
+        string directoryPath = Directory.GetParent(Environment.CurrentDirectory).FullName;
+        FileInfo[] files = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"settings")).GetFiles();
+
+        Dictionary<string, SettingsFile> presets = new Dictionary<string, SettingsFile>();
+
+        foreach (var file in files)
+        {
+            var reader = File.ReadAllText(file.FullName);
+            var settingsFile = JsonSerializer.Deserialize<SettingsFile>(reader);
+
+            presets.Add(file.Name, settingsFile);
+        }
+
+        KeyValuePair<string, SettingsFile> presetToSave = new KeyValuePair<string, SettingsFile>("", new SettingsFile
+        {
+            Name = "",
+            Description = "",
+            AvailablePools = this.AvailablePools,
+            AvailableExtras = this.AvailableExtras,
+            AvailableOptions = this.AvailableOptions,
+            Replacements = this.replacements,
+            KeyAbilities = this.keyAbilities,
+            DuplicateAbilities = this.duplicateAbilities,
+            ImportantChecks = this.importantChecks,
+            HintType = this.HintSelectionType,
+            LastUsed = DateTime.Now
+        });
+
+        var parameters = new ModalParameters();
+        parameters.Add("Presets", presets);
+        parameters.Add("PresetToSave", presetToSave);
+        var options = new ModalOptions { Class = "modal-custom" };
+
+        string previousPresetKey = presetToSave.Key;
+
+        var saveModal = Modal.Show<SavePresetModal>("Save Preset", parameters, options);
+        var result = await saveModal.Result;
+
+        if (!result.Cancelled && result.Data != null && (string)result.Data == "User saved preset")
+        {
+            string alertText = "Saved preset as " + presetToSave.Value.Name;
+            await js.InvokeAsync<object>("showAlert", "main-review-content", "primary", alertText, 3000);
+
+            this.currentPreset = presetToSave;
+        }
     }
 
     public void GenerateSeed()
@@ -293,7 +339,7 @@
             Hints = hintResults
         };
 
-        var file = this.RandomizerService.GenerateRandomizerSeed(this.CurrentSeed, this.RandomizedOptions, this.AvailablePools, this.AvailableExtras, this.AvailableOptions, this.Replacements, this.keyAbilities, this.duplicateAbilities, this.Modifications, hintContainer);
+        var file = this.RandomizerService.GenerateRandomizerSeed(this.CurrentSeed, this.RandomizedOptions, this.AvailablePools, this.AvailableExtras, this.AvailableOptions, this.replacements, this.keyAbilities, this.duplicateAbilities, this.Modifications, hintContainer);
 
         js.InvokeAsync<object>("saveAsFile", "pakchunk99-randomizer-" + this.CurrentSeed + ".zip", Convert.ToBase64String(file));
         // js.InvokeAsync<object>("saveAsFile", "pakchunk99-randomizer-" + this.CurrentSeed + ".pak", Convert.ToBase64String(files[0]));
@@ -303,6 +349,44 @@
 
         var parameters = new ModalParameters();
         var options = new ModalOptions { Class = "modal-custom" };
+
+        // If using a preset, update the last used time of this preset
+        if (!this.currentPreset.Equals(new KeyValuePair<string, SettingsFile>()))
+        {
+            this.currentPreset.Value.LastUsed = DateTime.Now;
+
+            string settingsJson = JsonSerializer.Serialize(this.currentPreset.Value);
+            string fileName = @"settings\" + this.currentPreset.Key;
+            File.WriteAllText(Path.Combine(Environment.CurrentDirectory, fileName), settingsJson);
+
+            // Delete the Previous Seed preset if one exists
+            if (File.Exists(Path.Combine(Environment.CurrentDirectory, @"settings\PreviousSeed.json")))
+            {
+                File.Delete(Path.Combine(Environment.CurrentDirectory, @"settings\PreviousSeed.json"));
+            }
+        }
+
+        // Otherwise, save these current settings as a Previous Seed preset
+        else if (this.currentPreset.Equals(new KeyValuePair<string, SettingsFile>()) || !this.currentPreset.Key.Equals("PreviousSeed.json"))
+        {
+            SettingsFile previousSeed = new SettingsFile
+            {
+                Name = "Previous Seed",
+                Description = "Settings from the previous seed you generated. This will be deleted after you generate another seed. If you want to keep these settings, rename this preset with the pencil icon above.",
+                AvailablePools = this.AvailablePools,
+                AvailableExtras = this.AvailableExtras,
+                AvailableOptions = this.AvailableOptions,
+                Replacements = this.replacements,
+                KeyAbilities = this.keyAbilities,
+                DuplicateAbilities = this.duplicateAbilities,
+                ImportantChecks = this.importantChecks,
+                HintType = this.HintSelectionType,
+                LastUsed = DateTime.Now
+            };
+
+            string settingsJson = JsonSerializer.Serialize(previousSeed);
+            File.WriteAllText(Path.Combine(Environment.CurrentDirectory, @"settings\PreviousSeed.json"), settingsJson);
+        }
 
         Modal.Show<RedirectToGuideModal>("Redirect To Guides", parameters, options);
     }

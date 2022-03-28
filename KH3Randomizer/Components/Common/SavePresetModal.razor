@@ -1,0 +1,71 @@
+﻿@using System.IO;
+@using System.Text.Json;
+
+<div class="simple-form redirect-modal" style="min-width: 60vw; background-color: #F2F2F2;">
+    <label for="presetName">Preset Name:</label>
+    <input id="presetName" size="40" value="@this.presetName" @oninput="@((e) => this.UpdatePresetName(e.Value.ToString()))" />
+    <br />
+
+    <label for="presetDescription">Preset Description (Optional):</label>
+    <br />
+    <textarea id="presetDescription" rows="5" cols="100" value="@this.presetDescription" @onchange="@((e) => this.UpdatePresetDescription(e.Value.ToString()))" />
+    <br />
+
+    <button @onclick="ModalInstance.CancelAsync" class="btn kh-button-cancel" style="margin-left: 15px;">Go Back</button>
+    <button @onclick="CloseModal" class="btn @(string.IsNullOrEmpty(this.presetName) ? "kh-button-disabled" : "kh-button")" style="margin-left: 15px;">Save Preset</button>
+</div>
+
+@code {
+
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+    [Parameter] public Dictionary<string, SettingsFile> Presets { get; set; }
+    [Parameter] public KeyValuePair<string, SettingsFile> PresetToSave { get; set; }
+
+    private KeyValuePair<string, SettingsFile> presetToSave;
+    private string presetName;
+    private string presetDescription;
+
+    protected override void OnInitialized()
+    {
+        this.presetToSave = PresetToSave;
+        this.presetName = this.presetToSave.Value.Name;
+        this.presetDescription = this.presetToSave.Value.Description;
+    }
+
+    private void CloseModal()
+    {
+        if (!string.IsNullOrEmpty(this.presetName))
+        {
+            this.presetToSave.Value.Name = this.presetName;
+            this.presetToSave.Value.Description = this.presetDescription;
+            this.presetToSave.Value.LastUsed = DateTime.Now;
+            string settingsJson = JsonSerializer.Serialize(this.presetToSave.Value);
+            string fileName = string.Join("_", this.presetName.Split(Path.GetInvalidFileNameChars()));
+            int attemptsToSave = 0;
+
+            while(!this.presetToSave.Key.Equals(fileName + ".json") && this.Presets.ContainsKey(fileName + ".json"))
+            {
+                attemptsToSave++;
+                var fileAppend = "_" + attemptsToSave;
+                fileName = attemptsToSave > 1 ? fileName.Substring(0, fileName.Length - fileAppend.Length) + fileAppend : fileName + fileAppend;
+            }
+
+            string filePath = @"settings\" + fileName + ".json";
+
+            File.WriteAllText(Path.Combine(Environment.CurrentDirectory, filePath), settingsJson);
+
+            ModalInstance.CloseAsync(ModalResult.Ok($"User saved preset"));
+        }
+    }
+
+    private void UpdatePresetName(string newName)
+    {
+        this.presetName = newName;
+    }
+
+    private void UpdatePresetDescription(string newDescription)
+    {
+        this.presetDescription = newDescription;
+    }
+}

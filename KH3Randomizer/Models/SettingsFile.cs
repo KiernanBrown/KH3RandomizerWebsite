@@ -18,5 +18,6 @@ namespace KH3Randomizer.Models
         public List<string> DuplicateAbilities { get; set; }
         public List<string> ImportantChecks { get; set; }
         public string HintType { get; set; }
+        public DateTime LastUsed { get; set; }
     }
 }

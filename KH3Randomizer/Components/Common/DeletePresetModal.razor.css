@@ -35,6 +35,18 @@
         opacity: .75;
     }
 
+.kh-button-disabled {
+    background: #bababa;
+    padding: 5px 25px;
+    border-radius: 10px;
+    color: white;
+    border: unset;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+    margin: 5px;
+    cursor: default;
+}
+
 .header-color {
     width: 53px;
     height: 10px;
@@ -75,17 +87,4 @@ button > div {
 button:focus {
     outline: none !important;
     box-shadow: none;
-}
-
-.upload-div {
-    padding: 0;
-    margin-bottom: 0;
-}
-
-.upload-label {
-    padding: 12px 20px;
-    font-size: 1.25em;
-    color: #999999;
-    cursor: pointer;
-    width: 100%;
 }
