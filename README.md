@@ -19,16 +19,7 @@ Added the following extras that can be chosen on the Pools page. These will be e
   <li>Pole Spin Start: Ensures you start with Pole Spin as a starting ability.</li>
   <li>Synthesizable Proofs: Allows you to toggle whether Proofs can appear in the Moogle Synthesis menu.</li>
   <li>Allow Ultima: Either puts Ultima Weapon into the pool or removes it from the pool regardless of if Synthesis Items are enabled.</li>
-  <li>Allow Key Abilities on Fullcourse/Equippables/Weapon Upgrades: Allows/disallows key abilities from being on abilities gained from fullcourse meals/equippables/weapon upgrades. These extras work with a predefined Key Abilities list that contains the following Abilities:</li>
-  <ul>
-    <li>Block</li>
-    <li>Dodge Roll</li>
-    <li>Air Slide</li>
-    <li>Glide</li>
-    <li>Pole Spin</li>
-    <li>Second Chance</li>
-    <li>Withstand Combo</li>
-  </ul>
+  <li>Allow Key Abilities on Fullcourse/Equippables/Weapon Upgrades: Allows/disallows key abilities from being on abilities gained from fullcourse meals/equippables/weapon upgrades. These extras work with a Key Abilities list that you can set on the Pools page.</li>
 </ul>
 </details>
 
@@ -65,9 +56,27 @@ Overhauled the Hints page to provide more options.
 </ul>
 </details>
 
+### <b>Presets</b>
+Added the ability to use presets for your seed's settings which can speed up seed generation and make things less tedious.
+<details><summary>More Details</summary>
+
+<ul>
+  <li>Added a Presets button on the Pools page which opens up a Presets menu. Users can use this menu to select a preset selection of settings to be used for seed generation.</li>
+  <ul>
+    <li>Your preset files are located in the resources/bin/Settings folder of the KH3Randomizer folder that you download from here. This release comes with 3 files that contain my preferred settings. If you want to share your preset settings with others, feel free to take the files from this folder and share them that way. Likewise, you can add preset settings files to this folder and they'll be accessible from the seed generator. You will also want to keep this location in mind for bringing your settings presets over to new versions of this fork when they are released.</li>
+  </ul>
+  <li>Added an Upload Spoiler Log option on the Presets menu that allows you to take a SpoilerLog.json file and save the settings from that as a settings file.</li>
+  <li>Added options to rename/delete preset settings from the Preset menu.</li>
+  <li>Added a Save Preset button on the Review page when you are not using a preset. This will allow you to save your current settings as a preset that you can use later.</li>
+  <li>If you create a seed without using a preset and don't save your settings as a preset, a Previous Seed preset will be automatically generated. This file will get deleted the next time you generate a seed, but you can rename it from the Presets menu to stop this from happening if you do want to keep those settings.</li>
+</ul>
+</details>
+
 ### <b>Other Changes</b>
 <details><summary>More Details</summary>
   <ul>
+    <li>Added a Key Abilities section to the Pools page where users can create a list of Key Abilities. This list works with the Allow Key Abilities on Fullcourse/Equippables/Weapon Upgrades extras and the Key Abilities quick toggle on the Hints page.</li>
+    <li>Added a Duplicate Abilities section to the Pools page where users can create a list of additional copies of abilities that are added into the randomization pool. This is currently capped at a total of 20 abilities.</li>
     <li>Added a button on the Options page that will generate a random seed name for you.</li>
     <li>Added a warning for users trying to continue from the Options page to the Hints page without entering a seed name.</li>
     <li>Tooltips and hints are a bit more descriptive (thanks to Sonicshadowsilver2).</li>
@@ -89,6 +98,11 @@ Overhauled the Hints page to provide more options.
 * Fixed an issue where seeds could be missing a proof.
 
 ## Setup <a name="setup"></a>
+[![KH3 Rando Tutorial - Everything you need to know to start playing](https://res.cloudinary.com/marcomontalbano/image/upload/v1648596247/video_to_markdown/images/youtube--0wmPApYfbtM-c05b58ac6eb4c4700831b2b3070cd403.jpg)](https://youtu.be/0wmPApYfbtM "KH3 Rando Tutorial - Everything you need to know to start playing")
+[https://youtu.be/0wmPApYfbtM](https://youtu.be/0wmPApYfbtM)
+ 
+  
+ Follow the video tutorial above, or use this text tutorial to get setup with everything that you need!
 - Download the newest version of this project from [the releases page here.](https://github.com/KiernanBrown/KH3RandomizerWebsite/releases)
 - Extract the KH3Randomizer folder from the zip that you downloaded.
 - Inside the KH3Randomizer is a KH3Randomizer.exe file. This is the file you'll want to run.
