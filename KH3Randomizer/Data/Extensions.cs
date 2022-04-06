@@ -1826,9 +1826,9 @@ namespace KH3Randomizer.Data
                 case "ETresAbilityKind::DOUBLEFLIGHT":
                     return "Ability: Doubleflight";
                 case "ETresAbilityKind::SUPERJUMP":
-                    return "Ability: Super Jump";
+                    return "Ability: Superjump";
                 case "ETresAbilityKind::SUPERSLIDE":
-                    return "Ability: Super Slide";
+                    return "Ability: Superslide";
                 case "ETresAbilityKind::GLIDE":
                     return "Ability: Glide";
                 case "ETresAbilityKind::LIBRA":

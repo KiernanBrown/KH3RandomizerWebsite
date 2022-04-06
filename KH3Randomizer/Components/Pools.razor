@@ -361,7 +361,7 @@
         }
 
         this.pools = preset.Value.AvailablePools;
-        this.extras = preset.Value.AvailableExtras;
+        this.extras = preset.Value.AvailableExtras.Where(x => this.extras.ContainsKey(x.Key)).ToDictionary(x => x.Key, x => new Extra(this.extras[x.Key].Name, x.Value.Enabled, this.extras[x.Key].RequiredPool, this.extras[x.Key].Description));
         this.replacements = preset.Value.Replacements;
         this.keyAbilities = preset.Value.KeyAbilities;
         this.duplicateAbilities = preset.Value.DuplicateAbilities;
