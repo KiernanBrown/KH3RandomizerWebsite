@@ -846,21 +846,7 @@ namespace KH3Randomizer.Data
                     if (name == "Weapon" || name.Contains("Crit"))
                         continue;
 
-                    var defaultAbility = this.GetDefaultAbility(name);
-
-                    var abilityCategory = randomizedOptions.FirstOrDefault(x => x.Value.Any(y => !y.Key.Contains("GIVESORA") && y.Value.Any(z => z.Value == defaultAbility))).Key;
-                    var abilitySubCategory = randomizedOptions[abilityCategory].FirstOrDefault(y => !y.Key.Contains("GIVESORA") && y.Value.Any(z => z.Value == defaultAbility)).Key;
-                    var ability = randomizedOptions[abilityCategory][abilitySubCategory].FirstOrDefault(z => z.Value == defaultAbility);
-
-                    // Swap these options
-                    randomizedOptions[DataTableEnum.ChrInit]["m_PlayerSora"][name] = ability.Value;
-
-                    // Extra precaution to verify we swap this into a correct spot
-                    var swapOption = new Option { Category = abilityCategory, SubCategory = abilitySubCategory, Name = ability.Key, Value = value };
-
-                    var swapCategoryNeeded = this.RetrieveCategoryNeeded(abilityCategory, ability.Key);
-
-                    this.SwapRandomOption(ref randomizedOptions, random, swapCategoryNeeded, swapOption, canUseNone, false);
+                    ReplaceStartingAbilityWithDefault(ref randomizedOptions, random, name, value, false);
                 }
             }
 
@@ -871,21 +857,7 @@ namespace KH3Randomizer.Data
                     if (name == "Weapon" || !name.Contains("Crit"))
                         continue;
 
-                    var defaultAbility = this.GetDefaultAbility(name);
-
-                    var abilityCategory = randomizedOptions.FirstOrDefault(x => x.Value.Any(y => !y.Key.Contains("GIVESORA") && y.Value.Any(z => z.Value == defaultAbility))).Key;
-                    var abilitySubCategory = randomizedOptions[abilityCategory].FirstOrDefault(y => !y.Key.Contains("GIVESORA") && y.Value.Any(z => z.Value == defaultAbility)).Key;
-                    var ability = randomizedOptions[abilityCategory][abilitySubCategory].FirstOrDefault(z => z.Value == defaultAbility);
-
-                    // Swap these options
-                    randomizedOptions[DataTableEnum.ChrInit]["m_PlayerSora"][name] = ability.Value;
-
-                    // Extra precaution to verify we swap this into a correct spot
-                    var swapOption = new Option { Category = abilityCategory, SubCategory = abilitySubCategory, Name = ability.Key, Value = value };
-
-                    var swapCategoryNeeded = this.RetrieveCategoryNeeded(abilityCategory, ability.Key);
-
-                    this.SwapRandomOption(ref randomizedOptions, random, swapCategoryNeeded, swapOption, canUseNone, false);
+                    ReplaceStartingAbilityWithDefault(ref randomizedOptions, random, name, value, false);
                 }
             }
 
@@ -950,6 +922,28 @@ namespace KH3Randomizer.Data
                         break;
                 }
             }
+        }
+
+        public void ReplaceStartingAbilityWithDefault(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Random random, string name, string value, bool canUseNone = true)
+        {
+            var defaultAbility = this.GetDefaultAbility(name);
+
+            if (defaultAbility == value)
+                return;
+
+            var abilityCategory = randomizedOptions.FirstOrDefault(x => x.Value.Any(y => !y.Key.Contains("GIVESORA") && y.Value.Any(z => z.Value == defaultAbility))).Key;
+            var abilitySubCategory = randomizedOptions[abilityCategory].FirstOrDefault(y => !y.Key.Contains("GIVESORA") && y.Value.Any(z => z.Value == defaultAbility)).Key;
+            var ability = randomizedOptions[abilityCategory][abilitySubCategory].FirstOrDefault(z => z.Value == defaultAbility);
+
+            // Swap these options
+            randomizedOptions[DataTableEnum.ChrInit]["m_PlayerSora"][name] = ability.Value;
+
+            // Extra precaution to verify we swap this into a correct spot
+            var swapOption = new Option { Category = abilityCategory, SubCategory = abilitySubCategory, Name = ability.Key, Value = value };
+
+            var swapCategoryNeeded = this.RetrieveCategoryNeeded(abilityCategory, ability.Key);
+
+            this.SwapRandomOption(ref randomizedOptions, random, swapCategoryNeeded, swapOption, canUseNone, false);
         }
 
         public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> GetOptionsForPool(string pool, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> defaultOptions)
