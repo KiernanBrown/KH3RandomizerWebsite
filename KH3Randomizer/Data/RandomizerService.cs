@@ -786,7 +786,7 @@ namespace KH3Randomizer.Data
             }
         }
 
-        public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> Process(string seed, Dictionary<string, RandomizeOptionEnum> pools, Dictionary<string, bool> exceptions, bool canUseNone = true)
+        public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> Process(string seed, Dictionary<string, RandomizeOptionEnum> pools, Dictionary<string, bool> exceptions, List<string> keyAbilities, List<string> keyAbilityPools, bool canUseNone = true)
         {
             var randomizedOptions = new Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>();
 
@@ -802,6 +802,7 @@ namespace KH3Randomizer.Data
 
             var randomizePools = pools.Where(x => x.Value == RandomizeOptionEnum.Randomize).ToDictionary(x => x.Key, y => y.Value);
             var replacePools = pools.Where(x => x.Value == RandomizeOptionEnum.Replace).ToDictionary(x => x.Key, y => y.Value);
+            var vanillaPools = pools.Where(x => x.Value == RandomizeOptionEnum.Vanilla).ToDictionary(x => x.Key, y => y.Value);
 
             if (randomizePools.Count == 0)
                 return defaultOptions;
@@ -812,16 +813,16 @@ namespace KH3Randomizer.Data
             this.RandomizeOptions(randomizePools, defaultOptions, ref randomizedOptions, ref copiedOptions, random, canUseNone);
 
             // Validate randomized options
-            this.ValidateOptions(ref randomizedOptions, random, canUseNone);
+            this.ValidateOptions(ref randomizedOptions, random, keyAbilities, keyAbilityPools, canUseNone);
 
             // Move important items from the replace pools to the randomize pools
-            this.ReplaceOptions(replacePools, randomizePools, defaultOptions, ref randomizedOptions, random, canUseNone);
+            this.ReplaceOptions(replacePools, randomizePools, defaultOptions, ref randomizedOptions, random, keyAbilities, keyAbilityPools, canUseNone);
 
             // Add some clean-up after the randomization
-            this.CleanUpOptions(ref randomizedOptions, ref copiedOptions, defaultOptions, random, canUseNone);
+            this.CleanUpOptions(replacePools, vanillaPools, ref randomizedOptions, ref copiedOptions, defaultOptions, random, keyAbilities, keyAbilityPools, canUseNone);
 
             // Process exceptions like start with default abilities, etc.
-            this.ProcessExceptions(ref randomizedOptions, exceptions, random, canUseNone);
+            this.ProcessExceptions(replacePools, vanillaPools, ref randomizedOptions, exceptions, random, keyAbilities, keyAbilityPools, canUseNone);
 
             //foreach (var (category, categoryOptions) in randomizedOptions.Where(x => x.Value.Any(y => y.Value.Any(z => z.Value.ValueIdToDisplay().Contains("Proof")))))
             //{
@@ -837,7 +838,7 @@ namespace KH3Randomizer.Data
             return randomizedOptions;
         }
 
-        public void ProcessExceptions(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, bool> exceptions, Random random, bool canUseNone = true)
+        public void ProcessExceptions(Dictionary<string, RandomizeOptionEnum> replacePools, Dictionary<string, RandomizeOptionEnum> vanillaPools, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Dictionary<string, bool> exceptions, Random random, List<string> keyAbilities, List<string> keyAbilityPools, bool canUseNone = true)
         {
             if (exceptions["Default Abilities"])
             {
@@ -846,7 +847,7 @@ namespace KH3Randomizer.Data
                     if (name == "Weapon" || name.Contains("Crit"))
                         continue;
 
-                    ReplaceStartingAbilityWithDefault(ref randomizedOptions, random, name, value, false);
+                    ReplaceStartingAbilityWithDefault(replacePools, vanillaPools, ref randomizedOptions, random, name, value, keyAbilities, keyAbilityPools, false);
                 }
             }
 
@@ -857,7 +858,7 @@ namespace KH3Randomizer.Data
                     if (name == "Weapon" || !name.Contains("Crit"))
                         continue;
 
-                    ReplaceStartingAbilityWithDefault(ref randomizedOptions, random, name, value, false);
+                    ReplaceStartingAbilityWithDefault(replacePools, vanillaPools, ref randomizedOptions, random, name, value, keyAbilities, keyAbilityPools, false);
                 }
             }
 
@@ -913,7 +914,9 @@ namespace KH3Randomizer.Data
 
                             var swapCategoryNeeded = this.RetrieveCategoryNeeded(abilityBonusCategory, abilityBonus.Key);
 
-                            this.SwapRandomOption(ref randomizedOptions, random, swapCategoryNeeded, swapOption, canUseNone, false);
+                            // Swap with a random option that isn't in ChrInit. We don't want to swap an ability we've already set to default
+                            List<DataTableEnum> blockedDTs = new List<DataTableEnum>() { DataTableEnum.ChrInit };
+                            this.SwapRandomOption(ref randomizedOptions, random, swapCategoryNeeded, swapOption, keyAbilities, keyAbilityPools, canUseNone, false, replacePools, vanillaPools, blockedDTs);
                         }
                     }
 
@@ -924,7 +927,7 @@ namespace KH3Randomizer.Data
             }
         }
 
-        public void ReplaceStartingAbilityWithDefault(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Random random, string name, string value, bool canUseNone = true)
+        public void ReplaceStartingAbilityWithDefault(Dictionary<string, RandomizeOptionEnum> replacePools, Dictionary<string, RandomizeOptionEnum> vanillaPools, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Random random, string name, string value, List<string> keyAbilities, List<string> keyAbilityPools, bool canUseNone = true)
         {
             var defaultAbility = this.GetDefaultAbility(name);
 
@@ -943,7 +946,9 @@ namespace KH3Randomizer.Data
 
             var swapCategoryNeeded = this.RetrieveCategoryNeeded(abilityCategory, ability.Key);
 
-            this.SwapRandomOption(ref randomizedOptions, random, swapCategoryNeeded, swapOption, canUseNone, false);
+            // Swap with a random option that isn't in ChrInit. We don't want to swap an ability we've already set to default
+            List<DataTableEnum> blockedDTs = new List<DataTableEnum>() { DataTableEnum.ChrInit };
+            this.SwapRandomOption(ref randomizedOptions, random, swapCategoryNeeded, swapOption, keyAbilities, keyAbilityPools, canUseNone, false, replacePools, vanillaPools, blockedDTs);
         }
 
         public Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> GetOptionsForPool(string pool, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> defaultOptions)
@@ -1534,7 +1539,7 @@ namespace KH3Randomizer.Data
 
         public void ReplaceOptions(Dictionary<string, RandomizeOptionEnum> replacePools, Dictionary<string, RandomizeOptionEnum> randomizePools, 
                                    Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> defaultOptions, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, 
-                                   Random random, bool canUseNone)
+                                   Random random, List<string> keyAbilities, List<string> keyAbilityPools, bool canUseNone)
         {
             foreach (var (poolName, randomizeOptionEnum) in replacePools)
             {
@@ -1557,6 +1562,10 @@ namespace KH3Randomizer.Data
                             if (!isImportantCheck)
                                 continue;
 
+                            // Don't allow key abilities in replaced pools
+                            if (!keyAbilities.Contains(value.ValueIdToDisplay()))
+                                continue;
+
                             var isRandomImportantCheck = true;
                             var randomOption = new Option();
 
@@ -1569,6 +1578,17 @@ namespace KH3Randomizer.Data
                                 randomOption = this.RetrieveRandomOption(randomizedOptions, random, categoryNeeded, category, canUseNone);
 
                                 isRandomImportantCheck = this.VerifyImportantCheck(randomOption.Value);
+
+                                if (replacePools.ContainsKey(GetPoolFromOption(randomOption.Category, randomOption.SubCategory)))
+                                    isRandomImportantCheck = true;
+
+                                // Don't swap with a key ability
+                                if (keyAbilities.Contains(randomOption.Value.ValueIdToDisplay()))
+                                    isRandomImportantCheck = true;
+
+                                // Stop from swapping a key ability to a pool it's not allowed in
+                                if (keyAbilities.Contains(value.ValueIdToDisplay()) && !keyAbilityPools.Contains(GetPoolFromOption(randomOption.Category, randomOption.SubCategory)))
+                                    isRandomImportantCheck = true;
                             }
 
 
@@ -1630,7 +1650,7 @@ namespace KH3Randomizer.Data
             }
         }
 
-        public void ValidateOptions(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Random random, bool canUseNone)
+        public void ValidateOptions(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, Random random, List<string> keyAbilities, List<string> keyAbilityPools, bool canUseNone)
         {
             foreach (var (category, subOptions) in randomizedOptions)
             {
@@ -1654,25 +1674,33 @@ namespace KH3Randomizer.Data
                         else if (categoryNeeded == "Item" && (value.Contains("Ability") || value.Contains("Bonus")))
                             needSwapping = true;
 
+                        // Stop key abilities from appearing in pools they shouldn't
+                        if (keyAbilities.Contains(value.ValueIdToDisplay()) && !keyAbilityPools.Contains(GetPoolFromOption(category, subCategory)))
+                            needSwapping = true;
+
                         if (!needSwapping)
                             continue;
 
                         var swapOption = new Option { Category = category, SubCategory = subCategory, Name = name, Value = value, Found = false };
 
                         // Use our current randomized options as our base to look from
-                        this.SwapRandomOption(ref randomizedOptions, random, categoryNeeded, swapOption, canUseNone);
+                        this.SwapRandomOption(ref randomizedOptions, random, categoryNeeded, swapOption, keyAbilities, keyAbilityPools, canUseNone);
                     }
                 }
             }
         }
 
-        public void SwapRandomOption(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> options, Random random, string categoryNeeded, Option swapOption, bool canUseNone, bool canSwapImportant = true)
+        public void SwapRandomOption(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> options, Random random, string categoryNeeded, Option swapOption, List<string> keyAbilities, List<string> keyAbilityPools, bool canUseNone, bool canSwapImportant = true, Dictionary<string, RandomizeOptionEnum> replacePools = null, Dictionary<string, RandomizeOptionEnum> vanillaPools = null, List<DataTableEnum> blockedDTs = null)
         {
             var option = new Option();
+            replacePools = replacePools ?? new Dictionary<string, RandomizeOptionEnum>();
+            vanillaPools = vanillaPools ?? new Dictionary<string, RandomizeOptionEnum>();
+            blockedDTs = blockedDTs ?? new List<DataTableEnum>();
 
             while (!option.Found)
             {
-                option.Category = options.ElementAt(random.Next(0, options.Count)).Key;
+                var swappableOptions = options.Where(x => !blockedDTs.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value);
+                option.Category = swappableOptions.ElementAt(random.Next(0, swappableOptions.Count)).Key;
                 if (options[option.Category].Count == 0)
                     continue;
 
@@ -1683,6 +1711,19 @@ namespace KH3Randomizer.Data
                 option.Name = options[option.Category][option.SubCategory].ElementAt(random.Next(0, options[option.Category][option.SubCategory].Count)).Key;
                 option.Value = options[option.Category][option.SubCategory][option.Name];
 
+                // Stop from swapping to a vanilla pool
+                if (vanillaPools.ContainsKey(GetPoolFromOption(option.Category, option.SubCategory)))
+                    continue;
+
+                // Stop from swapping an important check or key ability to a replaced pool
+                if ((replacePools.ContainsKey(GetPoolFromOption(swapOption.Category, swapOption.SubCategory)) && (VerifyImportantCheck(option.Value) || keyAbilities.Contains(option.Value.ValueIdToDisplay()))) ||
+                    (replacePools.ContainsKey(GetPoolFromOption(option.Category, option.SubCategory)) && (VerifyImportantCheck(swapOption.Value) || keyAbilities.Contains(swapOption.Value.ValueIdToDisplay()))))
+                    continue;
+
+                // Stop from swapping a key ability to a pool it's not allowed in
+                if ((keyAbilities.Contains(option.Value.ValueIdToDisplay()) && !keyAbilityPools.Contains(GetPoolFromOption(swapOption.Category, swapOption.SubCategory))) ||
+                    (keyAbilities.Contains(swapOption.Value.ValueIdToDisplay()) && !keyAbilityPools.Contains(GetPoolFromOption(option.Category, option.SubCategory))))
+                    continue;
 
                 if (option.Value.Contains("NONE") && !canUseNone)
                     continue;
@@ -1706,6 +1747,10 @@ namespace KH3Randomizer.Data
                 if (!canSwapImportant && this.VerifyImportantCheck(option.Value))
                     continue;
 
+                // Stop key abilities from swapping to a pool they shouldn't
+                if ((keyAbilities.Contains(option.Value.ValueIdToDisplay()) && !keyAbilityPools.Contains(GetPoolFromOption(swapOption.Category, swapOption.SubCategory))) || 
+                    (keyAbilities.Contains(swapOption.Value.ValueIdToDisplay()) && !keyAbilityPools.Contains(GetPoolFromOption(option.Category, option.SubCategory))))
+                    continue;
 
                 option.Found = true;
                 break;
@@ -1716,8 +1761,8 @@ namespace KH3Randomizer.Data
             options[swapOption.Category][swapOption.SubCategory][swapOption.Name] = option.Value;
         }
 
-        public void CleanUpOptions(ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> copiedOptions,
-                                   Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> defaultOptions,  Random random, bool canUseNone)
+        public void CleanUpOptions(Dictionary<string, RandomizeOptionEnum> replacePools, Dictionary<string, RandomizeOptionEnum> vanillaPools, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, ref Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> copiedOptions,
+                                   Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> defaultOptions,  Random random, List<string> keyAbilities, List<string> keyAbilityPools, bool canUseNone)
         {
             // Add rest of default options (From Vanilla Pools)
             foreach (var (category, subOptions) in defaultOptions)
@@ -1740,6 +1785,15 @@ namespace KH3Randomizer.Data
                             if (name == "Weapon" && !value.Contains("ETresItemDefWeapon"))
                                 randomizedOptions[category][subCategory][name] = this.ConvertKeybladeWeaponToDefenseWeaponEnum(value);
                         }
+
+                        // Don't place default options for replaced pools if the default is important/key ability
+                        if (replacePools.ContainsKey(GetPoolFromOption(category, subCategory)) &&
+                            (VerifyImportantCheck(value) || keyAbilities.Contains(value.ValueIdToDisplay())))
+                        {
+                            var importantOption = new Option { Category = category, SubCategory = subCategory, Name = name, Value = value };
+
+                            this.SwapRandomOption(ref randomizedOptions, random, this.RetrieveCategoryNeeded(category, name), importantOption, keyAbilities, keyAbilityPools, canUseNone, true, replacePools, vanillaPools);
+                        }
                     }
                 }
             }
@@ -1760,7 +1814,7 @@ namespace KH3Randomizer.Data
 
                         var vbonusCategoryNeeded = this.RetrieveCategoryNeeded(vbonusCategory, vbonusFound.Key);
 
-                        this.SwapRandomOption(ref randomizedOptions, random, vbonusCategoryNeeded, vbonusOption, canUseNone);
+                        this.SwapRandomOption(ref randomizedOptions, random, vbonusCategoryNeeded, vbonusOption, keyAbilities, keyAbilityPools, canUseNone, true, replacePools, vanillaPools);
                     }
                     catch (Exception ex)
                     {
@@ -1780,7 +1834,7 @@ namespace KH3Randomizer.Data
 
                 var poleSpinCategoryNeeded = this.RetrieveCategoryNeeded(poleSpinCategory, poleSpin.Key);
 
-                this.SwapRandomOption(ref randomizedOptions, random, poleSpinCategoryNeeded, poleSpinOption, canUseNone);
+                this.SwapRandomOption(ref randomizedOptions, random, poleSpinCategoryNeeded, poleSpinOption, keyAbilities, keyAbilityPools, canUseNone, true, replacePools, vanillaPools);
 
                 // Check that this is a good swap
                 poleSpinCategory = randomizedOptions.FirstOrDefault(x => x.Value.Any(y => y.Key != "GIVESORA_POLE_SPIN" && y.Value.Any(z => z.Value.Contains("POLE_SPIN")))).Key;
@@ -2062,7 +2116,7 @@ namespace KH3Randomizer.Data
 
         public byte[] GenerateRandomizerSeed(string currentSeed, Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions,
                                              Dictionary<string, RandomizeOptionEnum> availablePools, List<Tuple<Option, Option>> modifications, Dictionary<string, bool> exceptions,
-                                             byte[] hintBytes, Dictionary<string, List<string>> hintValues, Dictionary<string, bool> qolValues)
+                                             List<string> keyAbilities, List<string> keyAbilityPools, byte[] hintBytes, Dictionary<string, List<string>> hintValues, Dictionary<string, bool> qolValues)
         {
             //foreach(var (topKey, topValue) in randomizedOptions)
             //{
@@ -2081,7 +2135,7 @@ namespace KH3Randomizer.Data
             var hintDataTable = dataTableManager.GenerateHintDataTable(hintValues);
             var qolDataTable = dataTableManager.GenerateQualityOfLifeDataTable(qolValues);
 
-            var zipArchive = this.CreateZipArchive(currentSeed, dataTables, availablePools, modifications, exceptions, hintBytes, hintDataTable, qolDataTable);
+            var zipArchive = this.CreateZipArchive(currentSeed, dataTables, availablePools, modifications, exceptions, keyAbilities, keyAbilityPools, hintBytes, hintDataTable, qolDataTable);
 
             return zipArchive;
 
@@ -2106,7 +2160,7 @@ namespace KH3Randomizer.Data
 
         public byte[] CreateZipArchive(string randomSeed, Dictionary<string, List<byte>> dataTables,
                                        Dictionary<string, RandomizeOptionEnum> availablePools, List<Tuple<Option, Option>> modifications, Dictionary<string, bool> exceptions,
-                                       byte[] hints, Dictionary<string, List<byte>> hintDataTable, Dictionary<string, List<byte>> qolDataTable)
+                                       List<string> keyAbilities, List<string> keyAbilityPools, byte[] hints, Dictionary<string, List<byte>> hintDataTable, Dictionary<string, List<byte>> qolDataTable)
         {
             var zipPath = @$"./Seeds/pakchunk99-randomizer-{randomSeed}/pakchunk99-randomizer-{randomSeed}.zip";
 
@@ -2139,6 +2193,8 @@ namespace KH3Randomizer.Data
                     SeedName = randomSeed,
                     AvailablePools = availablePools,
                     Exceptions = exceptions,
+                    KeyAbilities = keyAbilities,
+                    KeyAbilityPools = keyAbilityPools,
                     Modifications = jsonTupleList,
                 };
 
@@ -2706,7 +2762,7 @@ namespace KH3Randomizer.Data
                 if (currentSelection.Equals("Synthesis Items"))
                     synthesisItemSubsets = randomizedOptions[DataTableEnum.SynthesisItem].Where(x => int.Parse(x.Key.Split('_')[1]) < 61 || int.Parse(x.Key.Split('_')[1]) > 80).ToDictionary(x => x.Key, y => y.Value);
                 else if (currentSelection.Equals("Photo Missions"))
-                    synthesisItemSubsets = randomizedOptions[DataTableEnum.SynthesisItem].Where(x => int.Parse(x.Key.Split('_')[1]) >= 61 || int.Parse(x.Key.Split('_')[1]) <= 80).ToDictionary(x => x.Key, y => y.Value);
+                    synthesisItemSubsets = randomizedOptions[DataTableEnum.SynthesisItem].Where(x => int.Parse(x.Key.Split('_')[1]) >= 61 && int.Parse(x.Key.Split('_')[1]) <= 80).ToDictionary(x => x.Key, y => y.Value);
 
                 foreach (var tempSynthesisItem in synthesisItemSubsets)
                 {

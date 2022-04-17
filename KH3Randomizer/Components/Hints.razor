@@ -54,10 +54,13 @@
     [Parameter] public EventCallback<List<string>> UpdateImportantChecks { get; set; }
     [Parameter] public string HintSelectionType { get; set; }
     [Parameter] public List<string> ImportantChecks { get; set; }
+    [Parameter] public List<string> KeyAbilities { get; set; }
 
+    private Dictionary<string, Dictionary<string, bool>> hints = new Dictionary<string, Dictionary<string, bool>>();
     private List<string> importantChecks = new List<string>();
 
-    private Dictionary<string, List<string>> checkGroups = new Dictionary<string, List<string>> {
+    private Dictionary<string, List<string>> checkGroups = new Dictionary<string, List<string>>
+    {
         { "Proofs", new List<string> {
             "Proof of Promises", "Proof of Times Past", "Proof of Fantasy"}
         },
@@ -74,16 +77,17 @@
             "\'Ohana Heartbinder", "Dream Heartbinder", "Ocean Heartbinder",
             "Pixel Heartbinder", "Pride Heartbinder" }
         },
-        { "Key Abilities", new List<string> {
-            "Ability: Pole Spin", "Ability: Block", "Ability: Dodge Roll", "Ability: Air Slide",
-            "Ability: Doubleflight", "Ability: Second Chance", "Ability: Withstand Combo" }
-        }
     };
 
     private string selectedHintType = "Verbose";
 
     protected override void OnInitialized()
     {
+        if ((this.checkGroups.ContainsKey("Key Abilities") && this.checkGroups["Key Abilities"].ToList().SequenceEqual(this.KeyAbilities)) || !this.checkGroups.ContainsKey("Key Abilities"))
+        {
+            this.checkGroups["Key Abilities"] = this.KeyAbilities;
+        }
+
         this.importantChecks = this.ImportantChecks;
         this.selectedHintType = this.HintSelectionType;
     }

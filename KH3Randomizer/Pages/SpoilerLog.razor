@@ -45,9 +45,11 @@
     <div class="spoiler-log-options">
         <div class="spoiler-log-pools">
             <div class="row">
-                <Pools AvailablePools="@this.availablePools" CanBeNone="@this.canBeNone" CurrentSeed="@this.currentSeed" IsSpoilerLog="true" Exceptions="@this.exceptions"
-                       UpdateAvailablePools="@(pools => UpdateAvailablePools(pools))" UpdateCanBeNone="@(canBeNone => UpdateCanBeNone(canBeNone))" UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" 
-                       UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateExceptions="@(exceptions => UpdateExceptions(exceptions))">
+                <Pools AvailablePools="@this.availablePools" CanBeNone="@this.canBeNone" CurrentSeed="@this.currentSeed" IsSpoilerLog="true"
+                       Exceptions="@this.exceptions" KeyAbilities="@this.keyAbilities" KeyAbilityPools="@this.keyAbilityPools"
+                       UpdateAvailablePools="@(pools => UpdateAvailablePools(pools))" UpdateCanBeNone="@(canBeNone => UpdateCanBeNone(canBeNone))"
+                       UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateExceptions="@(exceptions => UpdateExceptions(exceptions))"
+                       UpdateKeyAbilities="@(keyAbilities => UpdateKeyAbilities(keyAbilities))" UpdateKeyAbilityPools="@(keyAbilityPools => UpdateKeyAbilityPools(keyAbilityPools))">
                 </Pools>
             </div>
         </div>
@@ -122,13 +124,23 @@
 
     private Dictionary<string, bool> exceptions = new Dictionary<string, bool>
     {
-        { "Default Abilities", false }
+        { "Default Abilities", false },
+        { "Default Critical Abilities", true },
+        { "Early Critical Abilities", false }
     };
 
     private Dictionary<string, Dictionary<string, bool>> availableOptions = new();
     private Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions = new();
 
     //private Dictionary<string, Dictionary<string, bool>> tempOptions = new();
+
+    private List<string> keyAbilities = new List<string>()
+    {
+        "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin",
+        "Ability: Glide", "Ability: Doubleflight", "Ability: Aerial Recovery",
+        "Ability: Second Chance", "Ability: Withstand Combo"
+    };
+    private List<string> keyAbilityPools = null;
 
     private List<Tuple<Option, Option>> modifications = new();
 
@@ -243,6 +255,26 @@
         });
     }
 
+    public void UpdateKeyAbilities(List<string> keyAbilities)
+    {
+        this.keyAbilities = keyAbilities;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    public void UpdateKeyAbilityPools(List<string> keyAbilityPools)
+    {
+        this.keyAbilityPools = keyAbilityPools;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
     public void UpdateModifications(Option initalOption, Option swapOption)
     {
         if (initalOption == null && swapOption == null)
@@ -270,11 +302,13 @@
             this.UpdateCurrentSeed(spoilerLogFile.SeedName);
             this.UpdateAvailablePools(spoilerLogFile.AvailablePools);
             this.UpdateExceptions(spoilerLogFile.Exceptions);
+            this.UpdateKeyAbilities(spoilerLogFile.KeyAbilities);
+            this.UpdateKeyAbilityPools(spoilerLogFile.KeyAbilityPools);
 
             this.RandomizerService.GetAvailableOptions(this.availablePools, ref this.availableOptions, false);
             this.UpdateAvailableOptions(this.availableOptions);
 
-            this.randomizedOptions = this.RandomizerService.Process(this.currentSeed, this.availablePools, this.exceptions, this.canBeNone);
+            this.randomizedOptions = this.RandomizerService.Process(this.currentSeed, this.availablePools, this.exceptions, this.keyAbilities, this.keyAbilityPools, this.canBeNone);
             this.UpdateRandomizedOptions(this.randomizedOptions);
 
             foreach (var item in spoilerLogFile.Modifications)

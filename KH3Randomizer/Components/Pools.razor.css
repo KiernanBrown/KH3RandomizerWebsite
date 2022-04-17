@@ -146,3 +146,34 @@ input:checked + .slider:before {
     color: white;
     outline: none !important;
 }
+
+.a-tag-selector {
+    color: unset;
+    text-decoration: none;
+}
+
+    .a-tag-selector:hover {
+        color: white;
+    }
+
+.a-tag-selected {
+    color: white;
+}
+
+.rounded-selector {
+    padding: 5px 10px;
+    border: 1px solid #0081ff;
+    border-radius: 20px;
+    margin: 5px;
+    display: block;
+    text-align: center;
+    transition: background-color 0.5s ease;
+}
+
+    .rounded-selector:hover {
+        background-color: #90bafc;
+    }
+
+.rounded-selected {
+    background-color: #0081ff;
+}

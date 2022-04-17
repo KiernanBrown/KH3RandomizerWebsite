@@ -76,6 +76,7 @@
 
         <h3>Miscellaneous Pools</h3>
 
+        <h4><b>Pools</b></h4>
         <div class="row">
             @foreach (var pool in miscellaneousPools.Where(x => x.Key != "Always On"))
             {
@@ -117,7 +118,7 @@
                 <div class="row">
                     <div class="col-md-2">
                         <label class="switch">
-                            <input type="checkbox" @onchange="@(() => { this.CanBeNone = !this.CanBeNone; this.UpdateCanBeNone.InvokeAsync(this.CanBeNone); 
+                            <input type="checkbox" @onchange="@(() => { this.CanBeNone = !this.CanBeNone; this.UpdateCanBeNone.InvokeAsync(this.CanBeNone);
                                                                     this.RandomizeByPools(new ChangeEventArgs { Value = this.currentSeed }); })" checked="@this.CanBeNone">
                             <span class="slider round"></span>
                         </label>
@@ -162,18 +163,43 @@
         </div>
     </div>
 
+    <!-- Key Abilities -->
+    <Collapsable @ref="@keyAbilitiesCollapsable" CurrentOption="@this.currentOption" ToggleCollapsables="this.ToggleCollapsables" Title="Key Abilities" ActionType="Options">
+        <h4 style="display: inline;"><b>Allowed Pools</b></h4>
+        <Tooltip Text="Select which pools you want Key Abilites to be able to appear in. Any Randomized pools are available here.">
+            <i class="bi bi-question-circle" style="font-size: 1.2rem; color: dodgerblue;"></i>
+        </Tooltip>
+            
+        <br />
+
+        <div class="row">
+            @foreach (var pool in worldPools.Where(x => x.Value == RandomizeOptionEnum.Randomize).Concat(miscellaneousPools.Where(x => x.Value == RandomizeOptionEnum.Randomize)))
+            {
+                <div class="col-md-2">
+                    <a class="rounded-selector a-tag-selector @(keyAbilityPools.Contains(pool.Key) ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => this.ToggleKeyAbilityPool(pool.Key))" @onclick:preventDefault>@pool.Key</a>
+                </div>
+            }
+        </div>
+
+        <br />
+
+        <SearchComponent SelectedChecks="@this.keyAbilities" SearchLimit="25" SelectedTitle="Key Abilities" SearchTitle="Available Abilities" Filter="Ability: " ActionType="Options" UseDisplayValues="true"></SearchComponent>
+    </Collapsable>
+
+    <br />
+
     @if (!this.IsSpoilerLog)
     {
-    <b>Is Plandomizer: </b>
+        <b>Is Plandomizer: </b>
 
-    <label class="switch">
-        <input type="checkbox" @onchange="@(() => { this.IsPlando = !this.IsPlando; this.UpdatePlando.InvokeAsync(this.IsPlando); })" checked="@this.IsPlando">
-        <span class="slider round"></span>
-    </label>
+        <label class="switch">
+            <input type="checkbox" @onchange="@(() => { this.IsPlando = !this.IsPlando; this.UpdatePlando.InvokeAsync(this.IsPlando); })" checked="@this.IsPlando">
+            <span class="slider round"></span>
+        </label>
 
-    <label style="margin-left: 10px;"><i>This feature is active but not supported for the 1.1 release.</i></label>
-    
-    <button class="btn kh-button" @onclick="@(() => { string section = this.IsPlando ? "Options" : "Quality of Life"; this.ContinueToNext(section); })" style="float: right;">Continue to @(this.IsPlando ? "Options" : "Quality of Life")...</button>
+        <label style="margin-left: 10px;"><i>This feature is active but not supported for the 1.1 release.</i></label>
+
+        <button class="btn kh-button" @onclick="@(() => { string section = this.IsPlando ? "Options" : "Quality of Life"; this.ContinueToNext(section); })" style="float: right;">Continue to @(this.IsPlando ? "Options" : "Quality of Life")...</button>
     }
 </div>
 
@@ -187,9 +213,13 @@
     [Parameter] public EventCallback<string> UpdateCurrentSeed { get; set; }
     [Parameter] public EventCallback<Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>>> UpdateRandomizedOptions { get; set; }
     [Parameter] public EventCallback<Dictionary<string, bool>> UpdateExceptions { get; set; }
+    [Parameter] public EventCallback<List<string>> UpdateKeyAbilities { get; set; }
+    [Parameter] public EventCallback<List<string>> UpdateKeyAbilityPools { get; set; }
 
     [Parameter] public Dictionary<string, RandomizeOptionEnum> AvailablePools { get; set; }
     [Parameter] public Dictionary<string, bool> Exceptions { get; set; }
+    [Parameter] public List<string> KeyAbilities { get; set; }
+    [Parameter] public List<string> KeyAbilityPools { get; set; }
     [Parameter] public bool IsPlando { get; set; }
     [Parameter] public bool IsSpoilerLog { get; set; } = false;
     [Parameter] public bool CanBeNone { get; set; }
@@ -221,11 +251,23 @@
         { "Battle Portals", "Rewards earned for completing a Battle Portal." },
     };
 
+    private Collapsable keyAbilitiesCollapsable;
+    private string currentOption = string.Empty;
+    private List<string> keyAbilities = new List<string>();
+    private List<string> keyAbilityPools = new List<string>();
+
+
     protected override void OnInitialized()
     {
         this.worldPools = this.RandomizerService.GetPools(this.AvailablePools, "World");
         this.miscellaneousPools = this.RandomizerService.GetPools(this.AvailablePools, "Miscellaneous");
         this.exceptions = this.Exceptions;
+        this.keyAbilities = this.KeyAbilities;
+
+        // Default key ability pools disallows non Disney worlds
+        this.keyAbilityPools = this.KeyAbilityPools ?? 
+            worldPools.Where(x => x.Value == RandomizeOptionEnum.Randomize && x.Key != "Keyblade Graveyard" && x.Key != "Re:Mind" && x.Key != "Dark World" && x.Key != "Unreality")
+            .Concat(miscellaneousPools.Where(x => x.Value == RandomizeOptionEnum.Randomize)).Select(x => x.Key).ToList();
 
         this.currentSeed = this.CurrentSeed ?? "";
     }
@@ -285,7 +327,12 @@
 
         this.UpdateAvailablePools.InvokeAsync(combinedDictionary);
 
-        var randomizedItems = this.RandomizerService.Process(this.currentSeed, combinedDictionary, this.exceptions, this.CanBeNone);
+        this.UpdateKeyAbilities.InvokeAsync(keyAbilities);
+
+        this.keyAbilityPools = this.keyAbilityPools.Where(pool => combinedDictionary.Where(x => x.Value == RandomizeOptionEnum.Randomize).Select(x => x.Key).Contains(pool)).ToList();
+        this.UpdateKeyAbilityPools.InvokeAsync(this.keyAbilityPools);
+
+        var randomizedItems = this.RandomizerService.Process(this.currentSeed, combinedDictionary, this.exceptions, this.keyAbilities, this.keyAbilityPools, this.CanBeNone);
 
         this.UpdateRandomizedOptions.InvokeAsync(randomizedItems);
     }
@@ -305,7 +352,31 @@
                 return;
             }
         }
-        
+
         await this.ContinueTo.InvokeAsync(section);
+    }
+
+    private void ToggleCollapsables(string currentOption)
+    {
+        this.currentOption = currentOption;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    private void ToggleKeyAbilityPool(string pool)
+    {
+        if (keyAbilityPools.Contains(pool))
+        {
+            keyAbilityPools.Remove(pool);
+        }
+        else
+        {
+            keyAbilityPools.Add(pool);
+        }
+
+        this.RandomizeByPools(new ChangeEventArgs { Value = this.currentSeed });
     }
 }

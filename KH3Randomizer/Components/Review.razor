@@ -207,6 +207,8 @@
     [Parameter] public Dictionary<string, RandomizeOptionEnum> AvailablePools { get; set; }
     [Parameter] public Dictionary<string, bool> Exceptions { get; set; }
     // [Parameter] public Dictionary<string, Dictionary<string, bool>> AvailableOptions { get; set; }
+    [Parameter] public List<string> KeyAbilities { get; set; }
+    [Parameter] public List<string> KeyAbilityPools { get; set; }
     [Parameter] public List<Tuple<Option, Option>> Modifications { get; set; }
     [Parameter] public string HintSelectionType { get; set; }
     [Parameter] public List<string> ImportantChecks { get; set; }
@@ -218,6 +220,7 @@
     private Dictionary<string, bool> qolValues = new();
     // private Dictionary<string, string> options { get; set; } = new();
     private List<string> modifications { get; set; } = new();
+    private List<string> importantChecks = new List<string>();
 
     private Dictionary<string, string> poolColors = new Dictionary<string, string>
     {
@@ -322,7 +325,7 @@
         }
 
         // Generate Randomized Seed
-        var file = this.RandomizerService.GenerateRandomizerSeed(this.CurrentSeed, this.RandomizedOptions, this.AvailablePools, this.Modifications, this.Exceptions, hintResults, this.hintValues, qolValues);
+        var file = this.RandomizerService.GenerateRandomizerSeed(this.CurrentSeed, this.RandomizedOptions, this.AvailablePools, this.Modifications, this.Exceptions, this.KeyAbilities, this.KeyAbilityPools, hintResults, this.hintValues, qolValues);
 
         await js.InvokeAsync<object>("saveAsFile", "pakchunk99-randomizer-" + this.CurrentSeed + ".zip", Convert.ToBase64String(file));
         // js.InvokeAsync<object>("saveAsFile", "pakchunk99-randomizer-" + this.CurrentSeed + ".pak", Convert.ToBase64String(files[0]));

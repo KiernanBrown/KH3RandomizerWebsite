@@ -11,9 +11,11 @@
 
     @if (this.currentSection == "Pools")
     {
-        <Pools ContinueTo="@(() => ContinueTo(this.IsPlando ? "Options" : "QoL"))" AvailablePools="@this.availablePools" IsPlando="@this.IsPlando" CanBeNone="@this.CanBeNone" CurrentSeed="@this.CurrentSeed" Exceptions="@this.exceptions"
+        <Pools ContinueTo="@(() => ContinueTo(this.IsPlando ? "Options" : "QoL"))" AvailablePools="@this.availablePools" IsPlando="@this.IsPlando" CanBeNone="@this.CanBeNone" CurrentSeed="@this.CurrentSeed" 
+               Exceptions="@this.exceptions" KeyAbilities="@this.keyAbilities" KeyAbilityPools="@this.keyAbilityPools"
                UpdateAvailablePools="@(pools => UpdateAvailablePools(pools))" UpdatePlando="@(isPlando => UpdatePlandoOption(isPlando))" UpdateCanBeNone="@(canBeNone => UpdateCanBeNone(canBeNone))" 
-               UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateExceptions="@(exceptions => UpdateExceptions(exceptions))">
+               UpdateRandomizedOptions="@(randOptions => UpdateRandomizedOptions(randOptions))" UpdateCurrentSeed="@(currentSeed => UpdateCurrentSeed(currentSeed))" UpdateExceptions="@(exceptions => UpdateExceptions(exceptions))" 
+               UpdateKeyAbilities="@(keyAbilities => UpdateKeyAbilities(keyAbilities))" UpdateKeyAbilityPools="@(keyAbilityPools => UpdateKeyAbilityPools(keyAbilityPools))">
         </Pools>
     }
     else if (this.currentSection == "Options" && this.IsPlando)
@@ -31,12 +33,12 @@
     }
     else if (this.currentSection == "Hints")
     {
-        <Hints ContinueTo="@(() => ContinueTo("Review"))" BackTo="@(() => BackTo("QoL"))" HintSelectionType="@this.hintSelectionType" ImportantChecks="@this.importantChecks" UpdateHintSelection="@(selection => UpdateHintSelection(selection))" UpdateImportantChecks="@(importantChecks => UpdateImportantChecks(importantChecks))"></Hints>
+        <Hints ContinueTo="@(() => ContinueTo("Review"))" BackTo="@(() => BackTo("QoL"))" HintSelectionType="@this.hintSelectionType" ImportantChecks="@this.importantChecks" KeyAbilities="@this.keyAbilities" UpdateHintSelection="@(selection => UpdateHintSelection(selection))" UpdateImportantChecks="@(importantChecks => UpdateImportantChecks(importantChecks))"></Hints>
     }
     else if (this.currentSection == "Review")
     {
         <Review BackTo="@(() => BackTo("Hints"))" CurrentSeed="@this.CurrentSeed" RandomizedOptions="@this.randomizedOptions"
-                AvailablePools="@this.availablePools" Exceptions="this.exceptions" Modifications="@this.modifications"
+                AvailablePools="@this.availablePools" Exceptions="this.exceptions" KeyAbilities="@this.keyAbilities" KeyAbilityPools="@this.keyAbilityPools" Modifications="@this.modifications"
                 ImportantChecks="@this.importantChecks" HintSelectionType="@this.hintSelectionType" CanBeNone="@this.CanBeNone"
                 AvailableQualityOfLifeSettings="@this.availableQualityOfLifeOptions"></Review>
     }
@@ -114,6 +116,14 @@
         }
     };
 
+    private List<string> keyAbilities = new List<string>()
+    {
+        "Ability: Dodge Roll", "Ability: Air Slide", "Ability: Block", "Ability: Pole Spin",
+        "Ability: Glide", "Ability: Doubleflight", "Ability: Aerial Recovery",
+        "Ability: Second Chance", "Ability: Withstand Combo"
+    };
+    private List<string> keyAbilityPools = null;
+
     private string currentSection = "Pools";
     private bool isGoingBack = false;
 
@@ -190,6 +200,27 @@
     public void UpdateRandomizedOptions(Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions)
     {
         this.randomizedOptions = randomizedOptions;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+
+    public void UpdateKeyAbilities(List<string> keyAbilities)
+    {
+        this.keyAbilities = keyAbilities;
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    public void UpdateKeyAbilityPools(List<string> keyAbilityPools)
+    {
+        this.keyAbilityPools = keyAbilityPools;
 
         InvokeAsync(() =>
         {
