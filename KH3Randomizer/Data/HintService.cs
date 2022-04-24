@@ -48,6 +48,7 @@ namespace KH3Randomizer.Data
                     {
                         if (importantChecks.Contains(searchValue.ValueIdToDisplay()))
                         {
+                            var tempAltLevelUps = "";
                             if (searchCategory.Key == DataTableEnum.LevelUp)
                             {
                                 var contained = false;
@@ -61,21 +62,20 @@ namespace KH3Randomizer.Data
                                     }
                                 }
 
-                                var tempAltLevelUps = this.GetLevelUpAlternatives(randomizedOptions, searchSubCategory.Key, searchName, searchValue);
-
-                                if (!levelUpTracker.Contains(tempAltLevelUps))
-                                {
-                                    levelUpTracker.Add(tempAltLevelUps);
-                                }
-                                else if (contained)
+                                if (contained)
                                 {
                                     continue;
                                 }
+
+                                tempAltLevelUps = this.GetLevelUpAlternatives(randomizedOptions, searchValue, levelUpTracker);
                             }
 
-                            var hintLocation = this.GetHintItemLocation(randomizedOptions, searchCategory.Key, searchSubCategory.Key, searchName, searchValue, hintType);
+                            var hintLocation = this.GetHintItemLocation(randomizedOptions, searchCategory.Key, searchSubCategory.Key, searchValue, hintType, levelUpTracker);
                             var hintText = string.Empty;
                             var hintName = CleanHintName(searchValue.ValueIdToDisplay());
+
+                            if (!string.IsNullOrEmpty(tempAltLevelUps) && !levelUpTracker.Contains(tempAltLevelUps))
+                                levelUpTracker.Add(tempAltLevelUps);
 
                             if (hintType.Equals("Verbose"))
                                 hintText = $"{hintName} is {hintLocation}";
@@ -263,7 +263,7 @@ namespace KH3Randomizer.Data
             }
         }
 
-        public string GetHintItemLocation(Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, DataTableEnum category, string subCategory, string name, string value, string hintType)
+        public string GetHintItemLocation(Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, DataTableEnum category, string subCategory, string value, string hintType, List<string> levelUpTracker)
         {
             var hintLocation = string.Empty;
 
@@ -282,7 +282,7 @@ namespace KH3Randomizer.Data
                     break;
                 case DataTableEnum.LevelUp:
                     if (hintType.Equals("Verbose"))
-                        hintLocation = $"on Sora's Level Up {this.GetLevelUpAlternatives(randomizedOptions, subCategory, name, value)}.";
+                        hintLocation = $"on Sora's Level Up {this.GetLevelUpAlternatives(randomizedOptions, value, levelUpTracker)}.";
                     else if (hintType.Contains("Vague"))
                         hintLocation = $"on Sora's Level Ups.";
 
@@ -1703,7 +1703,7 @@ namespace KH3Randomizer.Data
             return new Tuple<string, string>(keyblade, level);
         }
 
-        public string GetLevelUpAlternatives(Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, string subCategory, string name, string value)
+        public string GetLevelUpAlternatives(Dictionary<DataTableEnum, Dictionary<string, Dictionary<string, string>>> randomizedOptions, string value, List<string> levelUpTracker)
         {
             var levelUps = randomizedOptions[DataTableEnum.LevelUp];
 
@@ -1711,13 +1711,11 @@ namespace KH3Randomizer.Data
 
             foreach (var levelUp in levelUps)
             {
-                if (levelUp.Value["TypeA"].Equals(value))
+                if (levelUp.Value["TypeA"].Equals(value) && levelUpTexts.Where(x => x.Contains("Warrior")).Count() == 0 && levelUpTracker.Where(x => x.Contains($"{levelUp.Key} (Warrior)")).Count() == 0)
                     levelUpTexts.Add($"{levelUp.Key} (Warrior)");
-
-                if (levelUp.Value["TypeB"].Equals(value))
+                if (levelUp.Value["TypeB"].Equals(value) && levelUpTexts.Where(x => x.Contains("Mystic")).Count() == 0 && levelUpTracker.Where(x => x.Contains($"{levelUp.Key} (Mystic)")).Count() == 0)
                     levelUpTexts.Add($"{levelUp.Key} (Mystic)");
-                
-                if (levelUp.Value["TypeC"].Equals(value))
+                if (levelUp.Value["TypeC"].Equals(value) && levelUpTexts.Where(x => x.Contains("Guardian")).Count() == 0 && levelUpTracker.Where(x => x.Contains($"{levelUp.Key} (Guardian)")).Count() == 0)
                     levelUpTexts.Add($"{levelUp.Key} (Guardian)");
 
                 if (levelUpTexts.Count == 3)
