@@ -1,7 +1,6 @@
 ﻿@inject KH3Randomizer.Data.RandomizerService RandomizerService
 
 <div class="hints-section">
-
     <div class="hint-selection">
         <div class="row" style="width: 100%;">
             <div class="col-md-2">
@@ -11,13 +10,13 @@
                 <a class="rounded-selector a-tag-selector @(selectedHintType == "None" ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { UpdateCurrentHintSelection("None"); })" @onclick:preventDefault>None</a>
             </div>
             <div class="col-md-2">
-                <a class="rounded-selector a-tag-selector @(selectedHintType == "Vague" ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { UpdateCurrentHintSelection("Vague"); })" @onclick:preventDefault>Vague</a>
+                <a class="rounded-selector a-tag-selector @(selectedHintType == "Vague: By Check" ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { UpdateCurrentHintSelection("Vague: By Check"); })" @onclick:preventDefault>Vague: By Check</a>
+            </div>
+            <div class="col-md-2">
+                <a class="rounded-selector a-tag-selector @(selectedHintType == "Vague: By Category" ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { UpdateCurrentHintSelection("Vague: By Category"); })" @onclick:preventDefault>Vague: By Category</a>
             </div>
             <div class="col-md-2">
                 <a class="rounded-selector a-tag-selector @(selectedHintType == "Verbose" ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { UpdateCurrentHintSelection("Verbose"); })" @onclick:preventDefault>Verbose</a>
-            </div>
-            <div class="col-md-2">
-                <a class="rounded-selector a-tag-selector @(selectedHintType == "Category" ? "a-tag-selected rounded-selected" : "")" href="" @onclick="@(() => { UpdateCurrentHintSelection("Category"); })" @onclick:preventDefault>Category</a>
             </div>
         </div>
     </div>
@@ -40,6 +39,8 @@
             }
         </div>
     </div>
+
+    <div class="sub-section-text">In Collaboration With SwiftShadow</div>
 
     <br />
 

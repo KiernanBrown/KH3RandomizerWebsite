@@ -99,6 +99,39 @@
             </div>
         }
 
+        @if (this.KeyAbilities.Count > 0 && this.KeyAbilityPools.Count > 0)
+        {
+            <div class="review-sub-subsection">
+                <div class="review-header">
+                    <h3 for="abilities" style="font-size: 1.3rem;"><span class="header-color" style="background-color: #8fd0ff; "></span><b>Abilities: </b></h3>
+                </div>
+                <div class="review-content" style="max-height: 600px; overflow-y: auto;">
+                    <h4 for="pools" style="font-size: 1.0rem; margin-left: 10px;"><u><b>Key Abilities: </b></u></h4>
+                    @foreach (var ability in this.KeyAbilities)
+                    {
+                        <div style="display: inline-flex;">
+                            <div id="@(ability)_value" style="display: inline;">
+                                <span class="sub-option-bubble" style="@abilityColors["Key Abilities"]">@ability</span>
+                            </div>
+                        </div>
+                    }
+
+                    <br />
+                    <br />
+
+                    <h4 for="pools" style="font-size: 1.0rem; margin-left: 10px;"><u><b>Key Ability Pools: </b></u></h4>
+                    @foreach (var pool in this.KeyAbilityPools)
+                    {
+                        <div style="display: inline-flex;">
+                            <div id="@(pool)_value" style="display: inline;">
+                                <span class="sub-option-bubble" style="@abilityColors["Key Ability Pools"]">@pool</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
         @if (this.Modifications.Count > 0)
         {
             <div class="review-sub-subsection">
@@ -179,7 +212,7 @@
                     <h4 style="font-size: 1.0rem; margin-left: 10px;"><u><b>Hint Selection Type: @this.HintSelectionType</b></u></h4>
 
                     @foreach (var ic in this.ImportantChecks)
-                    { 
+                    {
                         <div style="display: inline-flex;">
                             <div id="@(ic)_value" style="display: inline;">
                                 <span class="sub-option-bubble" style="background: #ffac2f;">@ic</span>
@@ -290,6 +323,12 @@
         //{ "Slow Mickey Skip", "background: #56adff;" },
 
         //{ "All Maps Unlocked", "background: #56adff;" },
+    };
+
+    private Dictionary<string, string> abilityColors = new Dictionary<string, string>
+    {
+        { "Key Abilities", "background: #49b3ff;" },
+        { "Key Ability Pools", "background: #5ebcff" }
     };
 
     bool isGeneratingSeed { get; set; }

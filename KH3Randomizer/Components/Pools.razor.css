@@ -162,7 +162,7 @@ input:checked + .slider:before {
 
 .rounded-selector {
     padding: 5px 10px;
-    border: 1px solid #0081ff;
+    border: 1px solid #49b3ff;
     border-radius: 20px;
     margin: 5px;
     display: block;
@@ -171,9 +171,9 @@ input:checked + .slider:before {
 }
 
     .rounded-selector:hover {
-        background-color: #90bafc;
+        background-color: #c1e5ff;
     }
 
 .rounded-selected {
-    background-color: #0081ff;
+    background-color: #49b3ff;
 }
